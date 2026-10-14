@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       from: "Valhalla Studio <contacto@valhallastudio.com.mx>",
       to: "contacto@valhallastudio.com.mx",
       replyTo: email,
-      subject: `Nuevo contacto de ${name}`,
+      subject: `Valhalla Studio - Nuevo contacto de ${name}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #7c3aed;">Nuevo mensaje desde el portafolio</h2>
