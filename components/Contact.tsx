@@ -84,7 +84,7 @@ export default function Contact() {
               </a>
 
               <a
-                href="mailto:gabo.cn@proton.me"
+                href="mailto:contacto@valhallastudio.com.mx"
                 className="btn-secondary"
               >
                 <Envelope size={18} weight="fill" />
