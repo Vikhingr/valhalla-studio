@@ -123,7 +123,7 @@ export default function Hero() {
         </motion.div>
 
         {/* Right: photo */}
-        <motion.div {...right} style={{ display: "flex", justifyContent: "flex-end" }}>
+        <motion.div {...right} style={{ display: "flex", justifyContent: "flex-end" }} className="hero-photo">
           <div style={{ position: "relative", width: 300, height: 380 }}>
             {/* Photo frame */}
             <div
@@ -171,8 +171,8 @@ export default function Hero() {
             grid-template-columns: 1fr !important;
             gap: 48px !important;
           }
-          .hero-grid > *:last-child {
-            justify-content: center !important;
+          .hero-photo {
+            display: none !important;
           }
         }
       `}</style>
