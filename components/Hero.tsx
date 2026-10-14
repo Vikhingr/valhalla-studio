@@ -5,16 +5,18 @@ import { motion, useReducedMotion } from "framer-motion";
 export default function Hero() {
   const reduced = useReducedMotion();
 
+  const easing = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
   const left = {
     initial: { opacity: 0, x: reduced ? 0 : -28 },
     animate: { opacity: 1, x: 0 },
-    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.65, ease: easing },
   };
 
   const right = {
     initial: { opacity: 0, x: reduced ? 0 : 28 },
     animate: { opacity: 1, x: 0 },
-    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.12 },
+    transition: { duration: 0.65, ease: easing, delay: 0.12 },
   };
 
   return (
