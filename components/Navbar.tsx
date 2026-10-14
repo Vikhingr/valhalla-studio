@@ -1,0 +1,144 @@
+"use client";
+import { useState, useEffect } from "react";
+import { List, X } from "@phosphor-icons/react";
+
+const links = [
+  { href: "#inicio", label: "Inicio" },
+  { href: "#sobre-mi", label: "Sobre mí" },
+  { href: "#proyectos", label: "Proyectos" },
+  { href: "#servicios", label: "Servicios" },
+  { href: "#contacto", label: "Contacto" },
+];
+
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <header
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      style={{
+        background: scrolled ? "oklch(0.10 0.010 280 / 0.92)" : "transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        borderBottom: scrolled ? "1px solid var(--border-subtle)" : "none",
+      }}
+    >
+      <nav
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "0 24px",
+          height: 64,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Logo */}
+        <a href="#inicio" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              background: "var(--violet)",
+              borderRadius: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 14,
+              fontWeight: 800,
+              color: "white",
+              flexShrink: 0,
+            }}
+          >
+            V
+          </div>
+          <span style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)", letterSpacing: "-0.02em" }}>
+            Valhalla<span style={{ color: "var(--violet-light)" }}>Studio</span>
+          </span>
+        </a>
+
+        {/* Desktop links */}
+        <ul className="nav-links" style={{ listStyle: "none", display: "none", alignItems: "center", gap: 32 }}>
+          {links.map((l) => (
+            <li key={l.href}>
+              <a
+                href={l.href}
+                style={{ color: "var(--muted)", fontSize: 14, fontWeight: 500, textDecoration: "none", transition: "color 0.15s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+              >
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        {/* CTA */}
+        <a href="#contacto" className="btn-primary nav-cta" style={{ padding: "9px 20px", fontSize: 13, display: "none" }}>
+          Hablemos
+        </a>
+
+        {/* Mobile toggle */}
+        <button
+          className="nav-burger"
+          onClick={() => setOpen(!open)}
+          style={{ background: "none", border: "none", color: "var(--ink-2)", cursor: "pointer", padding: 4, display: "flex" }}
+          aria-label={open ? "Cerrar menú" : "Abrir menú"}
+        >
+          {open ? <X size={22} weight="bold" /> : <List size={22} weight="bold" />}
+        </button>
+      </nav>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .nav-links { display: flex !important; }
+          .nav-cta { display: inline-flex !important; }
+          .nav-burger { display: none !important; }
+        }
+      `}</style>
+
+      {/* Mobile menu */}
+      {open && (
+        <div
+          style={{
+            background: "var(--surface)",
+            borderTop: "1px solid var(--border-subtle)",
+            padding: "16px 24px 24px",
+          }}
+        >
+          {links.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              style={{
+                display: "block",
+                color: "var(--muted)",
+                padding: "12px 0",
+                fontSize: 15,
+                fontWeight: 500,
+                textDecoration: "none",
+                borderBottom: "1px solid var(--border-subtle)",
+                transition: "color 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+            >
+              {l.label}
+            </a>
+          ))}
+          <a href="#contacto" className="btn-primary" style={{ marginTop: 16, width: "100%", justifyContent: "center" }} onClick={() => setOpen(false)}>
+            Hablemos
+          </a>
+        </div>
+      )}
+    </header>
+  );
+}
