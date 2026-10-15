@@ -31,6 +31,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       nombre_fiscal: body.nombre_fiscal || null,
       regimen_fiscal: body.regimen_fiscal || null,
       codigo_postal: body.codigo_postal || null,
+      domicilio: body.domicilio || null,
     })
     .eq("id", id)
     .select()

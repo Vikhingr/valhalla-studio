@@ -63,9 +63,9 @@ const FORMAS_MAP: Record<string, string> = {
 
 interface Props {
   factura: Factura & {
-    clients?: { id: string; name: string; company: string | null; email: string | null; rfc: string | null; nombre_fiscal: string | null } | null;
+    clients?: { id: string; name: string; company: string | null; email: string | null; rfc: string | null; nombre_fiscal: string | null; domicilio: string | null } | null;
   };
-  emisor: { nombre: string; nombre_fiscal: string; rfc: string; regimen: string; cp: string };
+  emisor: { nombre: string; nombre_fiscal: string; rfc: string; regimen: string; cp: string; domicilio_fiscal?: string };
   hasCfdiDownload: boolean;
 }
 
@@ -236,7 +236,10 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{emisor.nombre_fiscal || emisor.nombre}</div>
             <div style={{ fontSize: 11, fontFamily: "monospace", color: "var(--muted)", marginTop: 2 }}>RFC {emisor.rfc}</div>
             {regimenEmisorLabel && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{regimenEmisorLabel}</div>}
-            {emisor.cp && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>C.P. {emisor.cp}</div>}
+            {emisor.domicilio_fiscal
+              ? <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{emisor.domicilio_fiscal}</div>
+              : emisor.cp && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>C.P. {emisor.cp}</div>
+            }
           </div>
           {isCfdi && factura.cfdi_uuid && (
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -262,7 +265,7 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <MRow label="Régimen Fiscal" value={regimenLabel} />
-              <MRow label="Domicilio" value={`${factura.receptor_cp}, MEX`} />
+              <MRow label="Domicilio" value={factura.clients?.domicilio || `${factura.receptor_cp}, MEX`} />
               <MRow label="Uso del CFDI" value={usoCfdiLabel} />
             </div>
           </div>

@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import type { Client } from "@/lib/types";
 import { Plus, PencilSimple, Trash, X, Key, IdentificationCard } from "@phosphor-icons/react";
 import { REGIMENES_FISCALES } from "@/lib/types";
+import { AddressInput } from "@/components/AddressInput";
 
-const EMPTY = { name: "", company: "", email: "", phone: "", notes: "", protonpass_ref: "", rfc: "", nombre_fiscal: "", regimen_fiscal: "", codigo_postal: "" };
+const EMPTY = { name: "", company: "", email: "", phone: "", notes: "", protonpass_ref: "", rfc: "", nombre_fiscal: "", regimen_fiscal: "", codigo_postal: "", domicilio: "" };
 
 function Modal({
   title,
@@ -107,6 +108,7 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
       nombre_fiscal: c.nombre_fiscal ?? "",
       regimen_fiscal: c.regimen_fiscal ?? "",
       codigo_postal: c.codigo_postal ?? "",
+      domicilio: c.domicilio ?? "",
     });
     setEditing(c);
     setSaveError(null);
@@ -236,6 +238,14 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
                 <option key={r.value} value={r.value}>{r.label}</option>
               ))}
             </select>
+          </Field>
+          <Field label="Domicilio fiscal">
+            <AddressInput
+              value={form.domicilio}
+              onChange={(v) => setForm({ ...form, domicilio: v })}
+              placeholder="Calle, número, colonia, ciudad"
+              style={inputStyle}
+            />
           </Field>
         </div>
       </div>

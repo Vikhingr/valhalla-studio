@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { CheckCircle, Warning, Eye, EyeSlash, UploadSimple, Gear } from "@phosphor-icons/react";
 import type { ConfiguracionFiscal } from "@/lib/types";
 import { REGIMENES_FISCALES, USOS_CFDI, USOS_CFDI_DEFAULT } from "@/lib/types";
+import { AddressInput } from "@/components/AddressInput";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -71,6 +72,7 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
     nombre_comercial: initial.nombre_comercial ?? "",
     regimen_fiscal: initial.regimen_fiscal ?? "612",
     codigo_postal: initial.codigo_postal ?? "",
+    domicilio_fiscal: initial.domicilio_fiscal ?? "",
     facturapi_mode: initial.facturapi_mode ?? "test",
     facturapi_key: "",
     csd_password: "",
@@ -117,6 +119,7 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
         nombre_comercial: form.nombre_comercial.trim(),
         regimen_fiscal: form.regimen_fiscal,
         codigo_postal: form.codigo_postal.trim(),
+        domicilio_fiscal: form.domicilio_fiscal.trim() || null,
         facturapi_mode: form.facturapi_mode,
         usos_cfdi_visibles: usosVisibles,
       };
@@ -197,6 +200,14 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
             value={form.nombre_emisor}
             onChange={(e) => set("nombre_emisor", e.target.value)}
             placeholder="TU NOMBRE COMPLETO EN MAYÚSCULAS"
+          />
+        </Field>
+        <Field label="Domicilio fiscal" hint="Aparece en la factura impresa. Puedes buscar con Google Places si tienes la clave configurada.">
+          <AddressInput
+            value={form.domicilio_fiscal}
+            onChange={(v) => set("domicilio_fiscal", v)}
+            placeholder="Calle, número, colonia, alcaldía / municipio, estado, C.P."
+            style={inputStyle}
           />
         </Field>
         <Field label="Nombre comercial" hint="Opcional — aparece en PDF como nombre de la empresa">

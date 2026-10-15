@@ -9,8 +9,8 @@ export default async function FacturaDetailPage({ params }: { params: Promise<{ 
   const db = await createServerClient();
 
   const [{ data: factura }, { data: cfg }] = await Promise.all([
-    db.from("facturas").select("*, clients(id, name, company, email, rfc, nombre_fiscal)").eq("id", id).single(),
-    db.from("configuracion").select("nombre_emisor, nombre_comercial, rfc_emisor, regimen_fiscal, codigo_postal, facturapi_key").eq("id", "global").single(),
+    db.from("facturas").select("*, clients(id, name, company, email, rfc, nombre_fiscal, domicilio)").eq("id", id).single(),
+    db.from("configuracion").select("nombre_emisor, nombre_comercial, rfc_emisor, regimen_fiscal, codigo_postal, domicilio_fiscal, facturapi_key").eq("id", "global").single(),
   ]);
 
   if (!factura) notFound();
@@ -24,6 +24,7 @@ export default async function FacturaDetailPage({ params }: { params: Promise<{ 
         rfc: cfg?.rfc_emisor ?? "",
         regimen: cfg?.regimen_fiscal ?? "",
         cp: cfg?.codigo_postal ?? "",
+        domicilio_fiscal: cfg?.domicilio_fiscal ?? "",
       }}
       hasCfdiDownload={!!factura.facturapi_id && !!cfg?.facturapi_key}
     />

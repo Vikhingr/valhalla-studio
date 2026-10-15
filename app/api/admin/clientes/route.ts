@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
       nombre_fiscal: body.nombre_fiscal || null,
       regimen_fiscal: body.regimen_fiscal || null,
       codigo_postal: body.codigo_postal || null,
+      domicilio: body.domicilio || null,
     })
     .select()
     .single();

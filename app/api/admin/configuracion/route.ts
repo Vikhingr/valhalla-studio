@@ -23,6 +23,7 @@ export async function GET() {
     nombre_comercial: data.nombre_comercial,
     regimen_fiscal: data.regimen_fiscal,
     codigo_postal: data.codigo_postal,
+    domicilio_fiscal: data.domicilio_fiscal ?? null,
     facturapi_mode: data.facturapi_mode ?? "test",
     has_facturapi_key: !!data.facturapi_key,
     has_cer: !!data.cer_data,
@@ -45,7 +46,7 @@ export async function PUT(req: NextRequest) {
   };
 
   // Plain fiscal fields
-  const plain = ["rfc_emisor", "nombre_emisor", "nombre_comercial", "regimen_fiscal", "codigo_postal", "facturapi_mode"] as const;
+  const plain = ["rfc_emisor", "nombre_emisor", "nombre_comercial", "regimen_fiscal", "codigo_postal", "domicilio_fiscal", "facturapi_mode"] as const;
   for (const f of plain) {
     if (body[f] !== undefined) update[f] = body[f] || null;
   }

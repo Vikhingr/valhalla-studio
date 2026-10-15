@@ -10,6 +10,7 @@ export type Client = {
   nombre_fiscal: string | null
   regimen_fiscal: string | null
   codigo_postal: string | null
+  domicilio: string | null
   created_at: string
 }
 
@@ -121,6 +122,7 @@ export type ConfiguracionFiscal = {
   nombre_comercial: string | null
   regimen_fiscal: string | null
   codigo_postal: string | null
+  domicilio_fiscal: string | null
   facturapi_mode: 'test' | 'live'
   has_facturapi_key: boolean
   has_cer: boolean
