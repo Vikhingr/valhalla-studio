@@ -397,13 +397,21 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
 
       <style>{`
         @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
+          body * { visibility: hidden; }
+          #factura-print, #factura-print * { visibility: visible; }
           #factura-print {
-            border: none !important; box-shadow: none !important;
-            margin: 0 !important; border-radius: 0 !important;
-            max-width: 100% !important; padding: 24px 32px !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            max-width: 100% !important;
+            padding: 24px 32px !important;
           }
+          body { background: white !important; margin: 0 !important; }
         }
       `}</style>
     </>
