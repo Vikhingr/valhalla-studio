@@ -22,6 +22,8 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const router   = useRouter();
 
+  if (pathname === "/admin/login") return null;
+
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
