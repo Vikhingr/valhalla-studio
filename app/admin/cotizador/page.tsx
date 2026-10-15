@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
-import { Copy, Check } from "@phosphor-icons/react";
+import { useState, useEffect } from "react";
+import { Copy, Check, FloppyDisk, Trash } from "@phosphor-icons/react";
+import type { Cotizacion } from "@/lib/types";
 
 type ProjectType = "web" | "app" | "automatizacion";
 
@@ -122,10 +123,21 @@ function fmt(n: number) {
 }
 
 export default function CotizadorPage() {
-  const [type, setType]       = useState<ProjectType>("web");
+  const [type, setType]         = useState<ProjectType>("web");
   const [selected, setSelected] = useState<string[]>(["base", "contacto"]);
-  const [withIVA, setWithIVA] = useState(false);
-  const [copied, setCopied]   = useState(false);
+  const [withIVA, setWithIVA]   = useState(false);
+  const [copied, setCopied]     = useState(false);
+  const [saving, setSaving]     = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [cotizaciones, setCotizaciones]   = useState<Cotizacion[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/cotizaciones")
+      .then((r) => r.json())
+      .then((d) => Array.isArray(d) && setCotizaciones(d))
+      .catch(() => {});
+  }, []);
 
   function applyPreset(features: string[]) {
     setSelected(features);
@@ -182,6 +194,48 @@ export default function CotizadorPage() {
     await navigator.clipboard.writeText(buildProposal());
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  }
+
+  async function handleSaveCotizacion() {
+    if (!saveName.trim() || total === 0) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/cotizaciones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: saveName.trim(),
+          project_type: type,
+          selected_features: selectedFeatures.map((f) => ({ id: f.id, label: f.label, price: f.price })),
+          subtotal,
+          iva,
+          total,
+          with_iva: withIVA,
+          anticipo,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCotizaciones((prev) => [data, ...prev]);
+        setShowSaveModal(false);
+        setSaveName("");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteCotizacion(id: string) {
+    await fetch("/api/admin/cotizaciones", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setCotizaciones((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  function fmt2(n: number) {
+    return n.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
   }
 
   return (
@@ -382,10 +436,87 @@ export default function CotizadorPage() {
               <p style={{ fontSize: 11, color: "var(--muted)", textAlign: "center", marginTop: 8 }}>
                 Lista para WhatsApp o email
               </p>
+              <button
+                onClick={() => { setSaveName(""); setShowSaveModal(true); }}
+                disabled={total === 0}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  padding: "10px 16px", borderRadius: 8, cursor: total === 0 ? "not-allowed" : "pointer",
+                  border: "1px solid var(--border)", background: "transparent",
+                  color: "var(--ink-2)", fontSize: 13, fontWeight: 500, marginTop: 8,
+                  opacity: total === 0 ? 0.4 : 1,
+                }}
+              >
+                <FloppyDisk size={15} /> Guardar cotización
+              </button>
+            </div>
+          </div>
+
+          {/* Cotizaciones guardadas */}
+          {cotizaciones.length > 0 && (
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", marginTop: 14 }}>
+              <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface-2)" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Cotizaciones guardadas
+                </span>
+              </div>
+              <div>
+                {cotizaciones.map((c) => (
+                  <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: "1px solid var(--border-subtle)", gap: 8 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{fmt2(c.total)} · {c.project_type}</div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteCotizacion(c.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 4, flexShrink: 0 }}
+                    >
+                      <Trash size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal guardar cotización */}
+      {showSaveModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }} onClick={() => setShowSaveModal(false)}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 24, width: "100%", maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", marginBottom: 16 }}>Guardar cotización</h3>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>Nombre</label>
+              <input
+                autoFocus
+                style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 7, padding: "9px 12px", color: "var(--ink)", fontSize: 13, outline: "none", fontFamily: "inherit" }}
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveCotizacion()}
+                placeholder="Ej. Landing El Rayo — Oct 2026"
+              />
+            </div>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 16 }}>
+              Total: <strong style={{ color: "var(--ink)" }}>{fmt2(total)}</strong>
+              {withIVA && <span> (IVA incluido)</span>}
+              {" · "}Anticipo 50%: <strong style={{ color: "var(--ink)" }}>{fmt2(anticipo)}</strong>
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setShowSaveModal(false)} style={{ padding: "9px 18px", borderRadius: 8, border: "1px solid var(--border)", background: "transparent", color: "var(--ink-2)", fontSize: 13, cursor: "pointer" }}>
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveCotizacion}
+                disabled={saving || !saveName.trim()}
+                style={{ padding: "9px 18px", borderRadius: 8, border: "none", background: "var(--violet)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: saving || !saveName.trim() ? 0.6 : 1 }}
+              >
+                {saving ? "Guardando..." : "Guardar"}
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

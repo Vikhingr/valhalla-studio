@@ -1,11 +1,15 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Project, ProjectStage } from "@/lib/types";
+import type { Project, ProjectStage, Cotizacion } from "@/lib/types";
 
-type ClientSummary = { id: string; name: string; company: string | null };
+type ClientSummary = { id: string; name: string; company: string | null; protonpass_ref: string | null };
 import { STAGES } from "@/lib/types";
 import { Plus, PencilSimple, Trash, X, Key } from "@phosphor-icons/react";
+
+function fmt(n: number) {
+  return n.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+}
 
 const EMPTY_FORM = {
   name: "", client_id: "", stage: "cotizacion" as ProjectStage,
@@ -32,18 +36,20 @@ const inputStyle: React.CSSProperties = { width: "100%", background: "var(--bg)"
 
 type ProjectWithClient = Project & { clients: ClientSummary | null };
 
-export default function ProyectosClient({ initial, clients }: { initial: ProjectWithClient[]; clients: ClientSummary[] }) {
+export default function ProyectosClient({ initial, clients, cotizaciones }: { initial: ProjectWithClient[]; clients: ClientSummary[]; cotizaciones: Cotizacion[] }) {
   const [projects, setProjects] = useState<ProjectWithClient[]>(initial);
   const [filter, setFilter] = useState<string>("all");
   const [modal, setModal] = useState<"create" | "edit" | null>(null);
   const [editing, setEditing] = useState<Project | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [anticipoCobrado, setAnticipoCobrado] = useState(false);
   const router = useRouter();
 
   const filtered = filter === "all" ? projects : projects.filter((p) => p.stage === filter);
 
-  function openCreate() { setForm(EMPTY_FORM); setEditing(null); setModal("create"); }
+  function openCreate() { setForm(EMPTY_FORM); setEditing(null); setSaveError(null); setAnticipoCobrado(false); setModal("create"); }
   function openEdit(p: Project) {
     setForm({
       name: p.name, client_id: p.client_id ?? "",
@@ -52,22 +58,28 @@ export default function ProyectosClient({ initial, clients }: { initial: Project
       paid_amount: p.paid_amount?.toString() ?? "", project_url: p.project_url ?? "",
       notes: p.notes ?? "", protonpass_ref: p.protonpass_ref ?? "",
     });
-    setEditing(p); setModal("edit");
+    setEditing(p); setSaveError(null); setAnticipoCobrado(false); setModal("edit");
   }
 
   async function handleSave() {
     if (!form.name.trim()) return;
     setSaving(true);
+    setSaveError(null);
     try {
       if (modal === "create") {
         const res = await fetch("/api/admin/proyectos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-        if (res.ok) { const data = await res.json(); setProjects((prev) => [data, ...prev]); }
+        const data = await res.json();
+        if (!res.ok) { setSaveError(data.error ?? "Error al guardar"); return; }
+        setProjects((prev) => [data, ...prev]);
       } else if (editing) {
         const res = await fetch(`/api/admin/proyectos/${editing.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-        if (res.ok) { const data = await res.json(); setProjects((prev) => prev.map((p) => (p.id === editing.id ? data : p))); }
+        const data = await res.json();
+        if (!res.ok) { setSaveError(data.error ?? "Error al guardar"); return; }
+        setProjects((prev) => prev.map((p) => (p.id === editing.id ? data : p)));
       }
       setModal(null);
-    } finally { setSaving(false); }
+    } catch { setSaveError("Error de red. Intenta de nuevo."); }
+    finally { setSaving(false); }
   }
 
   async function handleDelete(id: string, e: React.MouseEvent) {
@@ -77,13 +89,76 @@ export default function ProyectosClient({ initial, clients }: { initial: Project
     if (res.ok) setProjects((prev) => prev.filter((p) => p.id !== id));
   }
 
+  function handleClientChange(clientId: string) {
+    const client = clients.find((c) => c.id === clientId);
+    setForm((prev) => ({
+      ...prev,
+      client_id: clientId,
+      protonpass_ref: client?.protonpass_ref ?? prev.protonpass_ref,
+    }));
+  }
+
+  function handleCotizacionChange(cotizacionId: string) {
+    const cot = cotizaciones.find((c) => c.id === cotizacionId);
+    if (!cot) return;
+    setAnticipoCobrado(false);
+    setForm((prev) => ({
+      ...prev,
+      quoted_price: cot.total.toString(),
+      paid_amount: "",
+    }));
+  }
+
+  const selectedCotizacion = cotizaciones.find((c) => c.total.toString() === form.quoted_price);
+
   const formEl = (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+      {/* Picker de cotización guardada */}
+      {cotizaciones.length > 0 && (
+        <div style={{ background: "oklch(0.58 0.22 293 / 0.07)", border: "1px solid oklch(0.58 0.22 293 / 0.25)", borderRadius: 8, padding: "12px 14px" }}>
+          <label style={{ ...labelStyle, color: "var(--violet-light)" }}>Usar cotización guardada</label>
+          <select
+            style={{ ...inputStyle, cursor: "pointer" }}
+            defaultValue=""
+            onChange={(e) => handleCotizacionChange(e.target.value)}
+          >
+            <option value="">Seleccionar…</option>
+            {cotizaciones.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} — {fmt(c.total)}{c.with_iva ? " (IVA inc.)" : ""}
+              </option>
+            ))}
+          </select>
+          {selectedCotizacion && (
+            <div style={{ marginTop: 10 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={anticipoCobrado}
+                  onChange={(e) => {
+                    setAnticipoCobrado(e.target.checked);
+                    setForm((prev) => ({
+                      ...prev,
+                      paid_amount: e.target.checked ? selectedCotizacion.anticipo.toString() : "",
+                    }));
+                  }}
+                  style={{ accentColor: "var(--violet)", width: 14, height: 14 }}
+                />
+                <span style={{ fontSize: 12, color: "var(--ink-2)" }}>
+                  Anticipo cobrado — <strong>{fmt(selectedCotizacion.anticipo)}</strong>
+                </span>
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
       <div><label style={labelStyle}>Nombre del proyecto *</label><input required style={inputStyle} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ej. Sitio web Pepe's Barber Shop" /></div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
           <label style={labelStyle}>Cliente</label>
-          <select style={{ ...inputStyle, cursor: "pointer" }} value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}>
+          <select style={{ ...inputStyle, cursor: "pointer" }} value={form.client_id} onChange={(e) => handleClientChange(e.target.value)}>
             <option value="">Sin cliente</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ""}</option>)}
           </select>
@@ -112,6 +187,13 @@ export default function ProyectosClient({ initial, clients }: { initial: Project
         </div>
       </div>
       <div><label style={labelStyle}>Notas</label><textarea rows={3} style={{ ...inputStyle, resize: "vertical" }} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+
+      {saveError && (
+        <div style={{ background: "oklch(0.30 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.80 0.12 25)" }}>
+          {saveError}
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
         <button onClick={() => setModal(null)} className="btn-secondary" style={{ padding: "9px 20px" }}>Cancelar</button>
         <button onClick={handleSave} disabled={saving || !form.name.trim()} className="btn-primary" style={{ padding: "9px 20px", opacity: saving ? 0.7 : 1 }}>

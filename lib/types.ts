@@ -52,6 +52,19 @@ export type Task = {
   projects?: Pick<Project, 'id' | 'name'> | null
 }
 
+export type Cotizacion = {
+  id: string
+  name: string
+  project_type: string
+  selected_features: { id: string; label: string; price: number }[]
+  subtotal: number
+  iva: number
+  total: number
+  with_iva: boolean
+  anticipo: number
+  created_at: string
+}
+
 export const STAGES: { id: ProjectStage; label: string; color: string }[] = [
   { id: 'cotizacion',    label: 'Cotización',    color: 'oklch(0.65 0.10 60)' },
   { id: 'discovery',    label: 'Discovery',     color: 'oklch(0.65 0.15 200)' },

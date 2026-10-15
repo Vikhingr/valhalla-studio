@@ -5,10 +5,11 @@ export const instant = false;
 
 export default async function ProyectosPage() {
   const db = await createServerClient();
-  const [{ data: projects }, { data: clients }] = await Promise.all([
+  const [{ data: projects }, { data: clients }, { data: cotizaciones }] = await Promise.all([
     db.from("projects").select("*, clients(id, name, company)").order("created_at", { ascending: false }),
-    db.from("clients").select("id, name, company").order("name"),
+    db.from("clients").select("id, name, company, protonpass_ref").order("name"),
+    db.from("cotizaciones").select("*").order("created_at", { ascending: false }),
   ]);
 
-  return <ProyectosClient initial={projects ?? []} clients={clients ?? []} />;
+  return <ProyectosClient initial={projects ?? []} clients={clients ?? []} cotizaciones={cotizaciones ?? []} />;
 }

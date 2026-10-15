@@ -4,6 +4,7 @@ import Link from "next/link";
 import { STAGES } from "@/lib/types";
 import type { Task } from "@/lib/types";
 import { ArrowLeft, Key, Globe, CheckCircle, Circle, ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
+import StageAdvancer from "./StageAdvancer";
 
 export const instant = false;
 
@@ -43,9 +44,7 @@ export default async function ProyectoDetailPage({ params }: { params: Promise<{
             </Link>
           )}
         </div>
-        <Link href={`/admin/proyectos`} style={{ textDecoration: "none" }}>
-          {/* Back handled above */}
-        </Link>
+        <StageAdvancer projectId={project.id} currentStage={project.stage} />
       </div>
 
       {/* Stage timeline */}

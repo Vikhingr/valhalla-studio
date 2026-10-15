@@ -44,6 +44,23 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   return NextResponse.json(data);
 }
 
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const deny = await requireAdmin();
+  if (deny) return deny;
+  const { id } = await params;
+  const body = await req.json();
+  const db = await createServerClient();
+  const { data, error } = await db
+    .from("projects")
+    .update(body)
+    .eq("id", id)
+    .select("*, clients(id, name, company)")
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
+}
+
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const deny = await requireAdmin();
   if (deny) return deny;
