@@ -83,12 +83,14 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
   const [editing, setEditing] = useState<Client | null>(null);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const router = useRouter();
 
   function openCreate() {
     setForm(EMPTY);
     setEditing(null);
+    setSaveError(null);
     setModal("create");
   }
 
@@ -102,12 +104,14 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
       protonpass_ref: c.protonpass_ref ?? "",
     });
     setEditing(c);
+    setSaveError(null);
     setModal("edit");
   }
 
   async function handleSave() {
     if (!form.name.trim()) return;
     setSaving(true);
+    setSaveError(null);
     try {
       if (modal === "create") {
         const res = await fetch("/api/admin/clientes", {
@@ -116,7 +120,8 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
           body: JSON.stringify(form),
         });
         const data = await res.json();
-        if (res.ok) setClients((prev) => [data, ...prev]);
+        if (!res.ok) { setSaveError(data.error ?? "Error al guardar"); return; }
+        setClients((prev) => [data, ...prev]);
       } else if (editing) {
         const res = await fetch(`/api/admin/clientes/${editing.id}`, {
           method: "PUT",
@@ -124,9 +129,12 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
           body: JSON.stringify(form),
         });
         const data = await res.json();
-        if (res.ok) setClients((prev) => prev.map((c) => (c.id === editing.id ? data : c)));
+        if (!res.ok) { setSaveError(data.error ?? "Error al guardar"); return; }
+        setClients((prev) => prev.map((c) => (c.id === editing.id ? data : c)));
       }
       setModal(null);
+    } catch (e) {
+      setSaveError("Error de red. Intenta de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -176,6 +184,11 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
           placeholder="Notas internas sobre el cliente..."
         />
       </Field>
+      {saveError && (
+        <div style={{ background: "oklch(0.30 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.80 0.12 25)" }}>
+          {saveError}
+        </div>
+      )}
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
         <button onClick={() => setModal(null)} className="btn-secondary" style={{ padding: "9px 20px" }}>
           Cancelar

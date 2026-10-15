@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET() {
+  const deny = await requireAdmin();
+  if (deny) return deny;
+
   const db = await createServerClient();
   const { data, error } = await db
     .from("clients")
@@ -13,12 +17,19 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const deny = await requireAdmin();
+  if (deny) return deny;
+
   const body = await req.json();
+  if (!body.name?.trim()) {
+    return NextResponse.json({ error: "El nombre es requerido" }, { status: 400 });
+  }
+
   const db = await createServerClient();
   const { data, error } = await db
     .from("clients")
     .insert({
-      name: body.name,
+      name: body.name.trim(),
       company: body.company || null,
       email: body.email || null,
       phone: body.phone || null,

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const deny = await requireAdmin();
+  if (deny) return deny;
   const { id } = await params;
   const db = await createServerClient();
   const { data, error } = await db.from("clients").select("*").eq("id", id).single();
@@ -10,6 +13,8 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const deny = await requireAdmin();
+  if (deny) return deny;
   const { id } = await params;
   const body = await req.json();
   const db = await createServerClient();
@@ -32,6 +37,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const deny = await requireAdmin();
+  if (deny) return deny;
   const { id } = await params;
   const db = await createServerClient();
   const { error } = await db.from("clients").delete().eq("id", id);

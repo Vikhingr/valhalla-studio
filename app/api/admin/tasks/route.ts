@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
+  const deny = await requireAdmin();
+  if (deny) return deny;
+
   const db = await createServerClient();
   const url = new URL(req.url);
   const status = url.searchParams.get("status");
@@ -15,6 +19,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const deny = await requireAdmin();
+  if (deny) return deny;
+
   const body = await req.json();
   const db = await createServerClient();
   const { data, error } = await db

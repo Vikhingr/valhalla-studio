@@ -124,6 +124,7 @@ function fmt(n: number) {
 export default function CotizadorPage() {
   const [type, setType]       = useState<ProjectType>("web");
   const [selected, setSelected] = useState<string[]>(["base", "contacto"]);
+  const [withIVA, setWithIVA] = useState(false);
   const [copied, setCopied]   = useState(false);
 
   function applyPreset(features: string[]) {
@@ -142,7 +143,9 @@ export default function CotizadorPage() {
   // Calcular total
   const allFeatures = FEATURES[type].flatMap((g) => g.items);
   const selectedFeatures = allFeatures.filter((f) => selected.includes(f.id));
-  const total = selectedFeatures.reduce((s, f) => s + f.price, 0);
+  const subtotal = selectedFeatures.reduce((s, f) => s + f.price, 0);
+  const iva      = withIVA ? Math.round(subtotal * 0.16) : 0;
+  const total    = subtotal + iva;
   const anticipo = Math.round(total * 0.5 / 500) * 500;
   const mitad    = Math.round(total * 0.25 / 500) * 500;
   const resto    = total - anticipo - mitad;
@@ -155,7 +158,11 @@ export default function CotizadorPage() {
       "Incluye:",
       ...selectedFeatures.map((f) => `  • ${f.label}${f.unit ? ` (${f.unit})` : ""} — ${fmt(f.price)}`),
       "",
-      `Total: ${fmt(total)} MXN`,
+      ...(withIVA ? [
+        `Subtotal: ${fmt(subtotal)} MXN`,
+        `IVA (16%): ${fmt(iva)} MXN`,
+      ] : []),
+      `Total: ${fmt(total)} MXN${withIVA ? " (IVA incluido)" : " (+ IVA si aplica)"}`,
       "",
       "Estructura de pago:",
       `  • 50% anticipo para iniciar — ${fmt(anticipo)} MXN`,
@@ -279,11 +286,37 @@ export default function CotizadorPage() {
 
             {/* Total */}
             <div style={{ padding: "20px 22px", borderBottom: "1px solid var(--border)", background: "oklch(0.58 0.22 293 / 0.07)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Total del proyecto</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total del proyecto</div>
+                <button
+                  onClick={() => setWithIVA((v) => !v)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 100,
+                    border: `1px solid ${withIVA ? "var(--violet)" : "var(--border)"}`,
+                    background: withIVA ? "oklch(0.58 0.22 293 / 0.15)" : "transparent",
+                    cursor: "pointer", fontSize: 11, fontWeight: 600,
+                    color: withIVA ? "var(--violet-light)" : "var(--muted)",
+                  }}
+                >
+                  IVA 16%
+                </button>
+              </div>
+              {withIVA && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)", marginBottom: 3 }}>
+                    <span>Subtotal</span><span>{fmt(subtotal)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)" }}>
+                    <span>IVA (16%)</span><span>{fmt(iva)}</span>
+                  </div>
+                </div>
+              )}
               <div style={{ fontSize: 34, fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.03em", lineHeight: 1 }}>
                 {fmt(total)}
               </div>
-              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>MXN · IVA no incluido</div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>
+                MXN · {withIVA ? "IVA incluido" : "IVA no incluido"}
+              </div>
             </div>
 
             {/* Desglose seleccionado */}
