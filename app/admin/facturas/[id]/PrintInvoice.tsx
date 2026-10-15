@@ -48,14 +48,19 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
   const isCancelled = factura.status === "cancelada";
   const isCfdi = factura.tipo === "cfdi";
 
-  const FACTURAPI_RFC_PAC = "ICA050422AA8";
+  const FACTURAPI_RFC_PAC = "PPD101129EA3";
 
-  const satVerificationUrl = isCfdi && factura.cfdi_uuid && factura.cfdi_sello
-    ? `https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${factura.cfdi_uuid}&re=${emisor.rfc}&rr=${factura.receptor_rfc}&tt=${factura.total.toFixed(6)}&fe=${factura.cfdi_sello.slice(-8)}`
+  // stamp.signature = SelloCFD (el sello del CFDI que va en el TFD)
+  // stamp.cfdi_sign = puede ser null en test mode sin CSD
+  const selloCfdi = factura.cfdi_sello_sat ?? factura.cfdi_sello;
+
+  const satVerificationUrl = isCfdi && factura.cfdi_uuid && selloCfdi
+    ? `https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${factura.cfdi_uuid}&re=${emisor.rfc}&rr=${factura.receptor_rfc}&tt=${factura.total.toFixed(6)}&fe=${selloCfdi.slice(-8)}`
     : null;
 
-  const cadenaOriginal = isCfdi && factura.cfdi_uuid && factura.cfdi_fecha_timbrado && factura.cfdi_num_cert_sat && factura.cfdi_sello
-    ? `||1.1|${factura.cfdi_uuid}|${factura.cfdi_fecha_timbrado.replace(/\.\d{3}Z$/, "")}|${FACTURAPI_RFC_PAC}|${factura.cfdi_num_cert_sat}|${factura.cfdi_sello}||`
+  // Formato TFD 1.1: ||Version|UUID|FechaTimbre|RfcProvCertif|SelloCFD|NoCertificadoSAT||
+  const cadenaOriginal = isCfdi && factura.cfdi_uuid && factura.cfdi_fecha_timbrado && factura.cfdi_num_cert_sat && selloCfdi
+    ? `||1.1|${factura.cfdi_uuid}|${new Date(factura.cfdi_fecha_timbrado).toISOString().slice(0, 19)}|${FACTURAPI_RFC_PAC}|${selloCfdi}|${factura.cfdi_num_cert_sat}||`
     : null;
   const fechaFmt = new Date(factura.fecha + "T12:00:00").toLocaleDateString("es-MX", {
     day: "numeric", month: "long", year: "numeric",
@@ -293,16 +298,16 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
                     <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{cadenaOriginal}</div>
                   </div>
                 )}
-                {factura.cfdi_sello && (
+                {factura.cfdi_sello_sat && (
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Sello digital del CFDI</div>
-                    <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{factura.cfdi_sello}</div>
+                    <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{factura.cfdi_sello_sat}</div>
                   </div>
                 )}
-                {factura.cfdi_sello_sat && (
+                {factura.cfdi_sello && (
                   <div>
-                    <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Sello digital del SAT</div>
-                    <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{factura.cfdi_sello_sat}</div>
+                    <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Sello digital del emisor (CSD)</div>
+                    <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{factura.cfdi_sello}</div>
                   </div>
                 )}
               </div>
