@@ -1,5 +1,5 @@
 "use client";
-import { Printer, FilePdf, ArrowLeft, Prohibit } from "@phosphor-icons/react";
+import { Printer, FilePdf, ArrowLeft, Prohibit, Warning } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import type { Factura } from "@/lib/types";
 
@@ -64,6 +64,21 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
           <Printer size={15} /> Imprimir / Guardar PDF
         </button>
       </div>
+
+      {/* Banner de error de timbrado */}
+      {factura.facturapi_error && (
+        <div className="no-print" style={{ margin: "20px 32px 0", display: "flex", alignItems: "flex-start", gap: 12, background: "oklch(0.22 0.05 25 / 0.12)", border: "1px solid oklch(0.50 0.15 25 / 0.35)", borderRadius: 10, padding: "14px 18px" }}>
+          <Warning size={18} weight="fill" style={{ color: "oklch(0.70 0.18 30)", flexShrink: 0, marginTop: 1 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
+              Error de timbrado — factura guardada como PDF
+            </p>
+            <p style={{ fontSize: 12, fontFamily: "monospace", color: "oklch(0.72 0.12 30)", wordBreak: "break-word", lineHeight: 1.6 }}>
+              {factura.facturapi_error}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hoja de factura */}
       <div
@@ -161,6 +176,11 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
             {factura.iva > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, color: "var(--ink-2)" }}>
                 <span>IVA 16%</span><span>{fmt(factura.iva)}</span>
+              </div>
+            )}
+            {factura.iva_retenido > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, color: "oklch(0.65 0.15 200)" }}>
+                <span>IVA retenido</span><span>−{fmt(factura.iva_retenido)}</span>
               </div>
             )}
             <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 0", fontSize: 16, fontWeight: 800, color: "var(--ink)", borderTop: "2px solid var(--border)", marginTop: 4 }}>

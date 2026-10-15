@@ -103,6 +103,7 @@ export type Factura = {
   total: number
   clave_prod_serv: string
   clave_unidad: string
+  facturapi_error: string | null
   cfdi_uuid: string | null
   facturapi_id: string | null
   fecha: string

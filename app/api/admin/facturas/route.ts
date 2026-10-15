@@ -139,8 +139,8 @@ export async function POST(req: NextRequest) {
       facturaData.tipo = "cfdi";
       facturaData.cfdi_uuid = cfdi.uuid ?? null;
       facturaData.facturapi_id = cfdi.id ?? null;
-    } catch {
-      // Fall back to PDF — facturapi not ready or test mode without credentials
+    } catch (err) {
+      facturaData.facturapi_error = err instanceof Error ? err.message : String(err);
     }
   }
 

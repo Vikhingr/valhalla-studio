@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Plus, X, Eye, FilePdf, Prohibit, Warning, CheckCircle,
+  Plus, X, Eye, FilePdf, Prohibit, Warning, CheckCircle, ArrowRight,
 } from "@phosphor-icons/react";
 import type { Factura, Client } from "@/lib/types";
 import { USOS_CFDI, FORMAS_PAGO, REGIMENES_FISCALES, CATALOGO_SERVICIOS, USOS_CFDI_DEFAULT } from "@/lib/types";
@@ -72,6 +72,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [timbradoError, setTimbradoError] = useState<{ message: string; facturaId: string } | null>(null);
   const router = useRouter();
 
   const usosFiltrados = USOS_CFDI.filter((u) => {
@@ -105,7 +106,13 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
   function openCreate() {
     setForm(EMPTY_FORM);
     setSaveError(null);
+    setTimbradoError(null);
     setModal(true);
+  }
+
+  function closeModal() {
+    setModal(false);
+    setTimbradoError(null);
   }
 
   const subtotal = Number(form.subtotal) || 0;
@@ -127,7 +134,12 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
       const data = await res.json();
       if (!res.ok) { setSaveError(data.error ?? "Error al crear factura"); return; }
       setFacturas((prev) => [data, ...prev]);
-      setModal(false);
+      if (data.facturapi_error) {
+        // Timbrado falló — factura guardada como PDF, mostrar error en modal
+        setTimbradoError({ message: data.facturapi_error, facturaId: data.id });
+      } else {
+        setModal(false);
+      }
     } catch {
       setSaveError("Error de red. Intenta de nuevo.");
     } finally {
@@ -215,14 +227,21 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                       {fmt(f.total)}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      <span style={{
-                        display: "inline-block", fontSize: 11, fontWeight: 600, borderRadius: 100, padding: "2px 9px",
-                        color: f.tipo === "cfdi" ? "oklch(0.68 0.18 293)" : "oklch(0.65 0.12 40)",
-                        background: f.tipo === "cfdi" ? "oklch(0.68 0.18 293 / 0.1)" : "oklch(0.65 0.12 40 / 0.1)",
-                        border: `1px solid ${f.tipo === "cfdi" ? "oklch(0.68 0.18 293 / 0.3)" : "oklch(0.65 0.12 40 / 0.3)"}`,
-                      }}>
-                        {f.tipo === "cfdi" ? "CFDI" : "PDF"}
-                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{
+                          display: "inline-block", fontSize: 11, fontWeight: 600, borderRadius: 100, padding: "2px 9px",
+                          color: f.tipo === "cfdi" ? "oklch(0.68 0.18 293)" : "oklch(0.65 0.12 40)",
+                          background: f.tipo === "cfdi" ? "oklch(0.68 0.18 293 / 0.1)" : "oklch(0.65 0.12 40 / 0.1)",
+                          border: `1px solid ${f.tipo === "cfdi" ? "oklch(0.68 0.18 293 / 0.3)" : "oklch(0.65 0.12 40 / 0.3)"}`,
+                        }}>
+                          {f.tipo === "cfdi" ? "CFDI" : "PDF"}
+                        </span>
+                        {f.facturapi_error && (
+                          <span title={f.facturapi_error} style={{ color: "oklch(0.70 0.18 30)", cursor: "help", display: "flex" }}>
+                            <Warning size={13} weight="fill" />
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td style={{ padding: "12px 16px" }}>
                       <span style={{
@@ -267,20 +286,57 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
       {modal && (
         <div
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
-          onClick={() => setModal(false)}
+          onClick={closeModal}
         >
           <div
             style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 28, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>Nueva factura</h2>
-              <button onClick={() => setModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 4 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>
+                {timbradoError ? "Error de timbrado" : "Nueva factura"}
+              </h2>
+              <button onClick={closeModal} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 4 }}>
                 <X size={18} />
               </button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Panel de error de timbrado — reemplaza el form */}
+            {timbradoError && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "oklch(0.22 0.05 25 / 0.15)", border: "1px solid oklch(0.50 0.15 25 / 0.35)", borderRadius: 8, padding: "14px 16px" }}>
+                  <Warning size={18} weight="fill" style={{ color: "oklch(0.70 0.18 30)", flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 6 }}>
+                      Facturapi no pudo timbrar el CFDI
+                    </p>
+                    <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10, lineHeight: 1.5 }}>
+                      La factura fue guardada como <strong>PDF</strong>. Resuelve el error y vuelve a intentarlo desde Configuración.
+                    </p>
+                    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px", fontFamily: "monospace", fontSize: 12, color: "oklch(0.75 0.12 30)", wordBreak: "break-word", lineHeight: 1.6 }}>
+                      {timbradoError.message}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--muted)", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 7, padding: "10px 14px", lineHeight: 1.6 }}>
+                  <strong style={{ color: "var(--ink)" }}>Causas comunes:</strong> API key incorrecta o expirada · RFC del receptor inválido · Datos fiscales incompletos en Configuración · Modo test sin credenciales CSD
+                </div>
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => router.push(`/admin/facturas/${timbradoError.facturaId}`)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--ink)", fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+                  >
+                    Ver factura PDF <ArrowRight size={13} />
+                  </button>
+                  <button onClick={closeModal} className="btn-primary" style={{ padding: "9px 20px" }}>
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            )}
+
+
+            {!timbradoError && <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {/* Cliente */}
               <Field label="Cliente">
                 <select style={{ ...inputStyle, cursor: "pointer" }} value={form.client_id} onChange={(e) => handleClientChange(e.target.value)}>
@@ -427,7 +483,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
               )}
 
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
-                <button onClick={() => setModal(false)} className="btn-secondary" style={{ padding: "9px 20px" }}>Cancelar</button>
+                <button onClick={closeModal} className="btn-secondary" style={{ padding: "9px 20px" }}>Cancelar</button>
                 <button
                   onClick={handleSave}
                   disabled={saving || !form.receptor_nombre.trim() || !form.descripcion.trim() || subtotal <= 0}
@@ -437,7 +493,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                   {saving ? "Creando..." : facturapiconfigured ? "Emitir CFDI" : "Crear factura PDF"}
                 </button>
               </div>
-            </div>
+            </div>}
           </div>
         </div>
       )}
