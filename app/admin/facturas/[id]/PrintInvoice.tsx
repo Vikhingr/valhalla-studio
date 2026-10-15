@@ -48,8 +48,14 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
   const isCancelled = factura.status === "cancelada";
   const isCfdi = factura.tipo === "cfdi";
 
+  const FACTURAPI_RFC_PAC = "ICA050422AA8";
+
   const satVerificationUrl = isCfdi && factura.cfdi_uuid && factura.cfdi_sello
     ? `https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${factura.cfdi_uuid}&re=${emisor.rfc}&rr=${factura.receptor_rfc}&tt=${factura.total.toFixed(6)}&fe=${factura.cfdi_sello.slice(-8)}`
+    : null;
+
+  const cadenaOriginal = isCfdi && factura.cfdi_uuid && factura.cfdi_fecha_timbrado && factura.cfdi_num_cert_sat && factura.cfdi_sello
+    ? `||1.1|${factura.cfdi_uuid}|${factura.cfdi_fecha_timbrado.replace(/\.\d{3}Z$/, "")}|${FACTURAPI_RFC_PAC}|${factura.cfdi_num_cert_sat}|${factura.cfdi_sello}||`
     : null;
   const fechaFmt = new Date(factura.fecha + "T12:00:00").toLocaleDateString("es-MX", {
     day: "numeric", month: "long", year: "numeric",
@@ -212,9 +218,29 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
               {satVerificationUrl && (
                 <div style={{ flexShrink: 0 }}>
                   <QrCanvas url={satVerificationUrl} />
+                  {factura.cfdi_fecha_timbrado && (
+                    <div style={{ marginTop: 6 }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Fecha y hora de certificación</div>
+                      <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)" }}>
+                        {new Date(factura.cfdi_fecha_timbrado).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "medium" })}
+                      </div>
+                    </div>
+                  )}
+                  {factura.cfdi_num_cert_sat && (
+                    <div style={{ marginTop: 6 }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Núm. serie certificado del SAT</div>
+                      <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all" }}>{factura.cfdi_num_cert_sat}</div>
+                    </div>
+                  )}
                 </div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
+                {cadenaOriginal && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Cadena original del complemento de certificación digital del SAT</div>
+                    <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{cadenaOriginal}</div>
+                  </div>
+                )}
                 {factura.cfdi_sello && (
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Sello digital del CFDI</div>

@@ -141,6 +141,8 @@ export async function POST(req: NextRequest) {
       facturaData.facturapi_id = cfdi.id ?? null;
       facturaData.cfdi_sello = cfdi.stamp?.cfdi_sign ?? null;
       facturaData.cfdi_sello_sat = cfdi.stamp?.signature ?? null;
+      facturaData.cfdi_fecha_timbrado = cfdi.stamp?.date ?? null;
+      facturaData.cfdi_num_cert_sat = cfdi.stamp?.sat_cert_number ?? null;
     } catch (err) {
       facturaData.facturapi_error = err instanceof Error ? err.message : String(err);
     }
