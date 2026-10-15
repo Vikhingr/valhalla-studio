@@ -20,7 +20,7 @@ const projectLabels: Record<string, string> = {
 };
 
 function buildEmail(name: string, email: string, project: string, message: string) {
-  const projectLabel = projectLabels[project] ?? project || "No especificado";
+  const projectLabel = projectLabels[project] ?? (project || "No especificado");
   const date = new Date().toLocaleDateString("es-MX", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
