@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { CheckCircle, Warning, Eye, EyeSlash, UploadSimple, Gear } from "@phosphor-icons/react";
 import type { ConfiguracionFiscal } from "@/lib/types";
-import { REGIMENES_FISCALES } from "@/lib/types";
+import { REGIMENES_FISCALES, USOS_CFDI, USOS_CFDI_DEFAULT } from "@/lib/types";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -89,11 +89,22 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
   const [savedAt, setSavedAt] = useState<string | null>(initial.updated_at);
   const [error, setError] = useState<string | null>(null);
 
+  // Usos CFDI visibles: null = usar defaults
+  const [usosVisibles, setUsosVisibles] = useState<string[]>(
+    initial.usos_cfdi_visibles ?? USOS_CFDI_DEFAULT
+  );
+
   const cerRef = useRef<HTMLInputElement>(null);
   const keyRef = useRef<HTMLInputElement>(null);
 
   function set(key: string, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function toggleUso(value: string) {
+    setUsosVisibles((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
   }
 
   async function handleSave() {
@@ -107,6 +118,7 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
         regimen_fiscal: form.regimen_fiscal,
         codigo_postal: form.codigo_postal.trim(),
         facturapi_mode: form.facturapi_mode,
+        usos_cfdi_visibles: usosVisibles,
       };
 
       if (form.facturapi_key.trim()) payload.facturapi_key = form.facturapi_key.trim();
@@ -126,13 +138,11 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
         return;
       }
 
-      // Update presence indicators
       if (form.facturapi_key.trim()) setHasFacApi(true);
       if (cerFile) setHasCer(true);
       if (keyFile) setHasKey(true);
       if (form.csd_password.trim()) setHasPassword(true);
 
-      // Clear sensitive fields after save
       setForm((f) => ({ ...f, facturapi_key: "", csd_password: "" }));
       setCerFile(null);
       setKeyFile(null);
@@ -208,6 +218,44 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
             ))}
           </select>
         </Field>
+      </Section>
+
+      {/* Usos CFDI visibles */}
+      <Section title="Usos CFDI visibles en facturas">
+        <p style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.6 }}>
+          Selecciona cuáles aparecen en el formulario al crear una factura.
+          Seleccionados: <strong style={{ color: "var(--ink)" }}>{usosVisibles.length}</strong> de {USOS_CFDI.length}
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+          {USOS_CFDI.map((uso) => {
+            const activo = usosVisibles.includes(uso.value);
+            return (
+              <label
+                key={uso.value}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                  background: activo ? "oklch(0.68 0.18 293 / 0.06)" : "var(--surface-2)",
+                  border: `1px solid ${activo ? "oklch(0.68 0.18 293 / 0.3)" : "var(--border)"}`,
+                  borderRadius: 7, padding: "7px 10px", fontSize: 12, transition: "all 0.1s",
+                }}
+                onClick={() => toggleUso(uso.value)}
+              >
+                <div style={{
+                  width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                  border: `1.5px solid ${activo ? "var(--violet)" : "var(--border)"}`,
+                  background: activo ? "var(--violet)" : "transparent",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  {activo && <CheckCircle size={11} weight="fill" style={{ color: "#fff" }} />}
+                </div>
+                <span style={{ color: activo ? "var(--ink)" : "var(--muted)", fontWeight: activo ? 500 : 400, lineHeight: 1.3 }}>
+                  <strong style={{ fontFamily: "monospace", fontSize: 11 }}>{uso.value}</strong>{" "}
+                  {uso.label.replace(`${uso.value} — `, "")}
+                </span>
+              </label>
+            );
+          })}
+        </div>
       </Section>
 
       {/* Facturapi */}

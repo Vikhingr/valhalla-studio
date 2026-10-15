@@ -11,7 +11,7 @@ export default async function FacturasPage() {
       .select("*, clients(id, name, company)")
       .order("created_at", { ascending: false }),
     db.from("clients").select("id, name, company, rfc, nombre_fiscal, regimen_fiscal, codigo_postal").order("name"),
-    db.from("configuracion").select("facturapi_key, nombre_emisor").eq("id", "global").single(),
+    db.from("configuracion").select("facturapi_key, nombre_emisor, usos_cfdi_visibles").eq("id", "global").single(),
   ]);
 
   return (
@@ -20,6 +20,7 @@ export default async function FacturasPage() {
       clients={clients ?? []}
       facturapiconfigured={!!cfg?.facturapi_key}
       emisorNombre={cfg?.nombre_emisor ?? "Valhalla Studio"}
+      usosCfdiVisibles={cfg?.usos_cfdi_visibles ?? null}
     />
   );
 }

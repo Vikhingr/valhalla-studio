@@ -29,6 +29,7 @@ export async function GET() {
     has_key: !!data.key_data,
     has_password: !!data.csd_password,
     updated_at: data.updated_at,
+    usos_cfdi_visibles: data.usos_cfdi_visibles ?? null,
   });
 }
 
@@ -49,6 +50,13 @@ export async function PUT(req: NextRequest) {
     if (body[f] !== undefined) update[f] = body[f] || null;
   }
   if (body.facturapi_mode) update.facturapi_mode = body.facturapi_mode;
+
+  // Array field: usos CFDI visibles en formulario de factura
+  if (body.usos_cfdi_visibles !== undefined) {
+    update.usos_cfdi_visibles = Array.isArray(body.usos_cfdi_visibles) && body.usos_cfdi_visibles.length > 0
+      ? body.usos_cfdi_visibles
+      : null;
+  }
 
   // Encrypted fields (only if provided)
   if (body.facturapi_key) update.facturapi_key = await encrypt(body.facturapi_key);

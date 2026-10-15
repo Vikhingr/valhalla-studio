@@ -8,7 +8,7 @@ export default async function ConfiguracionPage() {
   const { data } = await db
     .from("configuracion")
     .select(
-      "rfc_emisor, nombre_emisor, nombre_comercial, regimen_fiscal, codigo_postal, facturapi_mode, facturapi_key, cer_data, key_data, csd_password, updated_at"
+      "rfc_emisor, nombre_emisor, nombre_comercial, regimen_fiscal, codigo_postal, facturapi_mode, facturapi_key, cer_data, key_data, csd_password, updated_at, usos_cfdi_visibles"
     )
     .eq("id", "global")
     .single();
@@ -25,6 +25,7 @@ export default async function ConfiguracionPage() {
     has_key: !!data?.key_data,
     has_password: !!data?.csd_password,
     updated_at: data?.updated_at ?? null,
+    usos_cfdi_visibles: data?.usos_cfdi_visibles ?? null,
   };
 
   return <ConfiguracionClient initial={safe} />;

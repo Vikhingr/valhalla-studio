@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Trash, ArrowRight, CheckCircle, Circle, Warning } from "@phosphor-icons/react";
+import { Trash, ArrowRight, CheckCircle, Warning } from "@phosphor-icons/react";
 import type { Cotizacion } from "@/lib/types";
 
 function fmt(n: number) {
@@ -36,17 +36,26 @@ function PaymentStatus({ cot }: { cot: Cotizacion }) {
   );
 }
 
-export default function CotizacionesClient({ initial }: { initial: Cotizacion[] }) {
-  const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>(initial);
-  const [loading, setLoading] = useState<string | null>(null);
+export default function CotizacionesClient() {
+  const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    fetch("/api/admin/cotizaciones")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCotizaciones(data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   async function toggleField(id: string, field: "anticipo_pagado" | "pagado_completo", value: boolean) {
-    setLoading(id + field);
+    setUpdating(id + field);
     const updates: Partial<Cotizacion> = { [field]: value };
-    // Si marcas pagado_completo, anticipo también va a true
     if (field === "pagado_completo" && value) updates.anticipo_pagado = true;
-    // Si desmarcan anticipo, pagado_completo también va a false
     if (field === "anticipo_pagado" && !value) updates.pagado_completo = false;
 
     const res = await fetch("/api/admin/cotizaciones", {
@@ -58,7 +67,7 @@ export default function CotizacionesClient({ initial }: { initial: Cotizacion[] 
       const updated = await res.json();
       setCotizaciones((prev) => prev.map((c) => (c.id === id ? updated : c)));
     }
-    setLoading(null);
+    setUpdating(null);
   }
 
   async function handleDelete(id: string) {
@@ -73,6 +82,15 @@ export default function CotizacionesClient({ initial }: { initial: Cotizacion[] 
 
   function handleCrearProyecto(cotId: string) {
     router.push(`/admin/proyectos?from=${cotId}`);
+  }
+
+  if (loading) {
+    return (
+      <div style={{ padding: "28px 32px" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", marginBottom: 4 }}>Cotizaciones</h1>
+        <p style={{ fontSize: 13, color: "var(--muted)" }}>Cargando...</p>
+      </div>
+    );
   }
 
   if (cotizaciones.length === 0) {
@@ -99,7 +117,7 @@ export default function CotizacionesClient({ initial }: { initial: Cotizacion[] 
         {cotizaciones.map((c) => {
           const segundoPago = Math.round((c.total - c.anticipo) * 0.5);
           const pagoFinal   = c.total - c.anticipo - segundoPago;
-          const isLoading   = loading?.startsWith(c.id) ?? false;
+          const isUpdating  = updating?.startsWith(c.id) ?? false;
 
           return (
             <div
@@ -109,7 +127,7 @@ export default function CotizacionesClient({ initial }: { initial: Cotizacion[] 
                 border: "1px solid var(--border)",
                 borderRadius: 10,
                 padding: "18px 20px",
-                opacity: isLoading ? 0.7 : 1,
+                opacity: isUpdating ? 0.7 : 1,
                 transition: "opacity 0.15s",
               }}
             >
@@ -142,15 +160,15 @@ export default function CotizacionesClient({ initial }: { initial: Cotizacion[] 
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 
                   {/* Anticipo */}
-                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: isLoading ? "not-allowed" : "pointer" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: isUpdating ? "not-allowed" : "pointer" }}>
                     <div
-                      onClick={() => !isLoading && toggleField(c.id, "anticipo_pagado", !c.anticipo_pagado)}
+                      onClick={() => !isUpdating && toggleField(c.id, "anticipo_pagado", !c.anticipo_pagado)}
                       style={{
                         width: 20, height: 20, borderRadius: 6, flexShrink: 0,
                         border: `1.5px solid ${c.anticipo_pagado ? "oklch(0.70 0.18 160)" : "var(--border)"}`,
                         background: c.anticipo_pagado ? "oklch(0.70 0.18 160)" : "transparent",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: isLoading ? "not-allowed" : "pointer",
+                        cursor: isUpdating ? "not-allowed" : "pointer",
                         transition: "all 0.15s",
                       }}
                     >
@@ -174,15 +192,15 @@ export default function CotizacionesClient({ initial }: { initial: Cotizacion[] 
                   </div>
 
                   {/* Pago final */}
-                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: isLoading ? "not-allowed" : "pointer" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: isUpdating ? "not-allowed" : "pointer" }}>
                     <div
-                      onClick={() => !isLoading && c.anticipo_pagado && toggleField(c.id, "pagado_completo", !c.pagado_completo)}
+                      onClick={() => !isUpdating && c.anticipo_pagado && toggleField(c.id, "pagado_completo", !c.pagado_completo)}
                       style={{
                         width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                        border: `1.5px solid ${c.pagado_completo ? "oklch(0.70 0.18 160)" : c.anticipo_pagado ? "var(--border)" : "var(--border)"}`,
+                        border: `1.5px solid ${c.pagado_completo ? "oklch(0.70 0.18 160)" : "var(--border)"}`,
                         background: c.pagado_completo ? "oklch(0.70 0.18 160)" : "transparent",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: c.anticipo_pagado && !isLoading ? "pointer" : "not-allowed",
+                        cursor: c.anticipo_pagado && !isUpdating ? "pointer" : "not-allowed",
                         opacity: c.anticipo_pagado ? 1 : 0.4,
                         transition: "all 0.15s",
                       }}
@@ -206,7 +224,7 @@ export default function CotizacionesClient({ initial }: { initial: Cotizacion[] 
               </div>
 
               {/* Features */}
-              {c.selected_features.length > 0 && (
+              {c.selected_features?.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
                   {c.selected_features.map((f) => (
                     <span key={f.id} style={{ fontSize: 11, color: "var(--muted)", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 100, padding: "2px 8px" }}>

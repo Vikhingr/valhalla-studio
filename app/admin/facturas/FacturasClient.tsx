@@ -5,10 +5,16 @@ import {
   Plus, X, Eye, FilePdf, Prohibit, Warning, CheckCircle,
 } from "@phosphor-icons/react";
 import type { Factura, Client } from "@/lib/types";
-import { USOS_CFDI, FORMAS_PAGO, REGIMENES_FISCALES } from "@/lib/types";
+import { USOS_CFDI, FORMAS_PAGO, REGIMENES_FISCALES, CATALOGO_SERVICIOS, USOS_CFDI_DEFAULT } from "@/lib/types";
 
 function fmt(n: number) {
   return n.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 2 });
+}
+
+// RFC de 12 caracteres = Persona Moral → aplica retención de IVA
+function detectaPM(rfc: string): boolean {
+  const clean = rfc.replace(/\s/g, "").toUpperCase();
+  return clean.length === 12 && clean !== "XAXX010101000" && clean !== "XEXX010101000";
 }
 
 const inputStyle: React.CSSProperties = {
@@ -37,6 +43,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const EMPTY_FORM = {
   client_id: "",
+  tipo_servicio: "landing",
   descripcion: "",
   fecha: new Date().toISOString().split("T")[0],
   subtotal: "",
@@ -56,15 +63,21 @@ interface Props {
   clients: Pick<Client, "id" | "name" | "company" | "rfc" | "nombre_fiscal" | "regimen_fiscal" | "codigo_postal">[];
   facturapiconfigured: boolean;
   emisorNombre: string;
+  usosCfdiVisibles: string[] | null;
 }
 
-export default function FacturasClient({ initial, clients, facturapiconfigured, emisorNombre }: Props) {
+export default function FacturasClient({ initial, clients, facturapiconfigured, emisorNombre, usosCfdiVisibles }: Props) {
   const [facturas, setFacturas] = useState<Factura[]>(initial);
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
+
+  const usosFiltrados = USOS_CFDI.filter((u) => {
+    const visibles = usosCfdiVisibles ?? USOS_CFDI_DEFAULT;
+    return visibles.includes(u.value);
+  });
 
   function set(key: keyof FormState, value: unknown) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -81,6 +94,14 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
     }
   }
 
+  function handleTipoServicioChange(tipoId: string) {
+    set("tipo_servicio", tipoId);
+    const srv = CATALOGO_SERVICIOS.find((s) => s.id === tipoId);
+    if (srv && !form.descripcion.trim()) {
+      set("descripcion", srv.label);
+    }
+  }
+
   function openCreate() {
     setForm(EMPTY_FORM);
     setSaveError(null);
@@ -89,7 +110,9 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
 
   const subtotal = Number(form.subtotal) || 0;
   const iva = form.with_iva ? Math.round(subtotal * 0.16 * 100) / 100 : 0;
-  const total = subtotal + iva;
+  const esPM = detectaPM(form.receptor_rfc);
+  const ivaRetenido = iva > 0 && esPM ? Math.round(subtotal * 0.16 * (2 / 3) * 100) / 100 : 0;
+  const total = subtotal + iva - ivaRetenido;
 
   async function handleSave() {
     if (!form.receptor_nombre.trim() || !form.descripcion.trim() || subtotal <= 0) return;
@@ -137,13 +160,13 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
             <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 3 }}>
               {facturas.length} factura{facturas.length !== 1 ? "s" : ""}
               {facturas.length > 0 && <> · <strong style={{ color: "var(--ink)" }}>{fmt(totalActivas)}</strong> emitidos</>}
-              {!facturapiconfigured && (
-                <span style={{ marginLeft: 10, fontSize: 11, color: "oklch(0.65 0.12 40)", background: "oklch(0.65 0.12 40 / 0.1)", border: "1px solid oklch(0.65 0.12 40 / 0.3)", borderRadius: 100, padding: "2px 8px" }}>
-                  <Warning size={10} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                  Facturapi no configurado — se emitirán como PDF
-                </span>
-              )}
             </p>
+            {!facturapiconfigured && (
+              <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: "oklch(0.65 0.12 40)", background: "oklch(0.65 0.12 40 / 0.1)", border: "1px solid oklch(0.65 0.12 40 / 0.3)", borderRadius: 100, padding: "4px 10px" }}>
+                <Warning size={12} weight="fill" />
+                Facturapi no configurado — se emitirán como PDF
+              </div>
+            )}
           </div>
           <button onClick={openCreate} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", flexShrink: 0 }}>
             <Plus size={15} weight="bold" /> Nueva factura
@@ -268,6 +291,27 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                 </select>
               </Field>
 
+              {/* Tipo de servicio */}
+              <Field label="Tipo de servicio">
+                <select
+                  style={{ ...inputStyle, cursor: "pointer" }}
+                  value={form.tipo_servicio}
+                  onChange={(e) => handleTipoServicioChange(e.target.value)}
+                >
+                  {CATALOGO_SERVICIOS.map((s) => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
+                {(() => {
+                  const srv = CATALOGO_SERVICIOS.find((s) => s.id === form.tipo_servicio);
+                  return srv ? (
+                    <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+                      Clave SAT: <code style={{ fontFamily: "monospace" }}>{srv.clave_prod_serv}</code> · Unidad: <code style={{ fontFamily: "monospace" }}>{srv.clave_unidad}</code>
+                    </p>
+                  ) : null;
+                })()}
+              </Field>
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <Field label="Fecha">
                   <input type="date" style={inputStyle} value={form.fecha} onChange={(e) => set("fecha", e.target.value)} />
@@ -281,25 +325,52 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                 <input style={inputStyle} value={form.descripcion} onChange={(e) => set("descripcion", e.target.value)} placeholder="Diseño y desarrollo de sitio web" />
               </Field>
 
-              {/* IVA toggle */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "12px 14px" }}>
-                <div
-                  onClick={() => set("with_iva", !form.with_iva)}
-                  style={{
-                    width: 20, height: 20, borderRadius: 6, flexShrink: 0, cursor: "pointer",
-                    border: `1.5px solid ${form.with_iva ? "var(--violet)" : "var(--border)"}`,
-                    background: form.with_iva ? "var(--violet)" : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {form.with_iva && <CheckCircle size={13} weight="fill" style={{ color: "#fff" }} />}
+              {/* IVA toggle + totales */}
+              <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "12px 14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: (iva > 0 || esPM) ? 10 : 0 }}>
+                  <div
+                    onClick={() => set("with_iva", !form.with_iva)}
+                    style={{
+                      width: 20, height: 20, borderRadius: 6, flexShrink: 0, cursor: "pointer",
+                      border: `1.5px solid ${form.with_iva ? "var(--violet)" : "var(--border)"}`,
+                      background: form.with_iva ? "var(--violet)" : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {form.with_iva && <CheckCircle size={13} weight="fill" style={{ color: "#fff" }} />}
+                  </div>
+                  <div style={{ flex: 1, fontSize: 13, color: "var(--ink-2)" }}>Agregar IVA 16%</div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{fmt(total)}</div>
+                    <div style={{ fontSize: 11, color: "var(--muted)" }}>Total a recibir</div>
+                  </div>
                 </div>
-                <div style={{ flex: 1, fontSize: 13, color: "var(--ink-2)" }}>Agregar IVA 16%</div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{fmt(total)}</div>
-                  {form.with_iva && <div style={{ fontSize: 11, color: "var(--muted)" }}>+ IVA {fmt(iva)}</div>}
-                </div>
+
+                {(iva > 0 || ivaRetenido > 0) && (
+                  <div style={{ borderTop: "1px solid var(--border)", paddingTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)" }}>
+                      <span>Subtotal</span><span>{fmt(subtotal)}</span>
+                    </div>
+                    {iva > 0 && (
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)" }}>
+                        <span>+ IVA 16%</span><span>{fmt(iva)}</span>
+                      </div>
+                    )}
+                    {ivaRetenido > 0 && (
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "oklch(0.65 0.15 200)" }}>
+                        <span>− IVA retenido (Persona Moral)</span><span>−{fmt(ivaRetenido)}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {esPM && form.with_iva && (
+                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "oklch(0.65 0.15 200)", background: "oklch(0.65 0.15 200 / 0.08)", border: "1px solid oklch(0.65 0.15 200 / 0.25)", borderRadius: 6, padding: "5px 10px" }}>
+                    <Warning size={12} weight="fill" />
+                    Persona Moral — retención de IVA aplicada automáticamente
+                  </div>
+                )}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -310,7 +381,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                 </Field>
                 <Field label="Uso CFDI">
                   <select style={{ ...inputStyle, cursor: "pointer" }} value={form.uso_cfdi} onChange={(e) => set("uso_cfdi", e.target.value)}>
-                    {USOS_CFDI.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
+                    {usosFiltrados.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
                   </select>
                 </Field>
               </div>

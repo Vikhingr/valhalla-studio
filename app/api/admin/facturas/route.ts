@@ -3,8 +3,30 @@ import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";
 import { decrypt } from "@/lib/encrypt";
 
+const SERVICIOS_MAP: Record<string, { clave_prod_serv: string; clave_unidad: string }> = {
+  landing:        { clave_prod_serv: "81112103", clave_unidad: "E48" },
+  sitio_web:      { clave_prod_serv: "81111509", clave_unidad: "E48" },
+  app_web:        { clave_prod_serv: "81111509", clave_unidad: "E48" },
+  app_movil:      { clave_prod_serv: "81111504", clave_unidad: "E48" },
+  diseno_grafico: { clave_prod_serv: "82141504", clave_unidad: "E48" },
+  automatizacion: { clave_prod_serv: "81111504", clave_unidad: "E48" },
+  mantenimiento:  { clave_prod_serv: "81111509", clave_unidad: "E48" },
+};
+
+// RFC de 12 caracteres = Persona Moral (retiene IVA al emisor RESICO)
+function isPersonaMoral(rfc: string): boolean {
+  const clean = rfc.replace(/\s/g, "");
+  return clean.length === 12 && clean !== "XAXX010101000" && clean !== "XEXX010101000";
+}
+
 async function callFacturapi(facturaData: Record<string, unknown>, apiKey: string) {
   const withIva = (facturaData.iva as number) > 0;
+  const ivaRetenido = (facturaData.iva_retenido as number) ?? 0;
+
+  const taxes: { type: string; rate: number; withholding?: boolean }[] = [];
+  if (withIva) taxes.push({ type: "IVA", rate: 0.16 });
+  if (ivaRetenido > 0) taxes.push({ type: "IVA", rate: 0.16 * (2 / 3), withholding: true });
+
   const payload = {
     customer: {
       legal_name: facturaData.receptor_nombre,
@@ -17,10 +39,11 @@ async function callFacturapi(facturaData: Record<string, unknown>, apiKey: strin
         quantity: 1,
         product: {
           description: facturaData.descripcion,
-          product_key: "84111500",
+          product_key: facturaData.clave_prod_serv ?? "81112103",
+          unit_key: facturaData.clave_unidad ?? "E48",
           price: facturaData.subtotal,
           tax_included: false,
-          taxes: withIva ? [{ type: "IVA", rate: 0.16 }] : [],
+          taxes,
         },
       },
     ],
@@ -76,7 +99,14 @@ export async function POST(req: NextRequest) {
 
   const subtotal = Math.round(Number(body.subtotal) * 100) / 100;
   const iva = body.with_iva ? Math.round(subtotal * 0.16 * 100) / 100 : 0;
-  const total = subtotal + iva;
+
+  const rfc = (body.receptor_rfc || "XAXX010101000").trim().toUpperCase();
+  const ivaRetenido = iva > 0 && isPersonaMoral(rfc)
+    ? Math.round(subtotal * 0.16 * (2 / 3) * 100) / 100
+    : 0;
+
+  const servicio = SERVICIOS_MAP[body.tipo_servicio] ?? SERVICIOS_MAP.landing;
+  const total = subtotal + iva - ivaRetenido;
 
   const facturaData: Record<string, unknown> = {
     tipo: "pdf",
@@ -84,7 +114,7 @@ export async function POST(req: NextRequest) {
     client_id: body.client_id || null,
     project_id: body.project_id || null,
     cotizacion_id: body.cotizacion_id || null,
-    receptor_rfc: body.receptor_rfc || "XAXX010101000",
+    receptor_rfc: rfc,
     receptor_nombre: body.receptor_nombre.trim(),
     receptor_regimen: body.receptor_regimen || "616",
     receptor_cp: body.receptor_cp || "00000",
@@ -93,7 +123,11 @@ export async function POST(req: NextRequest) {
     descripcion: body.descripcion.trim(),
     subtotal,
     iva,
+    iva_retenido: ivaRetenido,
+    isr_retenido: 0,
     total,
+    clave_prod_serv: servicio.clave_prod_serv,
+    clave_unidad: servicio.clave_unidad,
     fecha: body.fecha || new Date().toISOString().split("T")[0],
   };
 
