@@ -20,6 +20,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div style={{ padding: "28px 32px", maxWidth: 900 }}>
+      <style>{`.cliente-project-link:hover { border-color: oklch(0.38 0.03 280) !important; }`}</style>
       <Link
         href="/admin/clientes"
         style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--muted)", textDecoration: "none", marginBottom: 20 }}
@@ -96,6 +97,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
               <Link
                 key={p.id}
                 href={`/admin/proyectos/${p.id}`}
+                className="cliente-project-link"
                 style={{
                   background: "var(--surface)",
                   border: "1px solid var(--border)",
@@ -107,8 +109,6 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
                   justifyContent: "space-between",
                   transition: "border-color 0.15s",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "oklch(0.38 0.03 280)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
               >
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{p.name}</div>

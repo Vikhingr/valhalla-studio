@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase";
-
-export const instant = false;
 import { STAGES } from "@/lib/types";
 import type { Client, Project, Task } from "@/lib/types";
 import { Users, Briefcase, CheckSquare, CurrencyDollar, ArrowRight, Warning } from "@phosphor-icons/react/dist/ssr";
+
+export const instant = false;
 
 function fmt(n: number) {
   return n.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
@@ -61,6 +61,11 @@ export default async function DashboardPage() {
 
   return (
     <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
+      <style>{`
+        .dash-stat-card:hover { border-color: oklch(0.38 0.03 280) !important; }
+        .dash-deadline-link:hover { background: var(--surface-2) !important; }
+      `}</style>
+
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em" }}>
           Dashboard
@@ -81,6 +86,7 @@ export default async function DashboardPage() {
           <Link
             key={label}
             href={href}
+            className="dash-stat-card"
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
@@ -90,8 +96,6 @@ export default async function DashboardPage() {
               display: "block",
               transition: "border-color 0.15s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-subtle)"; (e.currentTarget.style as CSSStyleDeclaration & { borderColor: string }).borderColor = "oklch(0.38 0.03 280)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <Icon size={16} weight="fill" style={{ color }} />
@@ -120,9 +124,8 @@ export default async function DashboardPage() {
                   <Link
                     key={p.id}
                     href={`/admin/proyectos/${p.id}`}
+                    className="dash-deadline-link"
                     style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", textDecoration: "none", transition: "background 0.1s" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
                     <div>
                       <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 500 }}>{p.name}</div>
@@ -165,15 +168,11 @@ export default async function DashboardPage() {
                   key={t.id}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", borderBottom: "1px solid var(--border-subtle)" }}
                 >
-                  <div
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      background: t.depends_on === "client" ? "oklch(0.65 0.15 60)" : "oklch(0.65 0.18 25)",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <div style={{
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: t.depends_on === "client" ? "oklch(0.65 0.15 60)" : "oklch(0.65 0.18 25)",
+                    flexShrink: 0,
+                  }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {t.title}
@@ -201,18 +200,11 @@ export default async function DashboardPage() {
         <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 14 }}>Proyectos por etapa</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {stageCounts.map((s) => (
-            <div
-              key={s.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                borderRadius: 100,
-                padding: "5px 12px",
-              }}
-            >
+            <div key={s.id} style={{
+              display: "flex", alignItems: "center", gap: 7,
+              background: "var(--surface-2)", border: "1px solid var(--border)",
+              borderRadius: 100, padding: "5px 12px",
+            }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: s.color, display: "inline-block" }} />
               <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{s.label}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>{s.count}</span>
@@ -225,18 +217,13 @@ export default async function DashboardPage() {
       </div>
 
       {blockingTasks.length > 0 && (
-        <div
-          style={{
-            marginTop: 20,
-            background: "oklch(0.65 0.15 60 / 0.08)",
-            border: "1px solid oklch(0.65 0.15 60 / 0.3)",
-            borderRadius: 10,
-            padding: "14px 18px",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
+        <div style={{
+          marginTop: 20,
+          background: "oklch(0.65 0.15 60 / 0.08)",
+          border: "1px solid oklch(0.65 0.15 60 / 0.3)",
+          borderRadius: 10, padding: "14px 18px",
+          display: "flex", alignItems: "center", gap: 10,
+        }}>
           <Warning size={16} weight="fill" style={{ color: "oklch(0.70 0.18 60)", flexShrink: 0 }} />
           <span style={{ fontSize: 13, color: "oklch(0.80 0.08 60)" }}>
             <strong>{blockingTasks.length}</strong> pendiente{blockingTasks.length > 1 ? "s están bloqueados" : " está bloqueado"} esperando respuesta del cliente.
