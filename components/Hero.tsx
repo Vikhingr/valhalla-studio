@@ -122,44 +122,98 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {/* Right: photo */}
+        {/* Right: browser mockup */}
         <motion.div {...right} style={{ display: "flex", justifyContent: "flex-end" }} className="hero-photo">
-          <div style={{ position: "relative", width: 300, height: 380 }}>
-            {/* Photo frame */}
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: 12,
-                overflow: "hidden",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <Image
-                src="/gabriel.jpg"
-                alt="Gabriel Castañeda"
-                fill
-                priority
-                style={{ objectFit: "cover", objectPosition: "top" }}
-              />
-            </div>
+          <div style={{ position: "relative", width: 420, paddingBottom: 24, paddingLeft: 24 }}>
 
-            {/* Identity badge */}
+            {/* Stat badge — top left */}
             <div
               style={{
                 position: "absolute",
-                bottom: -20,
-                left: -24,
+                top: -8,
+                left: 0,
                 background: "var(--surface)",
                 border: "1px solid var(--border)",
                 borderRadius: 10,
-                padding: "12px 20px",
+                padding: "10px 18px",
+                zIndex: 2,
               }}
             >
-              <div style={{ color: "var(--violet-light)", fontSize: 17, fontWeight: 700, letterSpacing: "-0.02em" }}>
-                Viking
+              <div style={{ color: "var(--muted)", fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 2 }}>Proyectos entregados</div>
+              <div style={{ color: "var(--ink)", fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em" }}>4+</div>
+            </div>
+
+            {/* Browser frame */}
+            <div
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                overflow: "hidden",
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                marginTop: 32,
+              }}
+            >
+              {/* Browser chrome */}
+              <div
+                style={{
+                  padding: "10px 14px",
+                  background: "oklch(0.16 0.02 270)",
+                  borderBottom: "1px solid var(--border)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "oklch(0.60 0.18 25)", flexShrink: 0 }} />
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "oklch(0.72 0.16 80)", flexShrink: 0 }} />
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "oklch(0.60 0.18 140)", flexShrink: 0 }} />
+                <div
+                  style={{
+                    flex: 1,
+                    marginLeft: 8,
+                    background: "oklch(0.20 0.02 270)",
+                    borderRadius: 5,
+                    padding: "3px 10px",
+                    fontSize: 11,
+                    color: "var(--muted)",
+                    fontFamily: "monospace",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  pepesbarbershop.com.mx
+                </div>
               </div>
-              <div style={{ color: "var(--muted)", fontSize: 12, marginTop: 2 }}>Valhalla Studio</div>
+
+              {/* Screenshot */}
+              <div style={{ position: "relative", height: 240 }}>
+                <Image
+                  src="/projects/pepes-inicio.png"
+                  alt="Pepe's Barber Shop"
+                  fill
+                  priority
+                  style={{ objectFit: "cover", objectPosition: "top" }}
+                />
+              </div>
+            </div>
+
+            {/* Project badge — bottom right */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                right: -8,
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                padding: "10px 16px",
+                zIndex: 2,
+              }}
+            >
+              <div style={{ color: "var(--violet-light)", fontSize: 13, fontWeight: 700 }}>Pepe&apos;s Barber Shop</div>
+              <div style={{ color: "var(--muted)", fontSize: 11, marginTop: 2 }}>Diseño + Desarrollo web</div>
             </div>
           </div>
         </motion.div>
