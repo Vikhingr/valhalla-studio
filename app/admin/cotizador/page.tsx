@@ -3,71 +3,113 @@ import { useState } from "react";
 import { Copy, Check } from "@phosphor-icons/react";
 
 type ProjectType = "web" | "app" | "automatizacion";
-type Complexity = "basico" | "estandar" | "avanzado" | "premium";
 
 const TYPES: { id: ProjectType; label: string; icon: string }[] = [
-  { id: "web",            label: "Sitio web",      icon: "🌐" },
-  { id: "app",            label: "App / Sistema",   icon: "💻" },
-  { id: "automatizacion", label: "Automatización",  icon: "⚡" },
+  { id: "web",            label: "Sitio web",     icon: "🌐" },
+  { id: "app",            label: "App / Sistema",  icon: "💻" },
+  { id: "automatizacion", label: "Automatización", icon: "⚡" },
 ];
 
-const TIERS: Record<ProjectType, { id: Complexity; label: string; desc: string; price: number }[]> = {
+// Presets: conjuntos de features preseleccionados para arrancar rápido
+const PRESETS: Record<ProjectType, { label: string; features: string[] }[]> = {
   web: [
-    { id: "basico",   label: "Landing page",    desc: "1 página, diseño a medida, formulario de contacto, sin backend",           price: 9500   },
-    { id: "estandar", label: "Sitio informativo",desc: "4–8 páginas, blog o CMS, formulario + email automático",                  price: 18000  },
-    { id: "avanzado", label: "Sitio con sistema",desc: "Reservas, auth, catálogo, carrito o panel de administración",             price: 38000  },
-    { id: "premium",  label: "E-commerce",       desc: "Tienda completa, pasarela de pagos, inventario, panel admin",             price: 60000  },
+    { label: "Landing",      features: ["base", "contacto"] },
+    { label: "Sitio web",    features: ["base", "paginas", "contacto", "seo"] },
+    { label: "Blog",         features: ["base", "paginas", "contacto", "blog", "seo"] },
+    { label: "Con sistema",  features: ["base", "paginas", "contacto", "auth", "admin"] },
+    { label: "E-commerce",   features: ["base", "paginas", "contacto", "catalogo", "carrito", "pagos"] },
   ],
   app: [
-    { id: "basico",   label: "App básica",       desc: "Auth + roles, dashboard, CRUD de 2–3 módulos, sin integraciones",        price: 48000  },
-    { id: "estandar", label: "App completa",      desc: "Múltiples módulos, reportes, exportación, 1–2 integraciones externas",  price: 85000  },
-    { id: "avanzado", label: "SaaS / plataforma", desc: "Multi-tenant, suscripciones, API propia, panel de configuración",       price: 130000 },
-    { id: "premium",  label: "Sistema empresarial",desc: "ERP / CRM a medida, flujos complejos, integraciones múltiples",        price: 200000 },
+    { label: "MVP básico",   features: ["setup", "auth", "modulo"] },
+    { label: "App completa", features: ["setup", "auth", "roles", "modulo", "dashboard", "notif"] },
+    { label: "SaaS",         features: ["setup", "auth", "roles", "modulo", "dashboard", "notif", "pagos_app", "api"] },
   ],
   automatizacion: [
-    { id: "basico",   label: "Flujo simple",     desc: "Google Sheets + notificaciones, Make/n8n, 1–2 pasos",                    price: 8500   },
-    { id: "estandar", label: "Con integración",  desc: "API externa, lógica condicional, formularios o CRM conectado",           price: 22000  },
-    { id: "avanzado", label: "Multi-sistema",    desc: "3+ plataformas, flujos paralelos, manejo de errores y reintentos",       price: 45000  },
-    { id: "premium",  label: "Con IA",           desc: "Agentes IA, procesamiento de documentos, decisiones automáticas",       price: 85000  },
+    { label: "Notificaciones", features: ["base_auto", "notif_auto"] },
+    { label: "Con API",        features: ["base_auto", "api_auto", "notif_auto"] },
+    { label: "Multi-sistema",  features: ["base_auto", "api_auto", "notif_auto", "cron", "errores"] },
   ],
 };
 
-const EXTRAS: Record<ProjectType, { id: string; label: string; price: number }[]> = {
+type Feature = { id: string; label: string; desc: string; price: number; unit?: string };
+
+const FEATURES: Record<ProjectType, { group: string; items: Feature[] }[]> = {
   web: [
-    { id: "seo",       label: "SEO técnico + contenido inicial",   price: 2800 },
-    { id: "blog",      label: "Blog / CMS editable",               price: 4200 },
-    { id: "multi",     label: "Multiidioma (ES + EN)",             price: 3800 },
-    { id: "analytics", label: "GA4 + Meta Pixel + reportes",       price: 1800 },
-    { id: "whatsapp",  label: "Chat WhatsApp flotante",            price: 1200 },
-    { id: "speed",     label: "Optimización de velocidad (Core Web Vitals)", price: 2200 },
+    { group: "Base", items: [
+      { id: "base",     label: "Diseño a medida",       desc: "Diseño responsive + setup de hosting y dominio + 1 página", price: 5500 },
+      { id: "paginas",  label: "Páginas adicionales",   desc: "Por cada página extra (nosotros, servicios, portafolio…)",  price: 1100, unit: "c/u" },
+    ]},
+    { group: "Funcionalidades", items: [
+      { id: "contacto", label: "Formulario de contacto", desc: "Formulario + email automático al recibir mensaje",          price: 1500 },
+      { id: "blog",     label: "Blog / CMS editable",    desc: "Crea y edita publicaciones sin tocar código",               price: 4200 },
+      { id: "auth",     label: "Login / Registro",       desc: "Auth completo con sesiones, recuperación de contraseña",   price: 5500 },
+      { id: "admin",    label: "Panel de administración",desc: "Gestiona contenido, usuarios o datos desde un dashboard",  price: 9500 },
+      { id: "reservas", label: "Reservas / Calendario",  desc: "Sistema de citas o reservas con disponibilidad",           price: 7500 },
+      { id: "catalogo", label: "Catálogo de productos",  desc: "Listado con filtros, búsqueda y detalle de producto",      price: 6000 },
+      { id: "carrito",  label: "Carrito de compras",     desc: "Carrito, checkout y gestión de órdenes",                   price: 5500 },
+      { id: "pagos",    label: "Pasarela de pagos",       desc: "Stripe, Conekta u OXXO Pay integrado",                    price: 8500 },
+    ]},
+    { group: "Marketing / SEO", items: [
+      { id: "seo",      label: "SEO técnico",             desc: "Meta tags, sitemap, schema markup, velocidad",            price: 2800 },
+      { id: "analytics",label: "GA4 + Meta Pixel",        desc: "Analytics, eventos y remarketing configurado",           price: 1800 },
+      { id: "multi",    label: "Multiidioma (ES + EN)",   desc: "Todo el sitio traducido con selector de idioma",          price: 3800 },
+      { id: "whatsapp", label: "Chat WhatsApp flotante",  desc: "Botón flotante que abre WhatsApp con mensaje predefinido",price: 1200 },
+      { id: "speed",    label: "Optimización de velocidad",desc: "Core Web Vitals 90+, lazy load, compresión de imágenes", price: 2200 },
+    ]},
   ],
   app: [
-    { id: "notif",     label: "Notificaciones email / push",       price: 3800 },
-    { id: "export",    label: "Exportar a Excel / PDF",            price: 3200 },
-    { id: "roles",     label: "Roles y permisos avanzados",        price: 5000 },
-    { id: "pagos",     label: "Pagos con Stripe / Conekta / OXXO", price: 7000 },
-    { id: "api",       label: "API REST documentada (Swagger)",    price: 9000 },
-    { id: "movil",     label: "App móvil (React Native básico)",   price: 35000 },
+    { group: "Base", items: [
+      { id: "setup",    label: "Arquitectura + setup",    desc: "Configuración del proyecto, CI/CD, base de datos, entornos", price: 6000 },
+    ]},
+    { group: "Usuarios y acceso", items: [
+      { id: "auth",     label: "Auth (login/registro)",   desc: "Registro, login, recuperación de contraseña, sesiones",  price: 5500 },
+      { id: "roles",    label: "Roles y permisos",        desc: "Múltiples roles con control de acceso por función",      price: 4500 },
+    ]},
+    { group: "Módulos y datos", items: [
+      { id: "modulo",   label: "Módulo CRUD",             desc: "Crear, leer, actualizar y eliminar (por módulo)",        price: 4000, unit: "c/u" },
+      { id: "dashboard",label: "Dashboard con métricas",  desc: "Gráficas, KPIs y estadísticas en tiempo real",          price: 6000 },
+      { id: "export",   label: "Exportar Excel / PDF",    desc: "Reportes descargables desde la app",                    price: 3200 },
+    ]},
+    { group: "Extras", items: [
+      { id: "notif",    label: "Notificaciones email/push",desc: "Emails transaccionales y push notifications",          price: 3800 },
+      { id: "pagos_app",label: "Pagos (Stripe / Conekta)", desc: "Cobros únicos o suscripciones recurrentes",            price: 7000 },
+      { id: "api",      label: "API REST documentada",    desc: "API con Swagger para integraciones externas",           price: 9000 },
+      { id: "movil",    label: "App móvil (React Native)", desc: "Versión iOS y Android de la misma app",                price: 35000 },
+    ]},
   ],
   automatizacion: [
-    { id: "report",    label: "Reporte automático (PDF / Sheets)", price: 2800 },
-    { id: "notif",     label: "Alertas por WhatsApp y email",      price: 2200 },
-    { id: "dashboard", label: "Dashboard visual en tiempo real",   price: 6000 },
-    { id: "cron",      label: "Ejecución programada (cron)",       price: 1800 },
-    { id: "ia",        label: "Clasificación con IA (GPT/Gemini)", price: 8000 },
+    { group: "Base", items: [
+      { id: "base_auto",label: "Configuración inicial",   desc: "Setup de Make / n8n, credenciales, primer flujo",       price: 3500 },
+    ]},
+    { group: "Flujos e integraciones", items: [
+      { id: "flujo",    label: "Flujo adicional",          desc: "Por cada flujo o automatización extra",                 price: 2500, unit: "c/u" },
+      { id: "api_auto", label: "Integración API externa",  desc: "Conectar con API de tercero (CRM, ERP, plataforma…)",  price: 4500, unit: "c/u" },
+      { id: "sheets",   label: "Google Sheets conectado",  desc: "Leer/escribir datos en Sheets automáticamente",        price: 2000 },
+      { id: "crm",      label: "CRM conectado",            desc: "HubSpot, Pipedrive, Notion u otro CRM",                price: 4000 },
+    ]},
+    { group: "Salidas y alertas", items: [
+      { id: "notif_auto",label: "Alertas WhatsApp / email",desc: "Notificaciones automáticas por WhatsApp Business o email", price: 2200 },
+      { id: "reporte",  label: "Reporte automático",       desc: "PDF o Sheets generado y enviado automáticamente",      price: 2800 },
+      { id: "dashboard_auto",label: "Dashboard en tiempo real",desc: "Visualización de datos del flujo en un panel",     price: 6000 },
+    ]},
+    { group: "Avanzado", items: [
+      { id: "cron",     label: "Ejecución programada",     desc: "Flujos que corren a hora o día definido (cron)",       price: 1800 },
+      { id: "errores",  label: "Manejo de errores",        desc: "Alertas de fallo, reintentos y logs de errores",       price: 2500 },
+      { id: "ia",       label: "IA (GPT / Gemini)",        desc: "Clasificación, resumen o decisiones automáticas con IA", price: 8000 },
+    ]},
   ],
 };
 
 const MAINT: Record<ProjectType, { label: string; price: number; desc: string }[]> = {
   web: [
-    { label: "Básico",    price: 900,  desc: "Actualizaciones, hosting supervisado, correcciones menores" },
-    { label: "Estándar",  price: 2000, desc: "Todo lo anterior + cambios de contenido y soporte" },
-    { label: "Premium",   price: 4000, desc: "Todo lo anterior + funciones pequeñas nuevas al mes" },
+    { label: "Básico",   price: 900,  desc: "Actualizaciones, hosting supervisado, correcciones" },
+    { label: "Estándar", price: 2000, desc: "Todo lo anterior + cambios de contenido y soporte" },
+    { label: "Premium",  price: 4000, desc: "Todo lo anterior + funciones pequeñas mensuales" },
   ],
   app: [
-    { label: "Básico",    price: 2500, desc: "Hosting + corrección de bugs + respaldo" },
-    { label: "Estándar",  price: 5000, desc: "Todo lo anterior + mejoras continuas" },
-    { label: "Premium",   price: 8000, desc: "Soporte prioritario + features mensuales" },
+    { label: "Básico",   price: 2500, desc: "Hosting + corrección de bugs + respaldo" },
+    { label: "Estándar", price: 5000, desc: "Todo lo anterior + mejoras continuas" },
+    { label: "Premium",  price: 8000, desc: "Soporte prioritario + features mensuales" },
   ],
   automatizacion: [
     { label: "Monitoreo", price: 900,  desc: "Verificación, ajustes y alertas de fallo" },
@@ -80,45 +122,52 @@ function fmt(n: number) {
 }
 
 export default function CotizadorPage() {
-  const [type, setType]           = useState<ProjectType>("web");
-  const [complexity, setComplexity] = useState<Complexity>("basico");
-  const [extras, setExtras]       = useState<string[]>([]);
-  const [copied, setCopied]       = useState(false);
+  const [type, setType]       = useState<ProjectType>("web");
+  const [selected, setSelected] = useState<string[]>(["base", "contacto"]);
+  const [copied, setCopied]   = useState(false);
 
-  const tier       = TIERS[type].find((t) => t.id === complexity)!;
-  const extraList  = EXTRAS[type].filter((e) => extras.includes(e.id));
-  const extraTotal = extraList.reduce((s, e) => s + e.price, 0);
-  const total      = tier.price + extraTotal;
-  const anticipo   = Math.round(total * 0.5 / 500) * 500;
-  const mitad      = Math.round(total * 0.25 / 500) * 500;
-
-  function toggleExtra(id: string) {
-    setExtras((prev) => prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]);
+  function applyPreset(features: string[]) {
+    setSelected(features);
   }
+
+  function toggle(id: string) {
+    setSelected((prev) => prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]);
+  }
+
+  function switchType(t: ProjectType) {
+    setType(t);
+    setSelected(PRESETS[t][0].features);
+  }
+
+  // Calcular total
+  const allFeatures = FEATURES[type].flatMap((g) => g.items);
+  const selectedFeatures = allFeatures.filter((f) => selected.includes(f.id));
+  const total = selectedFeatures.reduce((s, f) => s + f.price, 0);
+  const anticipo = Math.round(total * 0.5 / 500) * 500;
+  const mitad    = Math.round(total * 0.25 / 500) * 500;
+  const resto    = total - anticipo - mitad;
 
   function buildProposal() {
     const typeLabel = TYPES.find((t) => t.id === type)!.label;
     const lines = [
-      `Propuesta — ${typeLabel}: ${tier.label}`,
+      `Propuesta — ${typeLabel}`,
       "",
-      `Alcance: ${tier.desc}`,
-      extraList.length > 0 ? `Incluye: ${extraList.map((e) => e.label).join(", ")}` : "",
+      "Incluye:",
+      ...selectedFeatures.map((f) => `  • ${f.label}${f.unit ? ` (${f.unit})` : ""} — ${fmt(f.price)}`),
       "",
-      `Inversión total: ${fmt(total)} MXN`,
+      `Total: ${fmt(total)} MXN`,
       "",
       "Estructura de pago:",
       `  • 50% anticipo para iniciar — ${fmt(anticipo)} MXN`,
-      `  • 25% al aprobar el diseño  — ${fmt(mitad)} MXN`,
-      `  • 25% al entregar           — ${fmt(mitad)} MXN`,
+      `  • 25% al aprobar diseño     — ${fmt(mitad)} MXN`,
+      `  • 25% al entregar           — ${fmt(resto)} MXN`,
       "",
       "Mantenimiento mensual opcional:",
-      ...MAINT[type].map((m) => `  • ${m.label} (${fmt(m.price)}/mes): ${m.desc}`),
-      "",
-      "Tiempo estimado de entrega: te lo confirmo después de revisar el alcance completo.",
+      ...MAINT[type].map((m) => `  • ${m.label} — ${fmt(m.price)}/mes`),
       "",
       "¿Tienes preguntas? Respondo en menos de 24 horas.",
       "— Gabriel Castañeda · Valhalla Studio",
-    ].filter(Boolean);
+    ];
     return lines.join("\n");
   }
 
@@ -129,233 +178,180 @@ export default function CotizadorPage() {
   }
 
   return (
-    <div style={{ padding: "28px 32px", maxWidth: 960 }}>
+    <div style={{ padding: "28px 32px", maxWidth: 1000 }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", marginBottom: 4 }}>Cotizador</h1>
-      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 28 }}>
-        Precios exactos basados en el mercado freelance CDMX 2025–2026. Genera propuesta lista para copiar.
+      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 24 }}>
+        Arma el proyecto componente por componente. Cada funcionalidad tiene precio individual.
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "start" }}>
+      {/* Tipo */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+        {TYPES.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => switchType(t.id)}
+            style={{
+              display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 8, cursor: "pointer",
+              border: `1px solid ${type === t.id ? "var(--violet)" : "var(--border)"}`,
+              background: type === t.id ? "oklch(0.58 0.22 293 / 0.12)" : "transparent",
+              fontSize: 13, fontWeight: 600,
+              color: type === t.id ? "var(--violet-light)" : "var(--ink-2)",
+            }}
+          >
+            <span>{t.icon}</span> {t.label}
+          </button>
+        ))}
+      </div>
 
-        {/* ── Controles ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Presets */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", alignSelf: "center", marginRight: 4 }}>PLANTILLAS:</span>
+        {PRESETS[type].map((p) => (
+          <button
+            key={p.label}
+            onClick={() => applyPreset(p.features)}
+            style={{
+              padding: "5px 12px", borderRadius: 100, cursor: "pointer", fontSize: 12, fontWeight: 500,
+              border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--ink-2)",
+              transition: "border-color 0.15s",
+            }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
 
-          {/* Tipo */}
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "18px 20px" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Tipo de proyecto</div>
-            <div style={{ display: "flex", gap: 10 }}>
-              {TYPES.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => { setType(t.id); setComplexity("basico"); setExtras([]); }}
-                  style={{
-                    flex: 1, padding: "12px 8px", borderRadius: 8, cursor: "pointer", textAlign: "center",
-                    border: `1px solid ${type === t.id ? "var(--violet)" : "var(--border)"}`,
-                    background: type === t.id ? "oklch(0.58 0.22 293 / 0.12)" : "transparent",
-                  }}
-                >
-                  <div style={{ fontSize: 20, marginBottom: 5 }}>{t.icon}</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: type === t.id ? "var(--violet-light)" : "var(--ink-2)" }}>{t.label}</div>
-                </button>
-              ))}
-            </div>
-          </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
 
-          {/* Complejidad */}
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "18px 20px" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Alcance del proyecto</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {TIERS[type].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setComplexity(t.id)}
-                  style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "12px 14px", borderRadius: 8, cursor: "pointer", textAlign: "left",
-                    border: `1px solid ${complexity === t.id ? "var(--violet)" : "var(--border)"}`,
-                    background: complexity === t.id ? "oklch(0.58 0.22 293 / 0.10)" : "transparent",
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: complexity === t.id ? "var(--violet-light)" : "var(--ink)", marginBottom: 2 }}>{t.label}</div>
-                    <div style={{ fontSize: 11, color: "var(--muted)", maxWidth: 280 }}>{t.desc}</div>
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: complexity === t.id ? "var(--violet-light)" : "var(--ink-2)", flexShrink: 0, marginLeft: 16 }}>
-                    {fmt(t.price)}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Extras */}
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "18px 20px" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Extras opcionales</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {EXTRAS[type].map((e) => {
-                const active = extras.includes(e.id);
-                return (
-                  <button
-                    key={e.id}
-                    onClick={() => toggleExtra(e.id)}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "10px 14px", borderRadius: 7, cursor: "pointer", textAlign: "left",
-                      border: `1px solid ${active ? "var(--violet)" : "var(--border)"}`,
-                      background: active ? "oklch(0.58 0.22 293 / 0.08)" : "transparent",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                      <div style={{
-                        width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                        border: `1.5px solid ${active ? "var(--violet)" : "var(--border)"}`,
-                        background: active ? "var(--violet)" : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
-                        {active && <Check size={10} weight="bold" style={{ color: "#fff" }} />}
+        {/* ── Lista de features ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {FEATURES[type].map((group) => (
+            <div key={group.group} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
+              <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface-2)" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{group.group}</span>
+              </div>
+              <div style={{ padding: "8px 0" }}>
+                {group.items.map((f) => {
+                  const active = selected.includes(f.id);
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => toggle(f.id)}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "10px 16px", cursor: "pointer", textAlign: "left",
+                        border: "none", borderBottom: "1px solid var(--border-subtle)",
+                        background: active ? "oklch(0.58 0.22 293 / 0.07)" : "transparent",
+                        transition: "background 0.1s",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                        <div style={{
+                          width: 18, height: 18, borderRadius: 5, flexShrink: 0, marginTop: 1,
+                          border: `1.5px solid ${active ? "var(--violet)" : "var(--border)"}`,
+                          background: active ? "var(--violet)" : "transparent",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          {active && <Check size={11} weight="bold" style={{ color: "#fff" }} />}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: active ? "var(--ink)" : "var(--ink-2)" }}>
+                            {f.label}
+                            {f.unit && <span style={{ fontSize: 11, fontWeight: 400, color: "var(--muted)", marginLeft: 6 }}>({f.unit})</span>}
+                          </div>
+                          <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1 }}>{f.desc}</div>
+                        </div>
                       </div>
-                      <span style={{ fontSize: 13, color: active ? "var(--ink)" : "var(--ink-2)" }}>{e.label}</span>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: active ? "var(--violet-light)" : "var(--muted)", flexShrink: 0, marginLeft: 12 }}>
-                      +{fmt(e.price)}
-                    </span>
-                  </button>
-                );
-              })}
+                      <div style={{ flexShrink: 0, marginLeft: 16, textAlign: "right" }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: active ? "var(--violet-light)" : "var(--ink-2)" }}>{fmt(f.price)}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
-        {/* ── Resultado ── */}
+        {/* ── Panel derecho ── */}
         <div style={{ position: "sticky", top: 28 }}>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
 
-            {/* Precio total */}
+            {/* Total */}
             <div style={{ padding: "20px 22px", borderBottom: "1px solid var(--border)", background: "oklch(0.58 0.22 293 / 0.07)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                Precio del proyecto
-              </div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.03em", lineHeight: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Total del proyecto</div>
+              <div style={{ fontSize: 34, fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.03em", lineHeight: 1 }}>
                 {fmt(total)}
               </div>
               <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>MXN · IVA no incluido</div>
             </div>
 
-            {/* Desglose */}
-            <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Desglose</div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{tier.label}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)" }}>{fmt(tier.price)}</span>
+            {/* Desglose seleccionado */}
+            <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)", maxHeight: 240, overflowY: "auto" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
+                Incluye ({selectedFeatures.length})
               </div>
-              {extraList.map((e) => (
-                <div key={e.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                  <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{e.label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--violet-light)" }}>+{fmt(e.price)}</span>
-                </div>
-              ))}
-              {extraList.length > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>Total</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>{fmt(total)}</span>
-                </div>
+              {selectedFeatures.length === 0 ? (
+                <p style={{ fontSize: 12, color: "var(--muted)" }}>Selecciona al menos una funcionalidad.</p>
+              ) : (
+                selectedFeatures.map((f) => (
+                  <div key={f.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7, gap: 8 }}>
+                    <span style={{ fontSize: 12, color: "var(--ink-2)", minWidth: 0 }}>{f.label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", flexShrink: 0 }}>{fmt(f.price)}</span>
+                  </div>
+                ))
               )}
             </div>
 
             {/* Pagos */}
-            <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Esquema de pagos</div>
-              {[
-                { label: "50% anticipo para iniciar", amount: anticipo },
-                { label: "25% al aprobar diseño",      amount: mitad },
-                { label: "25% al entregar",            amount: mitad },
-              ].map(({ label, amount }) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-                  <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)" }}>{fmt(amount)}</span>
-                </div>
-              ))}
-            </div>
+            {total > 0 && (
+              <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)" }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Esquema de pagos</div>
+                {[
+                  { label: "50% anticipo",      amount: anticipo },
+                  { label: "25% al diseño",     amount: mitad },
+                  { label: "25% al entregar",   amount: resto },
+                ].map(({ label, amount }) => (
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
+                    <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)" }}>{fmt(amount)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Mantenimiento */}
             <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Mantenimiento mensual</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Mantenimiento /mes</div>
               {MAINT[type].map((m) => (
-                <div key={m.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6, gap: 8 }}>
+                <div key={m.label} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                   <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{m.label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", flexShrink: 0 }}>{fmt(m.price)}<span style={{ fontWeight: 400, color: "var(--muted)" }}>/mes</span></span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>{fmt(m.price)}<span style={{ fontWeight: 400, color: "var(--muted)" }}>/mes</span></span>
                 </div>
               ))}
             </div>
 
-            {/* Botón */}
+            {/* Copiar */}
             <div style={{ padding: "16px 22px" }}>
               <button
                 onClick={handleCopy}
+                disabled={total === 0}
                 style={{
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  padding: "11px 16px", borderRadius: 8, border: "none", cursor: "pointer",
+                  padding: "11px 16px", borderRadius: 8, border: "none", cursor: total === 0 ? "not-allowed" : "pointer",
                   background: copied ? "oklch(0.65 0.18 160)" : "var(--violet)",
                   color: "#fff", fontSize: 13, fontWeight: 600, transition: "background 0.2s",
+                  opacity: total === 0 ? 0.5 : 1,
                 }}
               >
-                {copied ? <><Check size={15} weight="bold" /> Propuesta copiada</> : <><Copy size={15} /> Copiar propuesta</>}
+                {copied ? <><Check size={15} weight="bold" /> Copiado</> : <><Copy size={15} /> Copiar propuesta</>}
               </button>
               <p style={{ fontSize: 11, color: "var(--muted)", textAlign: "center", marginTop: 8 }}>
-                Texto listo para WhatsApp o email
+                Lista para WhatsApp o email
               </p>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* ── Tabla de referencia CDMX ── */}
-      <div style={{ marginTop: 32, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "20px 24px" }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>Referencia de mercado — Freelancer CDMX 2025–2026</div>
-        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 20 }}>
-          Precios investigados en múltiples fuentes del mercado local. Perfil: freelancer con experiencia comprobable y proyectos reales. No son rangos orientativos — son los precios que cobra este perfil.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
-          {[
-            { category: "Sitios web", rows: [
-              ["Landing page (1 pág.)",        "$9,500"],
-              ["Sitio informativo (4–8 págs.)", "$18,000"],
-              ["Con auth / reservas / admin",   "$38,000"],
-              ["E-commerce completo",           "$60,000"],
-            ]},
-            { category: "Apps y sistemas", rows: [
-              ["App básica (auth + CRUD)",      "$48,000"],
-              ["App completa (módulos + reportes)", "$85,000"],
-              ["SaaS / multi-tenant",           "$130,000"],
-              ["Sistema empresarial",           "$200,000"],
-            ]},
-            { category: "Automatizaciones", rows: [
-              ["Flujo simple (Make/n8n)",        "$8,500"],
-              ["Con integración API",            "$22,000"],
-              ["Multi-sistema",                  "$45,000"],
-              ["Con agente IA",                  "$85,000"],
-            ]},
-            { category: "Mantenimiento /mes", rows: [
-              ["Web básico",                    "$900"],
-              ["Web estándar",                  "$2,000"],
-              ["App básica",                    "$2,500"],
-              ["App estándar",                  "$5,000"],
-            ]},
-          ].map(({ category, rows }) => (
-            <div key={category}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--violet-light)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>{category}</div>
-              {rows.map(([label, price]) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "6px 0", borderBottom: "1px solid var(--border-subtle)" }}>
-                  <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", flexShrink: 0 }}>{price}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 16 }}>
-          Fuentes: Nebugrama, Cubosweb, Evarian Dev, IAmanos, Gabriel Neuman, Bridge Studio · Mercado freelance CDMX
-        </p>
       </div>
     </div>
   );
