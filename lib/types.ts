@@ -105,6 +105,8 @@ export type Factura = {
   clave_unidad: string
   facturapi_error: string | null
   cfdi_uuid: string | null
+  cfdi_sello: string | null
+  cfdi_sello_sat: string | null
   facturapi_id: string | null
   fecha: string
   created_at: string

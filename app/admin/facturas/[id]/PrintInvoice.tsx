@@ -1,6 +1,8 @@
 "use client";
 import { Printer, FilePdf, ArrowLeft, Prohibit, Warning } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import QRCode from "qrcode";
 import type { Factura } from "@/lib/types";
 
 function fmt(n: number) {
@@ -30,11 +32,25 @@ interface Props {
   hasCfdiDownload: boolean;
 }
 
+function QrCanvas({ url }: { url: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    if (canvasRef.current) {
+      QRCode.toCanvas(canvasRef.current, url, { width: 100, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
+    }
+  }, [url]);
+  return <canvas ref={canvasRef} style={{ display: "block", width: 100, height: 100 }} />;
+}
+
 export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props) {
   const router = useRouter();
 
   const isCancelled = factura.status === "cancelada";
   const isCfdi = factura.tipo === "cfdi";
+
+  const satVerificationUrl = isCfdi && factura.cfdi_uuid && factura.cfdi_sello
+    ? `https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${factura.cfdi_uuid}&re=${emisor.rfc}&rr=${factura.receptor_rfc}&tt=${factura.total.toFixed(6)}&fe=${factura.cfdi_sello.slice(-8)}`
+    : null;
   const fechaFmt = new Date(factura.fecha + "T12:00:00").toLocaleDateString("es-MX", {
     day: "numeric", month: "long", year: "numeric",
   });
@@ -188,6 +204,33 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
             </div>
           </div>
         </div>
+
+        {/* Sellos digitales */}
+        {isCfdi && (factura.cfdi_sello || factura.cfdi_sello_sat) && (
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16, marginBottom: 16 }}>
+            <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+              {satVerificationUrl && (
+                <div style={{ flexShrink: 0 }}>
+                  <QrCanvas url={satVerificationUrl} />
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {factura.cfdi_sello && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Sello digital del CFDI</div>
+                    <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{factura.cfdi_sello}</div>
+                  </div>
+                )}
+                {factura.cfdi_sello_sat && (
+                  <div>
+                    <div style={{ fontSize: 9, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Sello digital del SAT</div>
+                    <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{factura.cfdi_sello_sat}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16, fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
