@@ -6,17 +6,25 @@ export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", project: "", message: "" });
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSending(true);
+    setFailed(false);
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (res.ok) setSent(true);
+      if (res.ok) {
+        setSent(true);
+      } else {
+        setFailed(true);
+      }
+    } catch {
+      setFailed(true);
     } finally {
       setSending(false);
     }
@@ -198,6 +206,29 @@ export default function Contact() {
                     onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
                   />
                 </div>
+
+                {failed && (
+                  <div
+                    role="alert"
+                    style={{
+                      background: "oklch(0.30 0.08 25 / 0.18)",
+                      border: "1px solid oklch(0.55 0.16 25 / 0.5)",
+                      borderRadius: 8,
+                      padding: "12px 16px",
+                      fontSize: 13,
+                      color: "oklch(0.85 0.08 25)",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    No se pudo enviar el mensaje. Escríbeme directamente a{" "}
+                    <a
+                      href="mailto:contacto@valhallastudio.com.mx"
+                      style={{ color: "oklch(0.85 0.08 25)", textDecoration: "underline" }}
+                    >
+                      contacto@valhallastudio.com.mx
+                    </a>
+                  </div>
+                )}
 
                 <button
                   type="submit"
