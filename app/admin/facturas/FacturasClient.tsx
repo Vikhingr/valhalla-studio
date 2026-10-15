@@ -68,6 +68,7 @@ interface Props {
 
 export default function FacturasClient({ initial, clients, facturapiconfigured, emisorNombre, usosCfdiVisibles }: Props) {
   const [facturas, setFacturas] = useState<Factura[]>(initial);
+  const [busqueda, setBusqueda] = useState("");
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -162,6 +163,21 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
 
   const totalActivas = facturas.filter((f) => f.status === "activa").reduce((s, f) => s + f.total, 0);
 
+  // Número de factura secuencial: la más antigua = #1
+  const folioMap = new Map<string, number>();
+  [...facturas].reverse().forEach((f, i) => folioMap.set(f.id, i + 1));
+
+  const facturasFiltradas = busqueda.trim()
+    ? facturas.filter((f) => {
+        const q = busqueda.toLowerCase();
+        return (
+          (f.clients?.name ?? f.receptor_nombre).toLowerCase().includes(q) ||
+          f.receptor_nombre.toLowerCase().includes(q) ||
+          String(folioMap.get(f.id)).includes(q)
+        );
+      })
+    : facturas;
+
   return (
     <>
       <div style={{ padding: "28px 32px", maxWidth: 1000 }}>
@@ -185,6 +201,23 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
           </button>
         </div>
 
+        {/* Buscador */}
+        {facturas.length > 0 && (
+          <div style={{ marginBottom: 16, position: "relative" }}>
+            <input
+              style={{ ...inputStyle, paddingLeft: 36, maxWidth: 320 }}
+              placeholder="Buscar por cliente o No. factura…"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", pointerEvents: "none" }}
+              aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </div>
+        )}
+
         {/* Lista */}
         {facturas.length === 0 ? (
           <div style={{ textAlign: "center", padding: "64px 0", color: "var(--muted)" }}>
@@ -192,18 +225,22 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
             <p style={{ fontSize: 14 }}>Sin facturas aún.</p>
             <p style={{ fontSize: 12, marginTop: 4 }}>Crea la primera desde el botón de arriba.</p>
           </div>
+        ) : facturasFiltradas.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
+            <p style={{ fontSize: 14 }}>Sin resultados para &ldquo;{busqueda}&rdquo;</p>
+          </div>
         ) : (
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                  {["Fecha", "Cliente", "Concepto", "Total", "Tipo", "Estado", ""].map((h) => (
+                  {["No.", "Fecha", "Cliente", "Concepto", "Total", "Tipo", "Estado", ""].map((h) => (
                     <th key={h} style={{ padding: "10px 16px", fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "left", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {facturas.map((f) => (
+                {facturasFiltradas.map((f) => (
                   <tr
                     key={f.id}
                     style={{ borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", transition: "background 0.1s" }}
@@ -211,6 +248,11 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                     onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "var(--surface-2)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}
                   >
+                    <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--muted)", fontFamily: "monospace" }}>
+                        #{String(folioMap.get(f.id) ?? "—").padStart(3, "0")}
+                      </span>
+                    </td>
                     <td style={{ padding: "12px 16px", fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>
                       {new Date(f.fecha + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
