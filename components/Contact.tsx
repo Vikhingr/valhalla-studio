@@ -118,7 +118,7 @@ export default function Contact() {
             }}
           >
             {sent ? (
-              <div style={{ textAlign: "center", padding: "48px 0" }}>
+              <div role="status" style={{ textAlign: "center", padding: "48px 0" }}>
                 <div
                   style={{
                     width: 56,

@@ -73,11 +73,11 @@ export default function About() {
               <span style={{ color: "var(--violet-light)" }}>programar.</span>
             </h2>
 
-            <p style={{ color: "var(--muted)", lineHeight: 1.75, marginBottom: 16, fontSize: 15, maxWidth: "55ch" }}>
+            <p style={{ color: "var(--ink-2)", lineHeight: 1.75, marginBottom: 16, fontSize: 15, maxWidth: "55ch" }}>
               Soy Gabriel Castañeda, estudiante de Ingeniería en Sistemas Computacionales en la UVEG, por egresar. Combino diseño visual de alto impacto con desarrollo real — sin depender de templates, sin sacrificar funcionalidad.
             </p>
-            <p style={{ color: "var(--muted)", lineHeight: 1.75, marginBottom: 36, fontSize: 15, maxWidth: "55ch" }}>
-              Trabajo con Vibe Coding: defino la lógica, la arquitectura y la experiencia de usuario, y construyo todo desde cero. El resultado son productos digitales que se ven distintos y funcionan de verdad.
+            <p style={{ color: "var(--ink-2)", lineHeight: 1.75, marginBottom: 36, fontSize: 15, maxWidth: "55ch" }}>
+              Defino la lógica, la arquitectura y la experiencia de usuario, y construyo todo desde cero. El resultado son productos digitales que se ven distintos y funcionan de verdad.
             </p>
 
             {/* Skills */}

@@ -87,7 +87,7 @@ const projects: Project[] = [
   },
 ];
 
-function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+function Lightbox({ src, alt, onClose, current, total }: { src: string; alt: string; onClose: () => void; current: number; total: number }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
@@ -112,9 +112,20 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
           borderRadius: 8, color: "var(--ink)", cursor: "pointer", padding: "8px 10px",
           display: "flex", zIndex: 1,
         }}
+        aria-label="Cerrar imagen"
       >
         <X size={20} weight="bold" />
       </button>
+      {total > 1 && (
+        <div style={{
+          position: "absolute", top: 20, left: 20, zIndex: 1,
+          background: "oklch(0.14 0.015 280 / 0.9)", border: "1px solid var(--border)",
+          borderRadius: 8, color: "var(--muted)", padding: "6px 12px",
+          fontSize: 12, fontWeight: 600, fontVariantNumeric: "tabular-nums",
+        }}>
+          {current + 1} / {total}
+        </div>
+      )}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{ position: "relative", width: "92vw", height: "92vh", cursor: "default" }}
@@ -179,7 +190,7 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
         </div>
 
         {/* Image — scrollable, clicks to lightbox */}
-        <div style={{ height: 420, flexShrink: 0, background: "var(--bg)", overflowY: "auto", overflowX: "hidden", position: "relative", cursor: "zoom-in" }} onClick={() => setLightboxOpen(true)}>
+        <div style={{ height: "clamp(220px, 45vh, 420px)", flexShrink: 0, background: "var(--bg)", overflowY: "auto", overflowX: "hidden", position: "relative", cursor: "zoom-in" }} onClick={() => setLightboxOpen(true)}>
           <Image key={active} src={project.screenshots[active]} alt={`${project.title} — captura ${active + 1}`} width={900} height={600} style={{ width: "100%", height: "auto", display: "block" }} />
           <div style={{ position: "absolute", top: 10, right: 10, background: "oklch(0.10 0.010 280 / 0.82)", backdropFilter: "blur(4px)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--muted)", padding: "5px 9px", display: "flex", gap: 5, alignItems: "center", fontSize: 11, fontWeight: 500, pointerEvents: "none" }}>
             <MagnifyingGlassPlus size={13} weight="bold" />
@@ -221,6 +232,8 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
             src={project.screenshots[active]}
             alt={`${project.title} — captura ${active + 1}`}
             onClose={() => setLightboxOpen(false)}
+            current={active}
+            total={total}
           />
         )}
       </div>
@@ -237,9 +250,6 @@ export default function Projects() {
   return (
     <section id="proyectos" style={{ padding: "120px 0", background: "var(--bg)", borderTop: "1px solid var(--border)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
-        <p style={{ color: "var(--muted)", fontSize: 13, fontWeight: 500, marginBottom: 12, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-          Proyectos seleccionados
-        </p>
         <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: "var(--ink)", marginBottom: 64, maxWidth: "18ch" }}>
           Trabajo real,<br />de principio a fin.
         </h2>
