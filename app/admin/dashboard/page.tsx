@@ -1,0 +1,251 @@
+import Link from "next/link";
+import { createServerClient } from "@/lib/supabase";
+
+export const instant = false;
+import { STAGES } from "@/lib/types";
+import type { Client, Project, Task } from "@/lib/types";
+import { Users, Briefcase, CheckSquare, CurrencyDollar, ArrowRight, Warning } from "@phosphor-icons/react/dist/ssr";
+
+function fmt(n: number) {
+  return n.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+}
+
+function daysUntil(date: string) {
+  return Math.ceil((new Date(date + "T12:00:00").getTime() - Date.now()) / 86400000);
+}
+
+export default async function DashboardPage() {
+  const db = await createServerClient();
+
+  const [
+    { data: clients },
+    { data: projects },
+    { data: tasks },
+  ] = await Promise.all([
+    db.from("clients").select("id"),
+    db.from("projects").select("*, clients(name, company)").order("created_at", { ascending: false }),
+    db.from("tasks").select("*, projects(id, name)").neq("status", "listo").order("created_at", { ascending: false }),
+  ]);
+
+  const allProjects = (projects ?? []) as (Project & { clients: Client | null })[];
+  const allTasks = (tasks ?? []) as Task[];
+
+  const activeProjects = allProjects.filter(
+    (p) => !["cotizacion", "entrega", "cobranza", "mantenimiento"].includes(p.stage)
+  );
+
+  const urgentTasks = allTasks.filter((t) => t.priority === "alta");
+
+  const pendingRevenue = allProjects.reduce((sum, p) => {
+    const owed = (p.quoted_price ?? 0) - (p.paid_amount ?? 0);
+    return sum + (owed > 0 ? owed : 0);
+  }, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const in14 = new Date(today.getTime() + 14 * 86400000);
+  const upcomingDeadlines = allProjects
+    .filter((p) => {
+      if (!p.deadline) return false;
+      const d = new Date(p.deadline + "T12:00:00");
+      return d >= today && d <= in14 && p.stage !== "entrega";
+    })
+    .sort((a, b) => a.deadline!.localeCompare(b.deadline!));
+
+  const stageCounts = STAGES.map((s) => ({
+    ...s,
+    count: allProjects.filter((p) => p.stage === s.id).length,
+  })).filter((s) => s.count > 0);
+
+  const blockingTasks = allTasks.filter((t) => t.depends_on === "client" && t.status !== "listo");
+
+  return (
+    <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em" }}>
+          Dashboard
+        </h1>
+        <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 3 }}>
+          {new Date().toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 32 }}>
+        {[
+          { label: "Clientes", value: clients?.length ?? 0, icon: Users, href: "/admin/clientes", color: "oklch(0.65 0.15 200)" },
+          { label: "Proyectos activos", value: activeProjects.length, icon: Briefcase, href: "/admin/proyectos", color: "var(--violet-light)" },
+          { label: "Pendientes urgentes", value: urgentTasks.length, icon: CheckSquare, href: "/admin/pendientes", color: "oklch(0.65 0.18 25)" },
+          { label: "Cobro pendiente", value: fmt(pendingRevenue), icon: CurrencyDollar, href: "/admin/proyectos", color: "oklch(0.70 0.18 160)" },
+        ].map(({ label, value, icon: Icon, href, color }) => (
+          <Link
+            key={label}
+            href={href}
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              padding: "16px 18px",
+              textDecoration: "none",
+              display: "block",
+              transition: "border-color 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-subtle)"; (e.currentTarget.style as CSSStyleDeclaration & { borderColor: string }).borderColor = "oklch(0.38 0.03 280)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <Icon size={16} weight="fill" style={{ color }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em" }}>{value}</div>
+          </Link>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
+        {/* Upcoming deadlines */}
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>Entregas próximas (14 días)</span>
+            <span style={{ fontSize: 11, color: "var(--muted)" }}>{upcomingDeadlines.length}</span>
+          </div>
+          <div style={{ padding: "8px 0" }}>
+            {upcomingDeadlines.length === 0 ? (
+              <p style={{ padding: "12px 18px", fontSize: 13, color: "var(--muted)" }}>Sin entregas próximas.</p>
+            ) : (
+              upcomingDeadlines.map((p) => {
+                const days = daysUntil(p.deadline!);
+                const urgent = days <= 3;
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/admin/proyectos/${p.id}`}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", textDecoration: "none", transition: "background 0.1s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 500 }}>{p.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1 }}>
+                        {(p.clients as Client | null)?.name ?? "Sin cliente"}
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: urgent ? "oklch(0.70 0.18 25)" : "var(--muted)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}>
+                      {urgent && <Warning size={12} weight="fill" />}
+                      {days === 0 ? "Hoy" : days === 1 ? "Mañana" : `${days} días`}
+                    </span>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Urgent tasks */}
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>Pendientes — Alta prioridad</span>
+            <Link href="/admin/pendientes" style={{ fontSize: 11, color: "var(--violet-light)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+              Ver todos <ArrowRight size={11} />
+            </Link>
+          </div>
+          <div style={{ padding: "8px 0" }}>
+            {urgentTasks.length === 0 ? (
+              <p style={{ padding: "12px 18px", fontSize: 13, color: "var(--muted)" }}>Sin pendientes urgentes.</p>
+            ) : (
+              urgentTasks.slice(0, 6).map((t) => (
+                <div
+                  key={t.id}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", borderBottom: "1px solid var(--border-subtle)" }}
+                >
+                  <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: t.depends_on === "client" ? "oklch(0.65 0.15 60)" : "oklch(0.65 0.18 25)",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {t.title}
+                    </div>
+                    {t.projects && (
+                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1 }}>
+                        {(t.projects as { name: string }).name}
+                      </div>
+                    )}
+                  </div>
+                  {t.depends_on === "client" && (
+                    <span style={{ fontSize: 10, color: "oklch(0.65 0.15 60)", background: "oklch(0.65 0.15 60 / 0.12)", padding: "2px 7px", borderRadius: 100, flexShrink: 0 }}>
+                      Cliente
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Stage distribution */}
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "16px 20px" }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 14 }}>Proyectos por etapa</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {stageCounts.map((s) => (
+            <div
+              key={s.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                borderRadius: 100,
+                padding: "5px 12px",
+              }}
+            >
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: s.color, display: "inline-block" }} />
+              <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{s.label}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>{s.count}</span>
+            </div>
+          ))}
+          {stageCounts.length === 0 && (
+            <p style={{ fontSize: 13, color: "var(--muted)" }}>Sin proyectos aún.</p>
+          )}
+        </div>
+      </div>
+
+      {blockingTasks.length > 0 && (
+        <div
+          style={{
+            marginTop: 20,
+            background: "oklch(0.65 0.15 60 / 0.08)",
+            border: "1px solid oklch(0.65 0.15 60 / 0.3)",
+            borderRadius: 10,
+            padding: "14px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <Warning size={16} weight="fill" style={{ color: "oklch(0.70 0.18 60)", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "oklch(0.80 0.08 60)" }}>
+            <strong>{blockingTasks.length}</strong> pendiente{blockingTasks.length > 1 ? "s están bloqueados" : " está bloqueado"} esperando respuesta del cliente.
+          </span>
+          <Link href="/admin/pendientes" style={{ marginLeft: "auto", fontSize: 12, color: "oklch(0.70 0.18 60)", textDecoration: "none", fontWeight: 600, flexShrink: 0 }}>
+            Ver →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}

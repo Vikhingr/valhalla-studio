@@ -1,8 +1,6 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function esc(str: string) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -132,6 +130,7 @@ function buildEmail(name: string, email: string, project: string, message: strin
 
 export async function POST(req: NextRequest) {
   const { name, email, project, message } = await req.json();
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
     await resend.emails.send({
