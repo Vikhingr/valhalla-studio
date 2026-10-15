@@ -146,8 +146,8 @@ export default function CotizadorPage() {
   const subtotal = selectedFeatures.reduce((s, f) => s + f.price, 0);
   const iva      = withIVA ? Math.round(subtotal * 0.16) : 0;
   const total    = subtotal + iva;
-  const anticipo = Math.round(total * 0.5 / 500) * 500;
-  const mitad    = Math.round(total * 0.25 / 500) * 500;
+  const anticipo = Math.round(total * 0.5);
+  const mitad    = Math.round(total * 0.25);
   const resto    = total - anticipo - mitad;
 
   function buildProposal() {
