@@ -35,6 +35,10 @@ export async function POST(req: NextRequest) {
       phone: body.phone || null,
       notes: body.notes || null,
       protonpass_ref: body.protonpass_ref || null,
+      rfc: body.rfc?.toUpperCase() || null,
+      nombre_fiscal: body.nombre_fiscal || null,
+      regimen_fiscal: body.regimen_fiscal || null,
+      codigo_postal: body.codigo_postal || null,
     })
     .select()
     .single();

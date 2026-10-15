@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Project, ProjectStage, Cotizacion } from "@/lib/types";
 
@@ -36,7 +36,7 @@ const inputStyle: React.CSSProperties = { width: "100%", background: "var(--bg)"
 
 type ProjectWithClient = Project & { clients: ClientSummary | null };
 
-export default function ProyectosClient({ initial, clients, cotizaciones }: { initial: ProjectWithClient[]; clients: ClientSummary[]; cotizaciones: Cotizacion[] }) {
+export default function ProyectosClient({ initial, clients, cotizaciones, defaultCotizacionId }: { initial: ProjectWithClient[]; clients: ClientSummary[]; cotizaciones: Cotizacion[]; defaultCotizacionId?: string }) {
   const [projects, setProjects] = useState<ProjectWithClient[]>(initial);
   const [filter, setFilter] = useState<string>("all");
   const [modal, setModal] = useState<"create" | "edit" | null>(null);
@@ -48,6 +48,18 @@ export default function ProyectosClient({ initial, clients, cotizaciones }: { in
   const router = useRouter();
 
   const filtered = filter === "all" ? projects : projects.filter((p) => p.stage === filter);
+
+  // Auto-open modal pre-filled when coming from cotizaciones page
+  useEffect(() => {
+    if (!defaultCotizacionId) return;
+    const cot = cotizaciones.find((c) => c.id === defaultCotizacionId);
+    if (!cot) return;
+    setForm({ ...EMPTY_FORM, quoted_price: cot.total.toString(), paid_amount: cot.anticipo_pagado ? cot.anticipo.toString() : "" });
+    setAnticipoCobrado(cot.anticipo_pagado);
+    setEditing(null);
+    setSaveError(null);
+    setModal("create");
+  }, [defaultCotizacionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function openCreate() { setForm(EMPTY_FORM); setEditing(null); setSaveError(null); setAnticipoCobrado(false); setModal("create"); }
   function openEdit(p: Project) {

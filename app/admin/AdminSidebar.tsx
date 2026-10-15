@@ -7,15 +7,21 @@ import {
   Briefcase,
   CheckSquare,
   Calculator,
+  Receipt,
+  FilePdf,
+  Gear,
   SignOut,
 } from "@phosphor-icons/react";
 
 const NAV = [
-  { href: "/admin/dashboard", label: "Dashboard",   icon: SquaresFour },
-  { href: "/admin/clientes",  label: "Clientes",     icon: Users },
-  { href: "/admin/proyectos", label: "Proyectos",    icon: Briefcase },
-  { href: "/admin/pendientes",label: "Pendientes",   icon: CheckSquare },
-  { href: "/admin/cotizador", label: "Cotizador",    icon: Calculator },
+  { href: "/admin/dashboard",     label: "Dashboard",     icon: SquaresFour },
+  { href: "/admin/clientes",      label: "Clientes",      icon: Users },
+  { href: "/admin/proyectos",     label: "Proyectos",     icon: Briefcase },
+  { href: "/admin/pendientes",    label: "Pendientes",    icon: CheckSquare },
+  { href: "/admin/cotizaciones",  label: "Cotizaciones",  icon: Receipt },
+  { href: "/admin/cotizador",     label: "Cotizador",     icon: Calculator },
+  { href: "/admin/facturas",      label: "Facturas",      icon: FilePdf },
+  { href: "/admin/configuracion", label: "Configuración", icon: Gear },
 ];
 
 export default function AdminSidebar() {

@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Client } from "@/lib/types";
-import { Plus, PencilSimple, Trash, X, Key } from "@phosphor-icons/react";
+import { Plus, PencilSimple, Trash, X, Key, IdentificationCard } from "@phosphor-icons/react";
+import { REGIMENES_FISCALES } from "@/lib/types";
 
-const EMPTY = { name: "", company: "", email: "", phone: "", notes: "", protonpass_ref: "" };
+const EMPTY = { name: "", company: "", email: "", phone: "", notes: "", protonpass_ref: "", rfc: "", nombre_fiscal: "", regimen_fiscal: "", codigo_postal: "" };
 
 function Modal({
   title,
@@ -102,6 +103,10 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
       phone: c.phone ?? "",
       notes: c.notes ?? "",
       protonpass_ref: c.protonpass_ref ?? "",
+      rfc: c.rfc ?? "",
+      nombre_fiscal: c.nombre_fiscal ?? "",
+      regimen_fiscal: c.regimen_fiscal ?? "",
+      codigo_postal: c.codigo_postal ?? "",
     });
     setEditing(c);
     setSaveError(null);
@@ -184,6 +189,56 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
           placeholder="Notas internas sobre el cliente..."
         />
       </Field>
+
+      {/* Datos fiscales */}
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+          <IdentificationCard size={14} style={{ color: "var(--muted)" }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Datos fiscales (para CFDI)</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <Field label="RFC">
+              <input
+                style={{ ...inputStyle, textTransform: "uppercase" }}
+                value={form.rfc}
+                onChange={(e) => setForm({ ...form, rfc: e.target.value.toUpperCase() })}
+                placeholder="RFC a 13 caracteres"
+                maxLength={13}
+              />
+            </Field>
+            <Field label="Código postal fiscal">
+              <input
+                style={inputStyle}
+                value={form.codigo_postal}
+                onChange={(e) => setForm({ ...form, codigo_postal: e.target.value })}
+                placeholder="06600"
+                maxLength={5}
+              />
+            </Field>
+          </div>
+          <Field label="Nombre o razón social (fiscal)">
+            <input
+              style={inputStyle}
+              value={form.nombre_fiscal}
+              onChange={(e) => setForm({ ...form, nombre_fiscal: e.target.value })}
+              placeholder="NOMBRE COMPLETO EN MAYÚSCULAS"
+            />
+          </Field>
+          <Field label="Régimen fiscal">
+            <select
+              style={{ ...inputStyle, cursor: "pointer" }}
+              value={form.regimen_fiscal}
+              onChange={(e) => setForm({ ...form, regimen_fiscal: e.target.value })}
+            >
+              <option value="">— Sin especificar —</option>
+              {REGIMENES_FISCALES.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      </div>
       {saveError && (
         <div style={{ background: "oklch(0.30 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.80 0.12 25)" }}>
           {saveError}
