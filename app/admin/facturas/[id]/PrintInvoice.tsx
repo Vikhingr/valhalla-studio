@@ -397,21 +397,35 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
 
       <style>{`
         @media print {
-          body * { visibility: hidden; }
-          #factura-print, #factura-print * { visibility: visible; }
+          /* Eliminar sidebar del layout */
+          aside { display: none !important; }
+          .no-print { display: none !important; }
+
+          /* Resetear layout flex del admin */
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+          }
+          body > div {
+            display: block !important;
+            min-height: auto !important;
+          }
+          main {
+            width: 100% !important;
+            overflow: visible !important;
+          }
+
+          /* Estilos de la hoja */
           #factura-print {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
             border: none !important;
             box-shadow: none !important;
-            margin: 0 !important;
             border-radius: 0 !important;
-            max-width: 100% !important;
+            margin: 0 auto !important;
+            max-width: 760px !important;
             padding: 24px 32px !important;
+            opacity: 1 !important;
           }
-          body { background: white !important; margin: 0 !important; }
         }
       `}</style>
     </>
