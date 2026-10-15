@@ -3,69 +3,75 @@ import { useState } from "react";
 import { Copy, Check } from "@phosphor-icons/react";
 
 type ProjectType = "web" | "app" | "automatizacion";
-type Complexity = "basico" | "estandar" | "avanzado";
+type Complexity = "basico" | "estandar" | "avanzado" | "premium";
 
 const TYPES: { id: ProjectType; label: string; icon: string }[] = [
-  { id: "web",           label: "Sitio web",       icon: "🌐" },
-  { id: "app",           label: "Aplicación web",   icon: "💻" },
-  { id: "automatizacion",label: "Automatización",   icon: "⚡" },
+  { id: "web",            label: "Sitio web",      icon: "🌐" },
+  { id: "app",            label: "App / Sistema",   icon: "💻" },
+  { id: "automatizacion", label: "Automatización",  icon: "⚡" },
 ];
 
-const TIERS: Record<ProjectType, { id: Complexity; label: string; desc: string; min: number; max: number }[]> = {
+const TIERS: Record<ProjectType, { id: Complexity; label: string; desc: string; price: number }[]> = {
   web: [
-    { id: "basico",    label: "Landing",   desc: "1 página, sin backend, formulario de contacto", min: 4000,  max: 8000 },
-    { id: "estandar",  label: "Sitio web", desc: "4–6 páginas, blog básico, formulario + email",  min: 8000,  max: 15000 },
-    { id: "avanzado",  label: "Con sistema",desc: "Reservas, auth, panel de admin o catálogo",    min: 15000, max: 35000 },
+    { id: "basico",   label: "Landing page",    desc: "1 página, diseño a medida, formulario de contacto, sin backend",           price: 9500   },
+    { id: "estandar", label: "Sitio informativo",desc: "4–8 páginas, blog o CMS, formulario + email automático",                  price: 18000  },
+    { id: "avanzado", label: "Sitio con sistema",desc: "Reservas, auth, catálogo, carrito o panel de administración",             price: 38000  },
+    { id: "premium",  label: "E-commerce",       desc: "Tienda completa, pasarela de pagos, inventario, panel admin",             price: 60000  },
   ],
   app: [
-    { id: "basico",    label: "App básica",  desc: "Auth + roles, dashboard sencillo, CRUD",      min: 25000, max: 45000 },
-    { id: "estandar",  label: "App completa",desc: "Múltiples módulos, reportes, integraciones",  min: 40000, max: 70000 },
-    { id: "avanzado",  label: "SaaS",        desc: "Multi-tenant, suscripciones, API propia",     min: 60000, max: 120000 },
+    { id: "basico",   label: "App básica",       desc: "Auth + roles, dashboard, CRUD de 2–3 módulos, sin integraciones",        price: 48000  },
+    { id: "estandar", label: "App completa",      desc: "Múltiples módulos, reportes, exportación, 1–2 integraciones externas",  price: 85000  },
+    { id: "avanzado", label: "SaaS / plataforma", desc: "Multi-tenant, suscripciones, API propia, panel de configuración",       price: 130000 },
+    { id: "premium",  label: "Sistema empresarial",desc: "ERP / CRM a medida, flujos complejos, integraciones múltiples",        price: 200000 },
   ],
   automatizacion: [
-    { id: "basico",    label: "Simple",    desc: "Sheets + notificaciones + Zapier/Make",         min: 3000,  max: 6000 },
-    { id: "estandar",  label: "Con API",   desc: "Integración con API externa, lógica custom",   min: 8000,  max: 18000 },
-    { id: "avanzado",  label: "Multi-sistema",desc: "Flujo completo entre múltiples plataformas", min: 15000, max: 30000 },
+    { id: "basico",   label: "Flujo simple",     desc: "Google Sheets + notificaciones, Make/n8n, 1–2 pasos",                    price: 8500   },
+    { id: "estandar", label: "Con integración",  desc: "API externa, lógica condicional, formularios o CRM conectado",           price: 22000  },
+    { id: "avanzado", label: "Multi-sistema",    desc: "3+ plataformas, flujos paralelos, manejo de errores y reintentos",       price: 45000  },
+    { id: "premium",  label: "Con IA",           desc: "Agentes IA, procesamiento de documentos, decisiones automáticas",       price: 85000  },
   ],
 };
 
-const EXTRAS: Record<ProjectType, { id: string; label: string; add: number }[]> = {
+const EXTRAS: Record<ProjectType, { id: string; label: string; price: number }[]> = {
   web: [
-    { id: "seo",      label: "SEO básico",              add: 2000 },
-    { id: "blog",     label: "Blog / CMS",               add: 3000 },
-    { id: "multi",    label: "Multiidioma",              add: 2500 },
-    { id: "analytics",label: "Google Analytics + Meta Pixel", add: 1500 },
-    { id: "whatsapp", label: "Chat WhatsApp flotante",   add: 800 },
+    { id: "seo",       label: "SEO técnico + contenido inicial",   price: 2800 },
+    { id: "blog",      label: "Blog / CMS editable",               price: 4200 },
+    { id: "multi",     label: "Multiidioma (ES + EN)",             price: 3800 },
+    { id: "analytics", label: "GA4 + Meta Pixel + reportes",       price: 1800 },
+    { id: "whatsapp",  label: "Chat WhatsApp flotante",            price: 1200 },
+    { id: "speed",     label: "Optimización de velocidad (Core Web Vitals)", price: 2200 },
   ],
   app: [
-    { id: "notif",    label: "Notificaciones email/push", add: 3000 },
-    { id: "export",   label: "Exportar a Excel/PDF",      add: 2500 },
-    { id: "roles",    label: "Roles avanzados",           add: 4000 },
-    { id: "stripe",   label: "Pagos con Stripe/Conekta",  add: 5000 },
-    { id: "api",      label: "API REST para externos",    add: 6000 },
+    { id: "notif",     label: "Notificaciones email / push",       price: 3800 },
+    { id: "export",    label: "Exportar a Excel / PDF",            price: 3200 },
+    { id: "roles",     label: "Roles y permisos avanzados",        price: 5000 },
+    { id: "pagos",     label: "Pagos con Stripe / Conekta / OXXO", price: 7000 },
+    { id: "api",       label: "API REST documentada (Swagger)",    price: 9000 },
+    { id: "movil",     label: "App móvil (React Native básico)",   price: 35000 },
   ],
   automatizacion: [
-    { id: "report",   label: "Reporte automático",        add: 2000 },
-    { id: "notif",    label: "Alertas por WhatsApp/email", add: 1500 },
-    { id: "dashboard",label: "Dashboard visual",          add: 4000 },
-    { id: "cron",     label: "Ejecución programada",      add: 1000 },
+    { id: "report",    label: "Reporte automático (PDF / Sheets)", price: 2800 },
+    { id: "notif",     label: "Alertas por WhatsApp y email",      price: 2200 },
+    { id: "dashboard", label: "Dashboard visual en tiempo real",   price: 6000 },
+    { id: "cron",      label: "Ejecución programada (cron)",       price: 1800 },
+    { id: "ia",        label: "Clasificación con IA (GPT/Gemini)", price: 8000 },
   ],
 };
 
-const MAINT: Record<ProjectType, { label: string; price: string }[]> = {
+const MAINT: Record<ProjectType, { label: string; price: number; desc: string }[]> = {
   web: [
-    { label: "Básico",    price: "$500–1,000/mes (actualizaciones, hosting supervisado)" },
-    { label: "Estándar",  price: "$1,000–2,500/mes (+ soporte, cambios menores)" },
-    { label: "Premium",   price: "$2,500–5,000/mes (+ nuevas funciones pequeñas)" },
+    { label: "Básico",    price: 900,  desc: "Actualizaciones, hosting supervisado, correcciones menores" },
+    { label: "Estándar",  price: 2000, desc: "Todo lo anterior + cambios de contenido y soporte" },
+    { label: "Premium",   price: 4000, desc: "Todo lo anterior + funciones pequeñas nuevas al mes" },
   ],
   app: [
-    { label: "Básico",    price: "$1,500–3,000/mes (hosting + correcciones de bugs)" },
-    { label: "Estándar",  price: "$3,000–6,000/mes (+ mejoras continuas)" },
-    { label: "Premium",   price: "$6,000+/mes (soporte prioritario + features)" },
+    { label: "Básico",    price: 2500, desc: "Hosting + corrección de bugs + respaldo" },
+    { label: "Estándar",  price: 5000, desc: "Todo lo anterior + mejoras continuas" },
+    { label: "Premium",   price: 8000, desc: "Soporte prioritario + features mensuales" },
   ],
   automatizacion: [
-    { label: "Monitoreo", price: "$500–1,000/mes (verificación y ajustes)" },
-    { label: "Activo",    price: "$1,000–3,000/mes (modificaciones frecuentes)" },
+    { label: "Monitoreo", price: 900,  desc: "Verificación, ajustes y alertas de fallo" },
+    { label: "Activo",    price: 2200, desc: "Modificaciones frecuentes y nuevas reglas" },
   ],
 };
 
@@ -74,18 +80,17 @@ function fmt(n: number) {
 }
 
 export default function CotizadorPage() {
-  const [type, setType] = useState<ProjectType>("web");
+  const [type, setType]           = useState<ProjectType>("web");
   const [complexity, setComplexity] = useState<Complexity>("basico");
-  const [extras, setExtras] = useState<string[]>([]);
-  const [copied, setCopied] = useState(false);
+  const [extras, setExtras]       = useState<string[]>([]);
+  const [copied, setCopied]       = useState(false);
 
-  const tier = TIERS[type].find((t) => t.id === complexity)!;
-  const extraList = EXTRAS[type].filter((e) => extras.includes(e.id));
-  const extraTotal = extraList.reduce((s, e) => s + e.add, 0);
-  const finalMin = tier.min + extraTotal;
-  const finalMax = tier.max + extraTotal;
-  const deposit = Math.round(finalMin * 0.5 / 1000) * 1000;
-  const mid = Math.round(finalMin * 0.25 / 1000) * 1000;
+  const tier       = TIERS[type].find((t) => t.id === complexity)!;
+  const extraList  = EXTRAS[type].filter((e) => extras.includes(e.id));
+  const extraTotal = extraList.reduce((s, e) => s + e.price, 0);
+  const total      = tier.price + extraTotal;
+  const anticipo   = Math.round(total * 0.5 / 500) * 500;
+  const mitad      = Math.round(total * 0.25 / 500) * 500;
 
   function toggleExtra(id: string) {
     setExtras((prev) => prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]);
@@ -94,68 +99,71 @@ export default function CotizadorPage() {
   function buildProposal() {
     const typeLabel = TYPES.find((t) => t.id === type)!.label;
     const lines = [
-      `Propuesta — ${typeLabel} (${tier.label})`,
+      `Propuesta — ${typeLabel}: ${tier.label}`,
       "",
       `Alcance: ${tier.desc}`,
-      extraList.length > 0 ? `Extras incluidos: ${extraList.map((e) => e.label).join(", ")}` : "",
+      extraList.length > 0 ? `Incluye: ${extraList.map((e) => e.label).join(", ")}` : "",
       "",
-      `Inversión estimada: ${fmt(finalMin)} – ${fmt(finalMax)} MXN`,
+      `Inversión total: ${fmt(total)} MXN`,
       "",
       "Estructura de pago:",
-      `  • 50% anticipo para iniciar: ${fmt(deposit)} MXN`,
-      `  • 25% al aprobar el diseño: ${fmt(mid)} MXN`,
-      `  • 25% restante al entregar: ${fmt(mid)} MXN`,
+      `  • 50% anticipo para iniciar — ${fmt(anticipo)} MXN`,
+      `  • 25% al aprobar el diseño  — ${fmt(mitad)} MXN`,
+      `  • 25% al entregar           — ${fmt(mitad)} MXN`,
       "",
-      "Mantenimiento opcional:",
-      ...MAINT[type].map((m) => `  • ${m.label}: ${m.price}`),
+      "Mantenimiento mensual opcional:",
+      ...MAINT[type].map((m) => `  • ${m.label} (${fmt(m.price)}/mes): ${m.desc}`),
+      "",
+      "Tiempo estimado de entrega: te lo confirmo después de revisar el alcance completo.",
       "",
       "¿Tienes preguntas? Respondo en menos de 24 horas.",
       "— Gabriel Castañeda · Valhalla Studio",
-    ].filter((l) => l !== undefined);
+    ].filter(Boolean);
     return lines.join("\n");
   }
 
   async function handleCopy() {
     await navigator.clipboard.writeText(buildProposal());
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   }
 
-  const selectedType = type;
-
   return (
-    <div style={{ padding: "28px 32px", maxWidth: 900 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", marginBottom: 6 }}>Cotizador</h1>
-      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 28 }}>Genera un rango de precio y propuesta para copiar.</p>
+    <div style={{ padding: "28px 32px", maxWidth: 960 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", marginBottom: 4 }}>Cotizador</h1>
+      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 28 }}>
+        Precios exactos basados en el mercado freelance CDMX 2025–2026. Genera propuesta lista para copiar.
+      </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "start" }}>
-        {/* Left: controls */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
-          {/* Type */}
+        {/* ── Controles ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Tipo */}
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "18px 20px" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Tipo de proyecto</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Tipo de proyecto</div>
             <div style={{ display: "flex", gap: 10 }}>
               {TYPES.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => { setType(t.id); setComplexity("basico"); setExtras([]); }}
                   style={{
-                    flex: 1, padding: "12px 8px", borderRadius: 8, border: `1px solid ${selectedType === t.id ? "var(--violet)" : "var(--border)"}`,
-                    background: selectedType === t.id ? "oklch(0.58 0.22 293 / 0.12)" : "transparent",
-                    cursor: "pointer", textAlign: "center",
+                    flex: 1, padding: "12px 8px", borderRadius: 8, cursor: "pointer", textAlign: "center",
+                    border: `1px solid ${type === t.id ? "var(--violet)" : "var(--border)"}`,
+                    background: type === t.id ? "oklch(0.58 0.22 293 / 0.12)" : "transparent",
                   }}
                 >
-                  <div style={{ fontSize: 18, marginBottom: 4 }}>{t.icon}</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: selectedType === t.id ? "var(--violet-light)" : "var(--ink-2)" }}>{t.label}</div>
+                  <div style={{ fontSize: 20, marginBottom: 5 }}>{t.icon}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: type === t.id ? "var(--violet-light)" : "var(--ink-2)" }}>{t.label}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Complexity */}
+          {/* Complejidad */}
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "18px 20px" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Complejidad</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Alcance del proyecto</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {TIERS[type].map((t) => (
                 <button
@@ -163,18 +171,17 @@ export default function CotizadorPage() {
                   onClick={() => setComplexity(t.id)}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "12px 14px", borderRadius: 8,
+                    padding: "12px 14px", borderRadius: 8, cursor: "pointer", textAlign: "left",
                     border: `1px solid ${complexity === t.id ? "var(--violet)" : "var(--border)"}`,
                     background: complexity === t.id ? "oklch(0.58 0.22 293 / 0.10)" : "transparent",
-                    cursor: "pointer", textAlign: "left",
                   }}
                 >
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: complexity === t.id ? "var(--violet-light)" : "var(--ink)", marginBottom: 2 }}>{t.label}</div>
-                    <div style={{ fontSize: 11, color: "var(--muted)" }}>{t.desc}</div>
+                    <div style={{ fontSize: 11, color: "var(--muted)", maxWidth: 280 }}>{t.desc}</div>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: complexity === t.id ? "var(--violet-light)" : "var(--ink-2)", flexShrink: 0, marginLeft: 16 }}>
-                    {fmt(t.min)}–{fmt(t.max)}
+                  <div style={{ fontSize: 14, fontWeight: 700, color: complexity === t.id ? "var(--violet-light)" : "var(--ink-2)", flexShrink: 0, marginLeft: 16 }}>
+                    {fmt(t.price)}
                   </div>
                 </button>
               ))}
@@ -183,8 +190,8 @@ export default function CotizadorPage() {
 
           {/* Extras */}
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "18px 20px" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Extras</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Extras opcionales</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               {EXTRAS[type].map((e) => {
                 const active = extras.includes(e.id);
                 return (
@@ -193,23 +200,25 @@ export default function CotizadorPage() {
                     onClick={() => toggleExtra(e.id)}
                     style={{
                       display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "10px 14px", borderRadius: 7,
+                      padding: "10px 14px", borderRadius: 7, cursor: "pointer", textAlign: "left",
                       border: `1px solid ${active ? "var(--violet)" : "var(--border)"}`,
                       background: active ? "oklch(0.58 0.22 293 / 0.08)" : "transparent",
-                      cursor: "pointer", textAlign: "left",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                       <div style={{
-                        width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${active ? "var(--violet)" : "var(--border)"}`,
+                        width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                        border: `1.5px solid ${active ? "var(--violet)" : "var(--border)"}`,
                         background: active ? "var(--violet)" : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        display: "flex", alignItems: "center", justifyContent: "center",
                       }}>
                         {active && <Check size={10} weight="bold" style={{ color: "#fff" }} />}
                       </div>
-                      <span style={{ fontSize: 13, color: "var(--ink-2)" }}>{e.label}</span>
+                      <span style={{ fontSize: 13, color: active ? "var(--ink)" : "var(--ink-2)" }}>{e.label}</span>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--muted)" }}>+{fmt(e.add)}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: active ? "var(--violet-light)" : "var(--muted)", flexShrink: 0, marginLeft: 12 }}>
+                      +{fmt(e.price)}
+                    </span>
                   </button>
                 );
               })}
@@ -217,108 +226,136 @@ export default function CotizadorPage() {
           </div>
         </div>
 
-        {/* Right: result card */}
+        {/* ── Resultado ── */}
         <div style={{ position: "sticky", top: 28 }}>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
-            <div style={{ padding: "18px 20px", borderBottom: "1px solid var(--border)", background: "oklch(0.58 0.22 293 / 0.06)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Estimado</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.03em" }}>
-                {fmt(finalMin)}
+
+            {/* Precio total */}
+            <div style={{ padding: "20px 22px", borderBottom: "1px solid var(--border)", background: "oklch(0.58 0.22 293 / 0.07)" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+                Precio del proyecto
               </div>
-              <div style={{ fontSize: 14, color: "var(--muted)", marginTop: 2 }}>– {fmt(finalMax)} MXN</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                {fmt(total)}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>MXN · IVA no incluido</div>
             </div>
 
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Pagos sugeridos</div>
+            {/* Desglose */}
+            <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Desglose</div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{tier.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)" }}>{fmt(tier.price)}</span>
+              </div>
+              {extraList.map((e) => (
+                <div key={e.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{e.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--violet-light)" }}>+{fmt(e.price)}</span>
+                </div>
+              ))}
+              {extraList.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>Total</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>{fmt(total)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Pagos */}
+            <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Esquema de pagos</div>
               {[
-                { label: "50% anticipo",       amount: deposit },
-                { label: "25% al aprobar diseño", amount: mid },
-                { label: "25% al entregar",    amount: mid },
+                { label: "50% anticipo para iniciar", amount: anticipo },
+                { label: "25% al aprobar diseño",      amount: mitad },
+                { label: "25% al entregar",            amount: mitad },
               ].map(({ label, amount }) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
                   <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{label}</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)" }}>{fmt(amount)}</span>
                 </div>
               ))}
             </div>
 
-            {extraList.length > 0 && (
-              <div style={{ padding: "12px 20px", borderBottom: "1px solid var(--border)" }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Extras incluidos</div>
-                {extraList.map((e) => (
-                  <div key={e.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{e.label}</span>
-                    <span style={{ fontSize: 12, color: "var(--violet-light)" }}>+{fmt(e.add)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Mantenimiento mensual</div>
+            {/* Mantenimiento */}
+            <div style={{ padding: "14px 22px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Mantenimiento mensual</div>
               {MAINT[type].map((m) => (
-                <div key={m.label} style={{ marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-2)" }}>{m.label}: </span>
-                  <span style={{ fontSize: 11, color: "var(--muted)" }}>{m.price}</span>
+                <div key={m.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6, gap: 8 }}>
+                  <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{m.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", flexShrink: 0 }}>{fmt(m.price)}<span style={{ fontWeight: 400, color: "var(--muted)" }}>/mes</span></span>
                 </div>
               ))}
             </div>
 
-            <div style={{ padding: "14px 20px" }}>
+            {/* Botón */}
+            <div style={{ padding: "16px 22px" }}>
               <button
                 onClick={handleCopy}
-                className="btn-primary"
-                style={{ width: "100%", justifyContent: "center", gap: 8 }}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  padding: "11px 16px", borderRadius: 8, border: "none", cursor: "pointer",
+                  background: copied ? "oklch(0.65 0.18 160)" : "var(--violet)",
+                  color: "#fff", fontSize: 13, fontWeight: 600, transition: "background 0.2s",
+                }}
               >
-                {copied ? <><Check size={15} weight="bold" /> Copiado</> : <><Copy size={15} /> Copiar propuesta</>}
+                {copied ? <><Check size={15} weight="bold" /> Propuesta copiada</> : <><Copy size={15} /> Copiar propuesta</>}
               </button>
               <p style={{ fontSize: 11, color: "var(--muted)", textAlign: "center", marginTop: 8 }}>
-                Texto listo para pegar en WhatsApp o email
+                Texto listo para WhatsApp o email
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* CDMX reference table */}
-      <div style={{ marginTop: 32, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "18px 20px" }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>Tarifas de referencia — CDMX 2025</div>
-        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 16 }}>Perfil: iniciando, con 4 proyectos reales no triviales. Estos rangos son para mercado freelance en Ciudad de México.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+      {/* ── Tabla de referencia CDMX ── */}
+      <div style={{ marginTop: 32, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "20px 24px" }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>Referencia de mercado — Freelancer CDMX 2025–2026</div>
+        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 20 }}>
+          Precios investigados en múltiples fuentes del mercado local. Perfil: freelancer con experiencia comprobable y proyectos reales. No son rangos orientativos — son los precios que cobra este perfil.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
           {[
             { category: "Sitios web", rows: [
-              ["Landing simple (1 pág.)",      "$4,000 – $8,000"],
-              ["Sitio (4–6 págs.)",             "$8,000 – $15,000"],
-              ["Con reservas / auth",           "$15,000 – $25,000"],
-              ["Con admin panel",               "$20,000 – $35,000"],
+              ["Landing page (1 pág.)",        "$9,500"],
+              ["Sitio informativo (4–8 págs.)", "$18,000"],
+              ["Con auth / reservas / admin",   "$38,000"],
+              ["E-commerce completo",           "$60,000"],
             ]},
-            { category: "Aplicaciones web", rows: [
-              ["Auth + roles básicos",          "$25,000 – $45,000"],
-              ["SaaS / dashboard complejo",     "$40,000 – $80,000"],
-              ["Simulador con API",             "$20,000 – $40,000"],
+            { category: "Apps y sistemas", rows: [
+              ["App básica (auth + CRUD)",      "$48,000"],
+              ["App completa (módulos + reportes)", "$85,000"],
+              ["SaaS / multi-tenant",           "$130,000"],
+              ["Sistema empresarial",           "$200,000"],
             ]},
             { category: "Automatizaciones", rows: [
-              ["Google Sheets + notif.",        "$3,000 – $6,000"],
-              ["Integración API externa",       "$8,000 – $18,000"],
-              ["Multi-sistema",                 "$15,000 – $30,000"],
+              ["Flujo simple (Make/n8n)",        "$8,500"],
+              ["Con integración API",            "$22,000"],
+              ["Multi-sistema",                  "$45,000"],
+              ["Con agente IA",                  "$85,000"],
             ]},
-            { category: "Mantenimiento mensual", rows: [
-              ["Básico",                        "$500 – $1,000"],
-              ["Estándar",                      "$1,000 – $2,500"],
-              ["Premium",                       "$2,500 – $5,000"],
+            { category: "Mantenimiento /mes", rows: [
+              ["Web básico",                    "$900"],
+              ["Web estándar",                  "$2,000"],
+              ["App básica",                    "$2,500"],
+              ["App estándar",                  "$5,000"],
             ]},
           ].map(({ category, rows }) => (
             <div key={category}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--violet-light)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>{category}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--violet-light)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>{category}</div>
               {rows.map(([label, price]) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px solid var(--border-subtle)" }}>
+                <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "6px 0", borderBottom: "1px solid var(--border-subtle)" }}>
                   <span style={{ fontSize: 12, color: "var(--ink-2)" }}>{label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", flexShrink: 0 }}>{price}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", flexShrink: 0 }}>{price}</span>
                 </div>
               ))}
             </div>
           ))}
         </div>
+        <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 16 }}>
+          Fuentes: Nebugrama, Cubosweb, Evarian Dev, IAmanos, Gabriel Neuman, Bridge Studio · Mercado freelance CDMX
+        </p>
       </div>
     </div>
   );
