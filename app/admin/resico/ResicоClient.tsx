@@ -239,7 +239,7 @@ export default function ResicоClient() {
           {/* Botón declarar */}
           <div style={{ marginBottom: 24 }}>
             <a
-              href="https://loginda.siat.sat.gob.mx/nidp/wsfed/ep?id=ciec&sid=2&option=credential&sid=2"
+              href="https://loginda.siat.sat.gob.mx/nidp/wsfed/ep?id=ciec&sid=0&option=credential&sid=0"
               target="_blank" rel="noopener noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 8, background: "var(--violet)", color: "white", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
               <ArrowSquareOut size={15} /> Declarar en SAT
