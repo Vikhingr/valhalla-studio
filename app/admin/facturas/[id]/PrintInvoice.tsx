@@ -241,10 +241,10 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
         </div>
 
         {/* ── Body ── */}
-        <div style={{ padding: "28px 40px" }}>
+        <div className="invoice-body" style={{ padding: "28px 40px" }}>
 
           {/* ── Emisor + Receptor en cajas ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+          <div className="invoice-emisor-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
             <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "14px 16px" }}>
               <div style={{ fontSize: 9, fontWeight: 700, color: "var(--violet)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Emisor</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{emisor.nombre_fiscal || emisor.nombre}</div>
@@ -276,7 +276,7 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
 
           {/* Metadata CFDI en línea (solo si está timbrado) */}
           {isCfdi && factura.cfdi_uuid && (
-            <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 20, padding: "9px 14px", background: "var(--surface-2)", borderRadius: 6, border: "1px solid var(--border)" }}>
+            <div className="invoice-meta" style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 20, padding: "9px 14px", background: "var(--surface-2)", borderRadius: 6, border: "1px solid var(--border)" }}>
               <MRow label="Tipo CFDI" value="I — Ingreso" />
               <MRow label="Versión" value="4.0" />
               <MRow label="Fecha de emisión" value={factura.fecha} />
@@ -287,7 +287,7 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
           )}
 
           {/* ── Concepto table ── */}
-          <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 24 }}>
+          <div className="invoice-items" style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 24 }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
@@ -333,7 +333,7 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
           </div>
 
           {/* ── Pago + Totales ── */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--border)" }}>
+          <div className="invoice-payment" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--border)" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <MRow label="Forma de pago" value={FORMAS_MAP[factura.forma_pago] ?? factura.forma_pago} />
               <MRow label="Método de pago" value="PUE — Pago en una sola exhibición" />
@@ -360,7 +360,7 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
 
           {/* ── Sellos digitales ── */}
           {isCfdi && (factura.cfdi_sello || factura.cfdi_sello_sat) && (
-            <div style={{ marginBottom: 16 }}>
+            <div className="invoice-sellos" style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
                 <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                   {satVerificationUrl && <QrCanvas url={satVerificationUrl} />}
@@ -410,6 +410,11 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
       </div>
 
       <style>{`
+        @page {
+          size: letter;
+          margin: 8mm 10mm;
+        }
+
         @media print {
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
@@ -448,7 +453,49 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
             overflow: visible !important;
           }
 
-          .invoice-header { border-radius: 0 !important; }
+          /* Header compacto */
+          .invoice-header {
+            border-radius: 0 !important;
+            padding: 12px 24px !important;
+          }
+
+          /* Body comprimido */
+          .invoice-body {
+            padding: 12px 24px !important;
+          }
+
+          /* Grid emisor/receptor */
+          .invoice-emisor-grid {
+            gap: 10px !important;
+            margin-bottom: 10px !important;
+          }
+          .invoice-emisor-grid > div { padding: 10px 12px !important; }
+
+          /* Metadatos CFDI */
+          .invoice-meta {
+            margin-bottom: 10px !important;
+            padding: 5px 10px !important;
+            gap: 12px !important;
+          }
+
+          /* Tabla de conceptos */
+          .invoice-items { margin-bottom: 12px !important; }
+          .invoice-items th { padding: 5px 6px !important; font-size: 8px !important; }
+          .invoice-items td { padding: 5px 6px !important; font-size: 10px !important; }
+
+          /* Pago + totales */
+          .invoice-payment {
+            margin-bottom: 12px !important;
+            padding-bottom: 10px !important;
+          }
+
+          /* Totales box */
+          .invoice-total-row { padding: 8px 12px !important; }
+
+          /* Sellos compactos */
+          .invoice-sellos { margin-bottom: 8px !important; }
+          .invoice-sellos canvas { width: 72px !important; height: 72px !important; }
+
           table { page-break-inside: avoid; }
         }
       `}</style>
