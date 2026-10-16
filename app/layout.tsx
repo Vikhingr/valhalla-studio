@@ -23,13 +23,19 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
-  themeColor: "#0d0c14",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0d0c14" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0c14" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <a href="#inicio" className="skip-link">Ir al contenido principal</a>
+        {children}
+      </body>
     </html>
   );
 }

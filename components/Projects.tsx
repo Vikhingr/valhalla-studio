@@ -14,7 +14,7 @@
  */
 "use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { ArrowUpRight, X, CaretLeft, CaretRight, MagnifyingGlassPlus } from "@phosphor-icons/react";
 
 type Project = {
@@ -128,7 +128,7 @@ function Lightbox({ src, alt, onClose, current, total }: { src: string; alt: str
         }}
         aria-label="Cerrar imagen"
       >
-        <X size={20} weight="bold" />
+        <X size={20} weight="bold" aria-hidden="true" />
       </button>
       {total > 1 && (
         <div style={{
@@ -176,6 +176,7 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
         backdropFilter: "blur(6px)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: 24,
+        animation: "modalBackdropIn 0.2s ease-out both",
       }}
     >
       <div
@@ -184,7 +185,11 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
           background: "var(--surface)", border: "1px solid var(--border)",
           borderRadius: 16, width: "100%", maxWidth: 900, maxHeight: "90vh",
           overflow: "hidden", display: "flex", flexDirection: "column",
+          animation: "modalPanelIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
         }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
       >
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 24px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
@@ -196,27 +201,27 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
                 </span>
               ))}
             </div>
-            <h3 style={{ fontWeight: 800, fontSize: "1.15rem", color: "var(--ink)", letterSpacing: "-0.02em" }}>{project.title}</h3>
+            <h3 id="modal-title" style={{ fontWeight: 800, fontSize: "1.15rem", color: "var(--ink)", letterSpacing: "-0.02em" }}>{project.title}</h3>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", padding: 6, display: "flex", borderRadius: 8 }} onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")} onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}>
-            <X size={20} weight="bold" />
+          <button onClick={onClose} aria-label="Cerrar" style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", padding: 6, display: "flex", borderRadius: 8 }} onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")} onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}>
+            <X size={20} weight="bold" aria-hidden="true" />
           </button>
         </div>
 
         {/* Image — scrollable, clicks to lightbox */}
-        <div style={{ height: "clamp(220px, 45vh, 420px)", flexShrink: 0, background: "var(--bg)", overflowY: "auto", overflowX: "hidden", position: "relative", cursor: "zoom-in" }} onClick={() => setLightboxOpen(true)}>
+        <div style={{ height: "clamp(220px, 45vh, 420px)", flexShrink: 0, background: "var(--bg)", overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain", position: "relative", cursor: "zoom-in" }} onClick={() => setLightboxOpen(true)}>
           <Image key={active} src={project.screenshots[active]} alt={`${project.title} — captura ${active + 1}`} width={900} height={600} style={{ width: "100%", height: "auto", display: "block" }} />
           <div style={{ position: "absolute", top: 10, right: 10, background: "oklch(0.10 0.010 280 / 0.82)", backdropFilter: "blur(4px)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--muted)", padding: "5px 9px", display: "flex", gap: 5, alignItems: "center", fontSize: 11, fontWeight: 500, pointerEvents: "none" }}>
-            <MagnifyingGlassPlus size={13} weight="bold" />
+            <MagnifyingGlassPlus size={13} weight="bold" aria-hidden="true" />
             Ver en grande
           </div>
           {total > 1 && (
             <>
-              <button onClick={(e) => { e.stopPropagation(); setActive((a) => (a - 1 + total) % total); }} style={{ position: "absolute", left: 12, top: 20, background: "oklch(0.10 0.010 280 / 0.78)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--ink)", cursor: "pointer", padding: "8px 10px", display: "flex" }}>
-                <CaretLeft size={18} weight="bold" />
+              <button onClick={(e) => { e.stopPropagation(); setActive((a) => (a - 1 + total) % total); }} aria-label="Captura anterior" style={{ position: "absolute", left: 12, top: 20, background: "oklch(0.10 0.010 280 / 0.78)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--ink)", cursor: "pointer", padding: "8px 10px", display: "flex" }}>
+                <CaretLeft size={18} weight="bold" aria-hidden="true" />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); setActive((a) => (a + 1) % total); }} style={{ position: "absolute", right: 12, top: 20, background: "oklch(0.10 0.010 280 / 0.78)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--ink)", cursor: "pointer", padding: "8px 10px", display: "flex" }}>
-                <CaretRight size={18} weight="bold" />
+              <button onClick={(e) => { e.stopPropagation(); setActive((a) => (a + 1) % total); }} aria-label="Captura siguiente" style={{ position: "absolute", right: 12, top: 20, background: "oklch(0.10 0.010 280 / 0.78)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--ink)", cursor: "pointer", padding: "8px 10px", display: "flex" }}>
+                <CaretRight size={18} weight="bold" aria-hidden="true" />
               </button>
             </>
           )}
@@ -227,7 +232,7 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
           {total > 1 && (
             <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
               {project.screenshots.map((src, i) => (
-                <button key={i} onClick={() => setActive(i)} style={{ width: 56, height: 40, borderRadius: 6, overflow: "hidden", position: "relative", border: "2px solid", cursor: "pointer", padding: 0, borderColor: i === active ? "var(--violet)" : "var(--border)", opacity: i === active ? 1 : 0.55, transition: "opacity 0.15s, border-color 0.15s" }}>
+                <button key={i} onClick={() => setActive(i)} aria-label={`Ver captura ${i + 1}`} aria-pressed={i === active} style={{ width: 56, height: 40, borderRadius: 6, overflow: "hidden", position: "relative", border: "2px solid", cursor: "pointer", padding: 0, borderColor: i === active ? "var(--violet)" : "var(--border)", opacity: i === active ? 1 : 0.55, transition: "opacity 0.15s, border-color 0.15s" }}>
                   <Image src={src} alt="" fill style={{ objectFit: "cover" }} />
                 </button>
               ))}
@@ -269,8 +274,8 @@ export default function Projects() {
         </h2>
 
         {/* Featured */}
-        <div onClick={() => setOpenProject(featured)} onMouseEnter={() => setHovered(featured.id)} onMouseLeave={() => setHovered(null)} style={{ cursor: "pointer", marginBottom: 20 }}>
-          <div style={{ borderRadius: 12, overflow: "hidden", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", background: "var(--surface)", border: "1px solid", transition: "border-color 0.2s", borderColor: hovered === featured.id ? "var(--violet)" : "var(--border)" }}>
+        <button onClick={() => startTransition(() => setOpenProject(featured))} onMouseEnter={() => setHovered(featured.id)} onMouseLeave={() => setHovered(null)} aria-label={`Ver proyecto: ${featured.title}`} style={{ cursor: "pointer", marginBottom: 20, background: "none", border: "none", padding: 0, width: "100%", textAlign: "left" }}>
+          <div style={{ borderRadius: 12, overflow: "hidden", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", background: "var(--surface)", border: "1px solid", transition: "border-color 0.2s", borderColor: hovered === featured.id ? "var(--violet)" : "var(--border)" }} role="presentation">
             <div style={{ position: "relative", minHeight: 300 }}>
               <Image src={featured.img} alt={featured.title} fill style={{ objectFit: "cover", transform: hovered === featured.id ? "scale(1.03)" : "scale(1)", transition: "transform 0.5s ease" }} />
             </div>
@@ -286,13 +291,13 @@ export default function Projects() {
               <span className="btn-primary" style={{ alignSelf: "flex-start" }}>Ver proyecto <ArrowUpRight size={16} weight="bold" /></span>
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
           {rest.map((p) => (
-            <div key={p.id} onClick={() => setOpenProject(p)} onMouseEnter={() => setHovered(p.id)} onMouseLeave={() => setHovered(null)} style={{ cursor: "pointer" }}>
-              <div style={{ borderRadius: 12, overflow: "hidden", background: "var(--surface)", border: "1px solid", transition: "border-color 0.2s", borderColor: hovered === p.id ? "var(--violet)" : "var(--border)", height: "100%" }}>
+            <button key={p.id} onClick={() => startTransition(() => setOpenProject(p))} onMouseEnter={() => setHovered(p.id)} onMouseLeave={() => setHovered(null)} aria-label={`Ver proyecto: ${p.title}`} style={{ cursor: "pointer", background: "none", border: "none", padding: 0, textAlign: "left", width: "100%" }}>
+              <div style={{ borderRadius: 12, overflow: "hidden", background: "var(--surface)", border: "1px solid", transition: "border-color 0.2s", borderColor: hovered === p.id ? "var(--violet)" : "var(--border)", height: "100%" }} role="presentation">
                 <div style={{ position: "relative", height: 200, overflow: "hidden" }}>
                   <Image src={p.img} alt={p.title} fill style={{ objectFit: "cover", transform: hovered === p.id ? "scale(1.04)" : "scale(1)", transition: "transform 0.4s ease" }} />
                   {p.screenshots.length > 1 && (
@@ -311,13 +316,13 @@ export default function Projects() {
                   <p style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.6 }}>{p.desc}</p>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
       {openProject && (
-        <Modal project={openProject} onClose={() => setOpenProject(null)} />
+        <Modal project={openProject} onClose={() => startTransition(() => setOpenProject(null))} />
       )}
     </section>
   );

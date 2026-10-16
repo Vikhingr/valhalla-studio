@@ -31,13 +31,22 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50"
       style={{
         background: scrolled ? "oklch(0.10 0.010 280 / 0.92)" : "transparent",
         backdropFilter: scrolled ? "blur(12px)" : "none",
         borderBottom: scrolled ? "1px solid var(--border-subtle)" : "none",
+        transition: "background 0.3s ease, backdrop-filter 0.3s ease, border-color 0.3s ease",
+        viewTransitionName: "site-header",
       }}
     >
       <nav
@@ -81,9 +90,7 @@ export default function Navbar() {
             <li key={l.href}>
               <a
                 href={l.href}
-                style={{ color: "var(--muted)", fontSize: 14, fontWeight: 500, textDecoration: "none", transition: "color 0.15s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+                className="nav-link"
               >
                 {l.label}
               </a>
@@ -102,6 +109,8 @@ export default function Navbar() {
           onClick={() => setOpen(!open)}
           style={{ background: "none", border: "none", color: "var(--ink-2)", cursor: "pointer", padding: 4, display: "flex" }}
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={open}
+          aria-controls="nav-mobile-menu"
         >
           {open ? <X size={22} weight="bold" /> : <List size={22} weight="bold" />}
         </button>
@@ -113,11 +122,28 @@ export default function Navbar() {
           .nav-cta { display: inline-flex !important; }
           .nav-burger { display: none !important; }
         }
+        .nav-link {
+          color: var(--muted);
+          font-size: 14px;
+          font-weight: 500;
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        .nav-mobile-link {
+          display: block;
+          padding: 12px 0;
+          font-size: 15px;
+          border-bottom: 1px solid var(--border-subtle);
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .nav-link:hover { color: var(--ink); }
+        }
       `}</style>
 
       {/* Mobile menu */}
       {open && (
         <div
+          id="nav-mobile-menu"
           style={{
             background: "var(--surface)",
             borderTop: "1px solid var(--border-subtle)",
@@ -129,18 +155,7 @@ export default function Navbar() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              style={{
-                display: "block",
-                color: "var(--muted)",
-                padding: "12px 0",
-                fontSize: 15,
-                fontWeight: 500,
-                textDecoration: "none",
-                borderBottom: "1px solid var(--border-subtle)",
-                transition: "color 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+              className="nav-link nav-mobile-link"
             >
               {l.label}
             </a>

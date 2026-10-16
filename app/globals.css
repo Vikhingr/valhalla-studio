@@ -6,6 +6,35 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPanelIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── View Transition: navbar isolation (for future route-level VT) ── */
+/* Prevent root cross-fade from freezing the rest of the page */
+::view-transition-old(root) { display: none; }
+::view-transition-new(root) { animation: none; }
+
+/* Isolate navbar — has backdrop-filter, hide old snapshot to avoid flash */
+::view-transition-old(site-header) { display: none; }
+::view-transition-new(site-header) { animation: none; }
+
+/* Reduced motion: skip all VT animations */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -59,6 +88,23 @@ button, a, [role="button"] {
 }
 
 ::selection { background: var(--violet); color: white; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 8px 20px;
+  background: var(--violet);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+}
+.skip-link:focus-visible {
+  left: 0;
+}
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -171,6 +217,10 @@ gmp-place-autocomplete {
   padding: 9px 12px;
   outline: none;
   box-sizing: border-box;
+}
+gmp-place-autocomplete:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
 }
 
 /* Google Places autocomplete dropdown (legacy) */
