@@ -1,10 +1,8 @@
-import dynamic from "next/dynamic";
+import ResicоLoader from "./ResicоLoader";
 
 export const instant = false;
 export const metadata = { title: "RESICO — Valhalla Studio" };
 
-const ResicоClient = dynamic(() => import("./ResicоClient"), { ssr: false });
-
 export default function ResicоPage() {
-  return <ResicоClient />;
+  return <ResicоLoader />;
 }
