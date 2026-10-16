@@ -8,63 +8,124 @@ interface Props {
   style?: React.CSSProperties;
 }
 
-declare global {
-  interface Window {
-    google?: {
-      maps?: {
-        places?: {
-          Autocomplete: new (
-            el: HTMLInputElement,
-            opts?: { componentRestrictions?: { country: string }; fields?: string[]; types?: string[] }
-          ) => { addListener(e: string, cb: () => void): void; getPlace(): { formatted_address?: string } };
-        };
-      };
-    };
-    _gmCb?: () => void;
-  }
+interface Suggestion {
+  text: string;
 }
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-export function AddressInput({ value, onChange, placeholder, style }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [ready, setReady] = useState(false);
+async function fetchSuggestions(input: string): Promise<Suggestion[]> {
+  if (!API_KEY || input.length < 3) return [];
+  try {
+    const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": API_KEY,
+        "X-Goog-FieldMask": "suggestions.placePrediction.text",
+      },
+      body: JSON.stringify({
+        input,
+        includedRegionCodes: ["mx"],
+      }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.suggestions ?? [])
+      .map((s: any) => ({ text: s.placePrediction?.text?.text ?? "" }))
 
+      .filter((s: Suggestion) => s.text);
+  } catch {
+    return [];
+  }
+}
+
+export function AddressInput({ value, onChange, placeholder, style }: Props) {
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  function handleChange(v: string) {
+    onChange(v);
+    setActive(-1);
+    if (debounce.current) clearTimeout(debounce.current);
+    if (v.length < 3) { setSuggestions([]); setOpen(false); return; }
+    debounce.current = setTimeout(async () => {
+      const results = await fetchSuggestions(v);
+      setSuggestions(results);
+      setOpen(results.length > 0);
+    }, 300);
+  }
+
+  function select(text: string) {
+    onChange(text);
+    setSuggestions([]);
+    setOpen(false);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (!open) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, suggestions.length - 1)); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
+    if (e.key === "Enter" && active >= 0) { e.preventDefault(); select(suggestions[active].text); }
+    if (e.key === "Escape") { setOpen(false); }
+  }
+
+  // Close on outside click
   useEffect(() => {
-    if (!API_KEY) return;
-    if (window.google?.maps?.places) { setReady(true); return; }
-    window._gmCb = () => setReady(true);
-    if (!document.getElementById("gm-places-script")) {
-      const s = document.createElement("script");
-      s.id = "gm-places-script";
-      s.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&callback=_gmCb&loading=async`;
-      s.async = true;
-      document.head.appendChild(s);
+    function handler(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
     }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  useEffect(() => {
-    if (!ready || !inputRef.current || !window.google?.maps?.places) return;
-    const ac = new window.google.maps.places.Autocomplete(inputRef.current, {
-      componentRestrictions: { country: "mx" },
-      fields: ["formatted_address"],
-      types: ["address"],
-    });
-    ac.addListener("place_changed", () => {
-      const p = ac.getPlace();
-      if (p.formatted_address) onChange(p.formatted_address);
-    });
-  }, [ready, onChange]);
-
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder ?? "Calle, colonia, ciudad"}
-      style={style}
-      autoComplete="off"
-    />
+    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        placeholder={placeholder ?? "Calle, colonia, ciudad"}
+        style={style}
+        autoComplete="off"
+      />
+      {open && suggestions.length > 0 && (
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 4px)",
+          left: 0,
+          right: 0,
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 8,
+          boxShadow: "0 8px 24px oklch(0 0 0 / 0.5)",
+          zIndex: 9999,
+          overflow: "hidden",
+        }}>
+          {suggestions.map((s, i) => (
+            <div
+              key={i}
+              onMouseDown={() => select(s.text)}
+              style={{
+                padding: "9px 12px",
+                fontSize: 13,
+                color: i === active ? "var(--ink)" : "var(--ink-2)",
+                background: i === active ? "var(--surface-2)" : "transparent",
+                cursor: "pointer",
+                borderTop: i > 0 ? "1px solid var(--border)" : "none",
+              }}
+              onMouseEnter={() => setActive(i)}
+              onMouseLeave={() => setActive(-1)}
+            >
+              {s.text}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

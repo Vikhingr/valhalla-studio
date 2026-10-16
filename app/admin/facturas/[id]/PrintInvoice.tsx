@@ -67,6 +67,7 @@ interface Props {
   };
   emisor: { nombre: string; nombre_fiscal: string; rfc: string; regimen: string; cp: string; domicilio_fiscal?: string };
   hasCfdiDownload: boolean;
+  folio: number;
 }
 
 function QrCanvas({ url }: { url: string }) {
@@ -95,13 +96,13 @@ function SValue({ children, mono }: { children: React.ReactNode; mono?: boolean 
   );
 }
 
-export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props) {
+export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }: Props) {
   const router = useRouter();
   const isCancelled = factura.status === "cancelada";
   const isCfdi = factura.tipo === "cfdi";
 
   const FACTURAPI_RFC_PAC = "PPD101129EA3";
-  const selloCfdi = factura.cfdi_sello_sat ?? factura.cfdi_sello;
+  const selloCfdi = factura.cfdi_sello ?? factura.cfdi_sello_sat;
 
   const satVerificationUrl = isCfdi && factura.cfdi_uuid && selloCfdi
     ? `https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${factura.cfdi_uuid}&re=${emisor.rfc}&rr=${factura.receptor_rfc}&tt=${factura.total.toFixed(6)}&fe=${selloCfdi.slice(-8)}`
@@ -201,234 +202,254 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload }: Props
 
       {/* Hoja de factura */}
       <div id="factura-print" style={{
-        padding: "36px 44px", maxWidth: 820, margin: "32px auto",
+        maxWidth: 820, margin: "32px auto",
         background: "var(--surface)", border: "1px solid var(--border)",
-        borderRadius: 12, position: "relative", opacity: isCancelled ? 0.7 : 1,
+        borderRadius: 12, overflow: "hidden",
+        position: "relative", opacity: isCancelled ? 0.7 : 1,
       }}>
         {isCancelled && (
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-30deg)", fontSize: 72, fontWeight: 900, color: "oklch(0.55 0.15 25 / 0.2)", letterSpacing: 8, pointerEvents: "none", userSelect: "none", whiteSpace: "nowrap" }}>
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-30deg)", fontSize: 72, fontWeight: 900, color: "oklch(0.55 0.15 25 / 0.2)", letterSpacing: 8, pointerEvents: "none", userSelect: "none", whiteSpace: "nowrap", zIndex: 10 }}>
             CANCELADA
           </div>
         )}
 
-        {/* ── Header ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, paddingBottom: 20, borderBottom: "2px solid var(--border)" }}>
+        {/* ── Header violeta ── */}
+        <div className="invoice-header" style={{
+          background: "var(--violet)", padding: "28px 40px",
+          display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+        }}>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.03em" }}>{emisor.nombre}</div>
-            {isCfdi && <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", marginTop: 4, letterSpacing: "0.04em", textTransform: "uppercase" }}>Comprobante Fiscal Digital por Internet</div>}
-            {!isCfdi && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>Factura / Recibo de pago</div>}
+            <div style={{ fontSize: 26, fontWeight: 900, color: "white", letterSpacing: "-0.03em", lineHeight: 1.1 }}>{emisor.nombre}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", marginTop: 5, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              {isCfdi ? "Comprobante Fiscal Digital · CFDI 4.0" : "Factura"}
+            </div>
+            {folio > 0 && (
+              <div style={{ fontSize: 13, fontWeight: 700, color: "white", marginTop: 4, letterSpacing: "0.02em" }}>
+                No. F-{String(folio).padStart(3, "0")}
+              </div>
+            )}
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.02em" }}>{fmt(factura.total)}</div>
-            <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{fechaFmt}</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>{fmt(factura.total)}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>{fechaFmt}</div>
             {isCfdi && factura.cfdi_uuid && (
-              <div style={{ fontSize: 9, fontFamily: "monospace", color: "var(--muted)", marginTop: 4, wordBreak: "break-all", maxWidth: 320 }}>
+              <div style={{ fontSize: 8, fontFamily: "monospace", color: "rgba(255,255,255,0.45)", marginTop: 6, maxWidth: 280, wordBreak: "break-all", lineHeight: 1.5 }}>
                 UUID: {factura.cfdi_uuid}
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Emisor + Metadata CFDI ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Emisor</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{emisor.nombre_fiscal || emisor.nombre}</div>
-            <div style={{ fontSize: 11, fontFamily: "monospace", color: "var(--muted)", marginTop: 2 }}>RFC {emisor.rfc}</div>
-            {regimenEmisorLabel && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{regimenEmisorLabel}</div>}
-            {emisor.domicilio_fiscal
-              ? <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{emisor.domicilio_fiscal}</div>
-              : emisor.cp && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>C.P. {emisor.cp}</div>
-            }
+        {/* ── Body ── */}
+        <div style={{ padding: "28px 40px" }}>
+
+          {/* ── Emisor + Receptor en cajas ── */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+            <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "14px 16px" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "var(--violet)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Emisor</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{emisor.nombre_fiscal || emisor.nombre}</div>
+              <div style={{ fontSize: 10, fontFamily: "monospace", color: "var(--muted)", marginTop: 3 }}>RFC {emisor.rfc}</div>
+              {regimenEmisorLabel && <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 3, lineHeight: 1.4 }}>{regimenEmisorLabel}</div>}
+              {emisor.domicilio_fiscal
+                ? <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 3 }}>{emisor.domicilio_fiscal}</div>
+                : emisor.cp && <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 3 }}>C.P. {emisor.cp}</div>
+              }
+              {isCfdi && factura.cfdi_uuid && emisor.cp && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)", fontSize: 9, color: "var(--muted)" }}>
+                  Lugar de emisión: {emisor.cp}
+                </div>
+              )}
+            </div>
+
+            <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "14px 16px" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "var(--violet)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Receptor</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{factura.receptor_nombre}</div>
+              <div style={{ fontSize: 10, fontFamily: "monospace", color: "var(--muted)", marginTop: 3 }}>RFC {factura.receptor_rfc}</div>
+              {factura.clients?.email && <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 3 }}>{factura.clients.email}</div>}
+              <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 4 }}>
+                <MRow label="Régimen" value={regimenLabel} />
+                <MRow label="Domicilio" value={factura.clients?.domicilio || `${factura.receptor_cp}, MEX`} />
+                <MRow label="Uso CFDI" value={usoCfdiLabel} />
+              </div>
+            </div>
           </div>
+
+          {/* Metadata CFDI en línea (solo si está timbrado) */}
           {isCfdi && factura.cfdi_uuid && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <MRow label="Tipo de CFDI" value="I — Ingreso" />
-              <MRow label="Versión CFDI" value="4.0" />
-              {emisor.cp && <MRow label="Lugar de emisión" value={emisor.cp} />}
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 20, padding: "9px 14px", background: "var(--surface-2)", borderRadius: 6, border: "1px solid var(--border)" }}>
+              <MRow label="Tipo CFDI" value="I — Ingreso" />
+              <MRow label="Versión" value="4.0" />
               <MRow label="Fecha de emisión" value={factura.fecha} />
               {factura.cfdi_fecha_timbrado && (
-                <MRow label="Fecha de certificación" value={new Date(factura.cfdi_fecha_timbrado).toISOString().slice(0, 19).replace("T", " ")} />
+                <MRow label="Fecha certificación" value={new Date(factura.cfdi_fecha_timbrado).toISOString().slice(0, 19).replace("T", " ")} />
               )}
             </div>
           )}
-        </div>
 
-        {/* ── Receptor ── */}
-        <div style={{ marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Receptor</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{factura.receptor_nombre}</div>
-              <div style={{ fontSize: 11, fontFamily: "monospace", color: "var(--muted)", marginTop: 2 }}>RFC {factura.receptor_rfc}</div>
-              {factura.clients?.email && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{factura.clients.email}</div>}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <MRow label="Régimen Fiscal" value={regimenLabel} />
-              <MRow label="Domicilio" value={factura.clients?.domicilio || `${factura.receptor_cp}, MEX`} />
-              <MRow label="Uso del CFDI" value={usoCfdiLabel} />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Concepto ── */}
-        <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 20 }}>
-          <thead>
-            <tr>
-              <th style={{ ...th, width: "11%" }}>Clave ProdServ</th>
-              <th style={{ ...th, width: "34%" }}>Concepto</th>
-              <th style={{ ...th, width: "5%", textAlign: "right" }}>Cant.</th>
-              <th style={{ ...th, width: "7%", textAlign: "center" }}>Obj. Imp.</th>
-              <th style={{ ...th, width: "8%", textAlign: "center" }}>Unidad</th>
-              <th style={{ ...th, width: "16%", textAlign: "right" }}>P. Unitario</th>
-              <th style={{ ...th, width: "16%", textAlign: "right", borderRadius: "0 6px 0 0" }}>Importe</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={tdMono}>{factura.clave_prod_serv}</td>
-              <td style={td}>{factura.descripcion}</td>
-              <td style={{ ...tdR }}>1</td>
-              <td style={{ ...td, textAlign: "center" }}>02</td>
-              <td style={{ ...td, textAlign: "center", fontFamily: "monospace", fontSize: 10 }}>{factura.clave_unidad}</td>
-              <td style={tdR}>{fmt(factura.subtotal)}</td>
-              <td style={tdR}>{fmt(factura.subtotal)}</td>
-            </tr>
-            {factura.iva > 0 && (
-              <tr style={{ background: "var(--surface-2)" }}>
-                <td colSpan={5} style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right", paddingRight: 12 }}>
-                  IVA 16%, Base: {fmt(factura.subtotal)}
-                </td>
-                <td style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right" }}>Traslado</td>
-                <td style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right" }}>{fmt(factura.iva)}</td>
-              </tr>
-            )}
-            {factura.iva_retenido > 0 && (
-              <tr style={{ background: "var(--surface-2)" }}>
-                <td colSpan={5} style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right", paddingRight: 12 }}>
-                  IVA 10.67% Retenido, Base: {fmt(factura.subtotal)}
-                </td>
-                <td style={{ ...td, fontSize: 10, color: "oklch(0.65 0.15 200)", textAlign: "right" }}>Retención</td>
-                <td style={{ ...td, fontSize: 10, color: "oklch(0.65 0.15 200)", textAlign: "right" }}>−{fmt(factura.iva_retenido)}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        {/* ── Pago + Totales ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--border)" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <MRow label="Forma de pago" value={FORMAS_MAP[factura.forma_pago] ?? factura.forma_pago} />
-            <MRow label="Método de pago" value="PUE — Pago en una sola exhibición" />
-            <MRow label="Exportación" value="01 — No aplica" />
-            <MRow label="Moneda" value="MXN" />
-            <div style={{ marginTop: 8, fontSize: 11, fontWeight: 600, color: "var(--ink)", maxWidth: 340 }}>
-              {importeEnLetra(factura.total)}
-            </div>
-          </div>
-          <div style={{ width: 230 }}>
-            <TRow label="Subtotal" value={fmt(factura.subtotal)} />
-            {factura.iva > 0 && <TRow label="IVA 16%" value={fmt(factura.iva)} />}
-            {factura.iva_retenido > 0 && <TRow label="IVA retenido" value={`−${fmt(factura.iva_retenido)}`} accent />}
-            <TRow label="Total" value={fmt(factura.total)} bold />
-          </div>
-        </div>
-
-        {/* ── Sellos digitales ── */}
-        {isCfdi && (factura.cfdi_sello || factura.cfdi_sello_sat) && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-              {/* QR + info proveedor */}
-              <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                {satVerificationUrl && <QrCanvas url={satVerificationUrl} />}
-                {!satVerificationUrl && (
-                  <div style={{ width: 96, height: 96, background: "var(--surface-2)", border: "1px dashed var(--border)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 9, color: "var(--muted)", textAlign: "center", padding: 4 }}>QR no disponible en test</span>
-                  </div>
+          {/* ── Concepto table ── */}
+          <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 24 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "11%" }}>Clave ProdServ</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "35%" }}>Concepto</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "6%", textAlign: "right" }}>Cant.</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "7%", textAlign: "center" }}>Obj. Imp.</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "8%", textAlign: "center" }}>Unidad</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "16%", textAlign: "right" }}>P. Unitario</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "16%", textAlign: "right" }}>Importe</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={tdMono}>{factura.clave_prod_serv}</td>
+                  <td style={td}>{factura.descripcion}</td>
+                  <td style={{ ...tdR }}>1</td>
+                  <td style={{ ...td, textAlign: "center" }}>02</td>
+                  <td style={{ ...td, textAlign: "center", fontFamily: "monospace", fontSize: 10 }}>{factura.clave_unidad}</td>
+                  <td style={tdR}>{fmt(factura.subtotal)}</td>
+                  <td style={tdR}>{fmt(factura.subtotal)}</td>
+                </tr>
+                {factura.iva > 0 && (
+                  <tr style={{ background: "var(--surface-2)" }}>
+                    <td colSpan={5} style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right", paddingRight: 12 }}>
+                      IVA 16%, Base: {fmt(factura.subtotal)}
+                    </td>
+                    <td style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right" }}>Traslado</td>
+                    <td style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right" }}>{fmt(factura.iva)}</td>
+                  </tr>
                 )}
-                <div style={{ fontSize: 8, fontFamily: "monospace", color: "var(--muted)", textAlign: "center" }}>
-                  Prov. Cert. {FACTURAPI_RFC_PAC}
-                </div>
-                {factura.cfdi_fecha_timbrado && (
-                  <div style={{ marginTop: 4, textAlign: "center" }}>
-                    <div style={{ fontSize: 8, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Fecha certif.</div>
-                    <div style={{ fontSize: 8, fontFamily: "monospace", color: "var(--muted)" }}>
-                      {new Date(factura.cfdi_fecha_timbrado).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}
+                {factura.iva_retenido > 0 && (
+                  <tr style={{ background: "var(--surface-2)" }}>
+                    <td colSpan={5} style={{ ...td, fontSize: 10, color: "var(--muted)", textAlign: "right", paddingRight: 12 }}>
+                      IVA 10.67% Retenido, Base: {fmt(factura.subtotal)}
+                    </td>
+                    <td style={{ ...td, fontSize: 10, color: "oklch(0.65 0.15 200)", textAlign: "right" }}>Retención</td>
+                    <td style={{ ...td, fontSize: 10, color: "oklch(0.65 0.15 200)", textAlign: "right" }}>−{fmt(factura.iva_retenido)}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Pago + Totales ── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <MRow label="Forma de pago" value={FORMAS_MAP[factura.forma_pago] ?? factura.forma_pago} />
+              <MRow label="Método de pago" value="PUE — Pago en una sola exhibición" />
+              <MRow label="Exportación" value="01 — No aplica" />
+              <MRow label="Moneda" value="MXN" />
+              <div style={{ marginTop: 10, fontSize: 11, fontWeight: 600, color: "var(--ink-2)", maxWidth: 340, lineHeight: 1.5 }}>
+                {importeEnLetra(factura.total)}
+              </div>
+            </div>
+
+            {/* Caja de totales */}
+            <div style={{ width: 224, border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+              <div style={{ padding: "12px 16px", background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}>
+                <TRow label="Subtotal" value={fmt(factura.subtotal)} />
+                {factura.iva > 0 && <TRow label="IVA 16%" value={fmt(factura.iva)} />}
+                {factura.iva_retenido > 0 && <TRow label="IVA retenido" value={`−${fmt(factura.iva_retenido)}`} accent />}
+              </div>
+              <div className="invoice-total-row" style={{ padding: "13px 16px", background: "var(--violet)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Total</span>
+                <span style={{ fontSize: 17, fontWeight: 900, color: "white" }}>{fmt(factura.total)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Sellos digitales ── */}
+          {isCfdi && (factura.cfdi_sello || factura.cfdi_sello_sat) && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                  {satVerificationUrl && <QrCanvas url={satVerificationUrl} />}
+                  {!satVerificationUrl && (
+                    <div style={{ width: 96, height: 96, background: "var(--surface-2)", border: "1px dashed var(--border)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 9, color: "var(--muted)", textAlign: "center", padding: 4 }}>QR no disponible en test</span>
                     </div>
-                  </div>
-                )}
-                {factura.cfdi_num_cert_sat && (
-                  <div style={{ marginTop: 4, textAlign: "center" }}>
-                    <div style={{ fontSize: 8, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Serie CSD SAT</div>
-                    <div style={{ fontSize: 8, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all" }}>{factura.cfdi_num_cert_sat}</div>
-                  </div>
-                )}
-              </div>
-
-              {/* Sellos y cadena */}
-              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-                {factura.cfdi_sello_sat && (
-                  <div>
-                    <SLabel>Sello digital del CFDI</SLabel>
-                    <SValue mono>{factura.cfdi_sello_sat}</SValue>
-                  </div>
-                )}
-                {factura.cfdi_sello && (
-                  <div>
-                    <SLabel>Sello digital del emisor (CSD)</SLabel>
-                    <SValue mono>{factura.cfdi_sello}</SValue>
-                  </div>
-                )}
-                {cadenaOriginal && (
-                  <div>
-                    <SLabel>Cadena original del complemento de certificación digital del SAT</SLabel>
-                    <SValue mono>{cadenaOriginal}</SValue>
-                  </div>
-                )}
+                  )}
+                  <div style={{ fontSize: 8, fontFamily: "monospace", color: "var(--muted)", textAlign: "center" }}>Prov. Cert. {FACTURAPI_RFC_PAC}</div>
+                  {factura.cfdi_fecha_timbrado && (
+                    <div style={{ marginTop: 4, textAlign: "center" }}>
+                      <div style={{ fontSize: 8, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Fecha certif.</div>
+                      <div style={{ fontSize: 8, fontFamily: "monospace", color: "var(--muted)" }}>
+                        {new Date(factura.cfdi_fecha_timbrado).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}
+                      </div>
+                    </div>
+                  )}
+                  {factura.cfdi_num_cert_sat && (
+                    <div style={{ marginTop: 4, textAlign: "center" }}>
+                      <div style={{ fontSize: 8, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Serie CSD SAT</div>
+                      <div style={{ fontSize: 8, fontFamily: "monospace", color: "var(--muted)", wordBreak: "break-all" }}>{factura.cfdi_num_cert_sat}</div>
+                    </div>
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                  {factura.cfdi_sello_sat && (
+                    <div><SLabel>Sello digital del CFDI</SLabel><SValue mono>{factura.cfdi_sello_sat}</SValue></div>
+                  )}
+                  {factura.cfdi_sello && (
+                    <div><SLabel>Sello digital del emisor (CSD)</SLabel><SValue mono>{factura.cfdi_sello}</SValue></div>
+                  )}
+                  {cadenaOriginal && (
+                    <div><SLabel>Cadena original del complemento de certificación digital del SAT</SLabel><SValue mono>{cadenaOriginal}</SValue></div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── Footer ── */}
-        <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, fontSize: 10, color: "var(--muted)", textAlign: "center" }}>
-          {isCfdi
-            ? "Este documento es una representación impresa de un CFDI"
-            : `Este documento es un recibo de pago. Para solicitar CFDI oficial contacte a ${emisor.nombre}.`}
+          {/* ── Footer ── */}
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, fontSize: 10, color: "var(--muted)", textAlign: "center" }}>
+            {isCfdi
+              ? "Este documento es una representación impresa de un CFDI"
+              : `Este documento es un recibo de pago. Para solicitar CFDI oficial contacte a ${emisor.nombre}.`}
+          </div>
         </div>
       </div>
 
       <style>{`
         @media print {
-          /* Eliminar sidebar del layout */
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+          :root {
+            --bg: #ffffff !important;
+            --surface: #ffffff !important;
+            --surface-2: #f2f2f5 !important;
+            --border: #d4d4dc !important;
+            --ink: #111111 !important;
+            --ink-2: #444455 !important;
+            --muted: #55556a !important;
+            --violet: #5b21b6 !important;
+            --violet-light: #7c3aed !important;
+          }
+
           aside { display: none !important; }
           .no-print { display: none !important; }
 
-          /* Resetear layout flex del admin */
           html, body {
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
+            color: #111 !important;
           }
-          body > div {
-            display: block !important;
-            min-height: auto !important;
-          }
-          main {
-            width: 100% !important;
-            overflow: visible !important;
-          }
+          body > div { display: block !important; min-height: auto !important; }
+          main { width: 100% !important; overflow: visible !important; }
 
-          /* Estilos de la hoja */
           #factura-print {
             border: none !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            margin: 0 auto !important;
-            max-width: 760px !important;
-            padding: 24px 32px !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            padding: 0 !important;
             opacity: 1 !important;
+            overflow: visible !important;
           }
+
+          .invoice-header { border-radius: 0 !important; }
+          table { page-break-inside: avoid; }
         }
       `}</style>
     </>
