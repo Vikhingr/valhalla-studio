@@ -91,9 +91,8 @@ function StatBox({ label, value, sub, accent }: { label: string; value: string; 
 }
 
 export default function ResicоClient() {
-  const now = new Date();
-  const [mes, setMes] = useState(now.getMonth() + 1);
-  const [año, setAño] = useState(now.getFullYear());
+  const [mes, setMes] = useState(() => new Date().getMonth() + 1);
+  const [año, setAño] = useState(() => new Date().getFullYear());
   const [data, setData]     = useState<ResData | null>(null);
   const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState<{ rfc_emisor: string; nombre_emisor: string } | null>(null);
