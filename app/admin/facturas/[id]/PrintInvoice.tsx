@@ -1,7 +1,7 @@
 "use client";
-import { Printer, FilePdf, ArrowLeft, Warning } from "@phosphor-icons/react";
+import { Printer, FilePdf, ArrowLeft, Warning, ShieldCheck } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import type { Factura } from "@/lib/types";
 import { REGIMENES_FISCALES, USOS_CFDI } from "@/lib/types";
@@ -96,10 +96,34 @@ function SValue({ children, mono }: { children: React.ReactNode; mono?: boolean 
   );
 }
 
+type CancelStatus = "none" | "pending" | "accepted" | "rejected";
+
+const CANCEL_STATUS_LABEL: Record<CancelStatus, { label: string; color: string; bg: string }> = {
+  none:     { label: "No cancelada en SAT",           color: "#6b7280", bg: "oklch(0.20 0.01 280)" },
+  pending:  { label: "Pendiente — esperando receptor", color: "#d97706", bg: "oklch(0.22 0.06 60)" },
+  accepted: { label: "Cancelada y aceptada por SAT",  color: "#16a34a", bg: "oklch(0.20 0.06 155)" },
+  rejected: { label: "Rechazada por el receptor",     color: "#dc2626", bg: "oklch(0.20 0.06 25)" },
+};
+
 export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }: Props) {
   const router = useRouter();
   const isCancelled = factura.status === "cancelada";
   const isCfdi = factura.tipo === "cfdi";
+
+  const [cancelStatus, setCancelStatus] = useState<CancelStatus | null>(null);
+  const [cancelChecking, setCancelChecking] = useState(false);
+
+  async function checkCancelStatus() {
+    setCancelChecking(true);
+    setCancelStatus(null);
+    try {
+      const res = await fetch(`/api/admin/facturas/${factura.id}/cancel-status`);
+      const data = await res.json();
+      if (res.ok) setCancelStatus((data.cancellation_status as CancelStatus) ?? "none");
+    } finally {
+      setCancelChecking(false);
+    }
+  }
 
   const FACTURAPI_RFC_PAC = "PPD101129EA3";
   const selloCfdi = factura.cfdi_sello ?? factura.cfdi_sello_sat;
@@ -181,6 +205,27 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
             </a>
             <div style={{ width: 1, height: 24, background: "var(--border)", margin: "0 2px" }} />
           </>
+        )}
+
+        {isCancelled && isCfdi && factura.facturapi_id && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={checkCancelStatus}
+              disabled={cancelChecking}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--ink)", fontSize: 13, fontWeight: 600, cursor: cancelChecking ? "default" : "pointer", opacity: cancelChecking ? 0.6 : 1 }}
+            >
+              <ShieldCheck size={15} />
+              {cancelChecking ? "Consultando…" : "Estatus SAT"}
+            </button>
+            {cancelStatus && (() => {
+              const s = CANCEL_STATUS_LABEL[cancelStatus];
+              return (
+                <span style={{ fontSize: 12, fontWeight: 600, padding: "5px 10px", borderRadius: 20, background: s.bg, color: s.color, whiteSpace: "nowrap" }}>
+                  {s.label}
+                </span>
+              );
+            })()}
+          </div>
         )}
 
         <button onClick={() => window.print()} className="btn-primary"
