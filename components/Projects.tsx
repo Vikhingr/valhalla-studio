@@ -14,7 +14,7 @@
  */
 "use client";
 import Image from "next/image";
-import { useState, useEffect, startTransition } from "react";
+import { useState, useEffect, startTransition, type CSSProperties } from "react";
 import { ArrowUpRight, X, CaretLeft, CaretRight, MagnifyingGlassPlus } from "@phosphor-icons/react";
 
 type Project = {
@@ -106,12 +106,26 @@ const projects: Project[] = [
   },
 ];
 
-function Lightbox({ src, alt, onClose, current, total }: { src: string; alt: string; onClose: () => void; current: number; total: number }) {
+const btnLb: CSSProperties = {
+  position: "absolute", background: "oklch(0.14 0.015 280 / 0.9)",
+  border: "1px solid var(--border)", borderRadius: 8, color: "var(--ink)",
+  cursor: "pointer", padding: "10px 12px", display: "flex", zIndex: 1,
+};
+
+function Lightbox({ src, alt, onClose, current, total, onPrev, onNext }: {
+  src: string; alt: string; onClose: () => void;
+  current: number; total: number;
+  onPrev?: () => void; onNext?: () => void;
+}) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && onPrev) onPrev();
+      if (e.key === "ArrowRight" && onNext) onNext();
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, onPrev, onNext]);
 
   return (
     <div
@@ -123,27 +137,30 @@ function Lightbox({ src, alt, onClose, current, total }: { src: string; alt: str
         cursor: "zoom-out",
       }}
     >
-      <button
-        onClick={onClose}
-        style={{
-          position: "absolute", top: 20, right: 20,
-          background: "oklch(0.14 0.015 280 / 0.9)", border: "1px solid var(--border)",
-          borderRadius: 8, color: "var(--ink)", cursor: "pointer", padding: "8px 10px",
-          display: "flex", zIndex: 1,
-        }}
-        aria-label="Cerrar imagen"
-      >
+      <button onClick={onClose} style={{ ...btnLb, top: 20, right: 20 }} aria-label="Cerrar imagen">
         <X size={20} weight="bold" aria-hidden="true" />
       </button>
       {total > 1 && (
         <div style={{
-          position: "absolute", top: 20, left: 20, zIndex: 1,
+          position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 1,
           background: "oklch(0.14 0.015 280 / 0.9)", border: "1px solid var(--border)",
-          borderRadius: 8, color: "var(--muted)", padding: "6px 12px",
-          fontSize: 12, fontWeight: 600, fontVariantNumeric: "tabular-nums",
+          borderRadius: 8, color: "var(--muted)", padding: "6px 14px",
+          fontSize: 12, fontWeight: 600, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
         }}>
           {current + 1} / {total}
         </div>
+      )}
+      {total > 1 && onPrev && (
+        <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="Imagen anterior"
+          style={{ ...btnLb, left: 20, top: "50%", transform: "translateY(-50%)" }}>
+          <CaretLeft size={22} weight="bold" aria-hidden="true" />
+        </button>
+      )}
+      {total > 1 && onNext && (
+        <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="Imagen siguiente"
+          style={{ ...btnLb, right: 20, top: "50%", transform: "translateY(-50%)" }}>
+          <CaretRight size={22} weight="bold" aria-hidden="true" />
+        </button>
       )}
       <div
         onClick={(e) => e.stopPropagation()}
@@ -253,16 +270,18 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
           </div>
         </div>
 
-        {lightboxOpen && (
-          <Lightbox
-            src={project.screenshots[active]}
-            alt={`${project.title} — captura ${active + 1}`}
-            onClose={() => setLightboxOpen(false)}
-            current={active}
-            total={total}
-          />
-        )}
       </div>
+      {lightboxOpen && (
+        <Lightbox
+          src={project.screenshots[active]}
+          alt={`${project.title} — captura ${active + 1}`}
+          onClose={() => setLightboxOpen(false)}
+          current={active}
+          total={total}
+          onPrev={() => setActive((a) => (a - 1 + total) % total)}
+          onNext={() => setActive((a) => (a + 1) % total)}
+        />
+      )}
     </div>
   );
 }
