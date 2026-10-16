@@ -83,6 +83,9 @@ export default async function DashboardPage() {
       <style>{`
         .dash-stat-card:hover { border-color: oklch(0.38 0.03 280) !important; }
         .dash-deadline-link:hover { background: var(--surface-2) !important; }
+        @media (max-width: 768px) {
+          .dash-two-col { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* Alerta RESICO */}
@@ -144,7 +147,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
+      <div className="dash-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
         {/* Upcoming deadlines */}
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>

@@ -236,7 +236,8 @@ export default function ResicоClient() {
               <p style={{ fontSize: 13, color: "var(--muted)", textAlign: "center", padding: "20px 0" }}>Sin facturas activas en este mes</p>
             ) : (
               <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 540 }}>
                   <thead>
                     <tr>
                       <th style={thStyle}>Fecha</th>
@@ -266,6 +267,7 @@ export default function ResicоClient() {
                     </tr>
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </Section>
@@ -285,7 +287,7 @@ export default function ResicоClient() {
               ) : (
                 <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: 16 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", marginBottom: 10 }}>Vista previa del CFDI leído:</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+                  <div className="resico-preview-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
                     {[
                       ["Emisor", preview.emisor_nombre],
                       ["RFC", preview.emisor_rfc],
@@ -327,7 +329,8 @@ export default function ResicоClient() {
               <p style={{ fontSize: 13, color: "var(--muted)", paddingTop: 4 }}>No hay gastos registrados para este mes. Sube los XML de tus facturas de teléfono, internet, etc.</p>
             ) : (
               <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
                   <thead>
                     <tr>
                       <th style={thStyle}>Proveedor</th>
@@ -365,13 +368,14 @@ export default function ResicоClient() {
                     </tr>
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </Section>
 
           {/* ── Desglose final ── */}
           <Section title="Resumen para declaración" icon={<ChartBar size={15} style={{ color: "var(--violet-light)" }} />}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, maxWidth: 560 }}>
+            <div className="resico-final-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, maxWidth: 560 }}>
               <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>ISR Provisional</div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)", marginBottom: 6 }}>
@@ -405,6 +409,13 @@ export default function ResicоClient() {
           </Section>
         </>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .resico-preview-grid { grid-template-columns: 1fr !important; }
+          .resico-final-grid { grid-template-columns: 1fr !important; max-width: 100% !important; }
+        }
+      `}</style>
 
       {/* Viewer modal */}
       {viewGasto && config && (

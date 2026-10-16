@@ -22,6 +22,7 @@ export default function Hero() {
   return (
     <section
       id="inicio"
+      className="hero-section"
       style={{
         minHeight: "100dvh",
         display: "flex",
@@ -221,13 +222,13 @@ export default function Hero() {
 
       <style>{`
         @media (max-width: 768px) {
-          .hero-grid {
-            grid-template-columns: 1fr !important;
-            gap: 48px !important;
-          }
-          .hero-photo {
-            display: none !important;
-          }
+          .hero-section { padding: 90px 20px 60px !important; min-height: unset !important; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .hero-photo { justify-content: center !important; }
+          .hero-photo > div { width: 100% !important; max-width: 360px; padding-left: 0 !important; padding-bottom: 32px !important; }
+        }
+        @media (max-width: 480px) {
+          .hero-photo > div { max-width: 100%; }
         }
       `}</style>
     </section>

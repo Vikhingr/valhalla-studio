@@ -8,9 +8,10 @@ const skills = [
 
 export default function About() {
   return (
-    <section id="sobre-mi" style={{ padding: "120px 0", background: "var(--section-alt)", borderTop: "1px solid var(--border)" }}>
+    <section id="sobre-mi" className="about-section" style={{ padding: "120px 0", background: "var(--section-alt)", borderTop: "1px solid var(--border)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
         <div
+          className="about-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
@@ -41,6 +42,7 @@ export default function About() {
 
               {/* Badge — solid, no glass */}
               <div
+                className="about-badge"
                 style={{
                   position: "absolute",
                   bottom: -16,
@@ -102,6 +104,13 @@ export default function About() {
           </div>
         </div>
       </div>
+      <style>{`
+        @media (max-width: 768px) {
+          .about-section { padding: 72px 0 !important; }
+          .about-grid { gap: 48px !important; }
+          .about-badge { right: 0 !important; }
+        }
+      `}</style>
     </section>
   );
 }

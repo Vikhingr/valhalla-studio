@@ -190,7 +190,7 @@ export default function ConfiguracionClient({ initial }: { initial: InitialConfi
 
       {/* Datos del emisor */}
       <Section title="Datos del emisor (CFDI 4.0)">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="config-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <Field label="RFC" required hint="13 caracteres para persona física">
             <input
               style={{ ...inputStyle, textTransform: "uppercase" }}
@@ -253,7 +253,7 @@ export default function ConfiguracionClient({ initial }: { initial: InitialConfi
           Selecciona cuáles aparecen en el formulario al crear una factura.
           Seleccionados: <strong style={{ color: "var(--ink)" }}>{usosVisibles.length}</strong> de {USOS_CFDI.length}
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+        <div className="config-cfdi-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
           {USOS_CFDI.map((uso) => {
             const activo = usosVisibles.includes(uso.value);
             return (
@@ -431,6 +431,12 @@ export default function ConfiguracionClient({ initial }: { initial: InitialConfi
           {saving ? "Guardando..." : "Guardar configuración"}
         </button>
       </div>
+      <style>{`
+        @media (max-width: 560px) {
+          .config-two-col { grid-template-columns: 1fr !important; }
+          .config-cfdi-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

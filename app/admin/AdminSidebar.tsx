@@ -12,6 +12,7 @@ import {
   Gear,
   SignOut,
   ChartBar,
+  X,
 } from "@phosphor-icons/react";
 
 const NAV = [
@@ -26,11 +27,9 @@ const NAV = [
   { href: "/admin/configuracion", label: "Configuración", icon: Gear },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const router   = useRouter();
-
-  if (pathname === "/admin/login") return null;
 
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -39,7 +38,9 @@ export default function AdminSidebar() {
   }
 
   return (
+    <>
     <aside
+      className={`adm-sidebar${open ? " adm-sidebar--open" : ""}`}
       style={{
         width: 220,
         minHeight: "100vh",
@@ -77,12 +78,21 @@ export default function AdminSidebar() {
         >
           V
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
             Valhalla<span style={{ color: "var(--violet-light)" }}>Studio</span>
           </div>
           <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 1 }}>Oficina Virtual</div>
         </div>
+        {/* Botón cerrar — solo mobile */}
+        <button
+          className="adm-sidebar-close"
+          onClick={onClose}
+          aria-label="Cerrar menú"
+          style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", padding: 4, display: "none", flexShrink: 0 }}
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -160,5 +170,24 @@ export default function AdminSidebar() {
         </button>
       </div>
     </aside>
+
+    <style>{`
+      .adm-sidebar { transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+      @media (max-width: 768px) {
+        .adm-sidebar {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          height: 100dvh !important;
+          min-height: 100dvh !important;
+          z-index: 200 !important;
+          transform: translateX(-100%);
+          box-shadow: 4px 0 32px rgba(0,0,0,0.4);
+        }
+        .adm-sidebar--open { transform: translateX(0) !important; }
+        .adm-sidebar-close { display: flex !important; }
+      }
+    `}</style>
+    </>
   );
 }

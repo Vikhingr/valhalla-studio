@@ -55,9 +55,10 @@ export default function Contact() {
   };
 
   return (
-    <section id="contacto" style={{ padding: "120px 0", background: "var(--bg)", borderTop: "1px solid var(--border)" }}>
+    <section id="contacto" className="contact-section" style={{ padding: "120px 0", background: "var(--bg)", borderTop: "1px solid var(--border)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
         <div
+          className="contact-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
@@ -110,6 +111,7 @@ export default function Contact() {
 
           {/* Form */}
           <div
+            className="contact-form-card"
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
@@ -147,7 +149,7 @@ export default function Contact() {
                   Cuéntame tu idea
                 </h3>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div className="contact-name-email" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <div>
                     <label style={labelStyle}>Nombre</label>
                     <input
@@ -243,6 +245,14 @@ export default function Contact() {
           </div>
         </div>
       </div>
+      <style>{`
+        @media (max-width: 768px) {
+          .contact-section { padding: 72px 0 !important; }
+          .contact-grid { gap: 40px !important; }
+          .contact-form-card { padding: 24px !important; }
+          .contact-name-email { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </section>
   );
 }

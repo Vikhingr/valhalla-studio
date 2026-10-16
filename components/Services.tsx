@@ -23,7 +23,7 @@ const services = [
 
 export default function Services() {
   return (
-    <section id="servicios" style={{ padding: "120px 0", background: "var(--section-alt)", borderTop: "1px solid var(--border)" }}>
+    <section id="servicios" className="services-section" style={{ padding: "120px 0", background: "var(--section-alt)", borderTop: "1px solid var(--border)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
         {/* Header */}
         <div style={{ maxWidth: 540, marginBottom: 72 }}>
@@ -130,6 +130,9 @@ export default function Services() {
       </div>
 
       <style>{`
+        @media (max-width: 768px) {
+          .services-section { padding: 72px 0 !important; }
+        }
         @media (max-width: 640px) {
           .service-row { grid-template-columns: 1fr !important; gap: 16px !important; }
           .service-tags { align-items: flex-start !important; flex-direction: row !important; flex-wrap: wrap !important; }

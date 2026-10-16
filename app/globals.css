@@ -113,6 +113,19 @@ h1, h2, h3 { text-wrap: balance; }
   }
 }
 
+/* ── Responsive global ── */
+@media (max-width: 768px) {
+  /* Padding de páginas admin */
+  [style*="padding: 28px 32px"] {
+    padding: 16px !important;
+  }
+  /* Botones en mobile — más compactos */
+  .btn-primary, .btn-secondary {
+    padding: 11px 20px;
+    font-size: 13px;
+  }
+}
+
 /* PlaceAutocompleteElement (new Places API) */
 .gmp-pac-wrap {
   --gmpx-color-surface: var(--bg);

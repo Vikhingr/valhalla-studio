@@ -282,7 +282,7 @@ export default function CotizadorPage() {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
+      <div className="cotizador-grid" style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
 
         {/* ── Lista de features ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -517,6 +517,11 @@ export default function CotizadorPage() {
           </div>
         </div>
       )}
+      <style>{`
+        @media (max-width: 900px) {
+          .cotizador-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

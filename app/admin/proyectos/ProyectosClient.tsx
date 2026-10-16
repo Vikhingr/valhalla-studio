@@ -167,7 +167,7 @@ export default function ProyectosClient({ initial, clients, cotizaciones, defaul
       )}
 
       <div><label style={labelStyle}>Nombre del proyecto *</label><input required style={inputStyle} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ej. Sitio web Pepe's Barber Shop" /></div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="proy-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
           <label style={labelStyle}>Cliente</label>
           <select style={{ ...inputStyle, cursor: "pointer" }} value={form.client_id} onChange={(e) => handleClientChange(e.target.value)}>
@@ -182,11 +182,11 @@ export default function ProyectosClient({ initial, clients, cotizaciones, defaul
           </select>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="proy-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div><label style={labelStyle}>Fecha inicio</label><input type="date" style={inputStyle} value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} /></div>
         <div><label style={labelStyle}>Fecha límite</label><input type="date" style={inputStyle} value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} /></div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="proy-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div><label style={labelStyle}>Precio cotizado (MXN)</label><input type="number" style={inputStyle} value={form.quoted_price} onChange={(e) => setForm({ ...form, quoted_price: e.target.value })} placeholder="18000" /></div>
         <div><label style={labelStyle}>Monto cobrado (MXN)</label><input type="number" style={inputStyle} value={form.paid_amount} onChange={(e) => setForm({ ...form, paid_amount: e.target.value })} placeholder="9000" /></div>
       </div>
@@ -303,6 +303,11 @@ export default function ProyectosClient({ initial, clients, cotizaciones, defaul
           {formEl}
         </Modal>
       )}
+      <style>{`
+        @media (max-width: 520px) {
+          .proy-form-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </>
   );
 }

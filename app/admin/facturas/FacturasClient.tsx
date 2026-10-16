@@ -313,7 +313,8 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
           </div>
         ) : (
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
                   {["No.", "Fecha", "Cliente", "Concepto", "Total", "Tipo", "Estado", ""].map((h) => (
@@ -412,6 +413,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

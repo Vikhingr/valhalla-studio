@@ -130,7 +130,7 @@ export default function PendientesClient({
       </div>
 
       {/* Kanban columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <div className="kanban-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
         {COLUMNS.map(({ status, label }) => {
           const col = filtered.filter((t) => t.status === status);
           return (
@@ -270,6 +270,13 @@ export default function PendientesClient({
           </div>
         </div>
       )}
+      <style>{`
+        @media (max-width: 768px) {
+          .kanban-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
