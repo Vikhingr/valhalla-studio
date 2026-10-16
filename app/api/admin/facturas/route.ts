@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";
 import { decrypt } from "@/lib/encrypt";
+import { callFacturapi, isPersonaMoral } from "@/lib/facturapi";
 
 const SERVICIOS_MAP: Record<string, { clave_prod_serv: string; clave_unidad: string }> = {
   landing:        { clave_prod_serv: "81112103", clave_unidad: "E48" },
@@ -12,60 +13,6 @@ const SERVICIOS_MAP: Record<string, { clave_prod_serv: string; clave_unidad: str
   automatizacion: { clave_prod_serv: "81111504", clave_unidad: "E48" },
   mantenimiento:  { clave_prod_serv: "81111509", clave_unidad: "E48" },
 };
-
-// RFC de 12 caracteres = Persona Moral (retiene IVA al emisor RESICO)
-function isPersonaMoral(rfc: string): boolean {
-  const clean = rfc.replace(/\s/g, "");
-  return clean.length === 12 && clean !== "XAXX010101000" && clean !== "XEXX010101000";
-}
-
-async function callFacturapi(facturaData: Record<string, unknown>, apiKey: string) {
-  const withIva = (facturaData.iva as number) > 0;
-  const ivaRetenido = (facturaData.iva_retenido as number) ?? 0;
-
-  const taxes: { type: string; rate: number; withholding?: boolean }[] = [];
-  if (withIva) taxes.push({ type: "IVA", rate: 0.16 });
-  if (ivaRetenido > 0) taxes.push({ type: "IVA", rate: 0.16 * (2 / 3), withholding: true });
-
-  const payload = {
-    customer: {
-      legal_name: facturaData.receptor_nombre,
-      tax_id: facturaData.receptor_rfc,
-      tax_system: facturaData.receptor_regimen,
-      address: { zip: facturaData.receptor_cp },
-    },
-    items: [
-      {
-        quantity: 1,
-        product: {
-          description: facturaData.descripcion,
-          product_key: facturaData.clave_prod_serv ?? "81112103",
-          unit_key: facturaData.clave_unidad ?? "E48",
-          price: facturaData.subtotal,
-          tax_included: false,
-          taxes,
-        },
-      },
-    ],
-    use: facturaData.uso_cfdi,
-    payment_form: facturaData.forma_pago,
-  };
-
-  const res = await fetch("https://www.facturapi.io/v2/invoices", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { message?: string }).message ?? `Facturapi ${res.status}`);
-  }
-  return res.json();
-}
 
 export async function GET() {
   const deny = await requireAdmin();

@@ -1,9 +1,36 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Plus, X, Eye, FilePdf, Prohibit, Warning, CheckCircle, ArrowRight,
+  Plus, X, Eye, FilePdf, Prohibit, Warning, CheckCircle, ArrowRight, ArrowsClockwise,
 } from "@phosphor-icons/react";
+
+type Toast = { id: number; type: "success" | "error"; message: string };
+
+function Toasts({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
+  if (!toasts.length) return null;
+  return (
+    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 200, display: "flex", flexDirection: "column", gap: 10, maxWidth: 380 }}>
+      {toasts.map((t) => (
+        <div key={t.id} style={{
+          display: "flex", alignItems: "flex-start", gap: 10,
+          background: t.type === "success" ? "oklch(0.20 0.04 160)" : "oklch(0.20 0.04 25)",
+          border: `1px solid ${t.type === "success" ? "oklch(0.55 0.18 160 / 0.5)" : "oklch(0.55 0.18 25 / 0.5)"}`,
+          borderRadius: 10, padding: "12px 14px", boxShadow: "0 4px 20px oklch(0 0 0 / 0.4)",
+          animation: "slideIn 0.2s ease",
+        }}>
+          {t.type === "success"
+            ? <CheckCircle size={16} weight="fill" style={{ color: "oklch(0.70 0.18 160)", flexShrink: 0, marginTop: 1 }} />
+            : <Warning size={16} weight="fill" style={{ color: "oklch(0.70 0.18 30)", flexShrink: 0, marginTop: 1 }} />}
+          <span style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.5, flex: 1 }}>{t.message}</span>
+          <button onClick={() => onDismiss(t.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, flexShrink: 0 }}>
+            <X size={14} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
 import type { Factura, Client } from "@/lib/types";
 import { USOS_CFDI, FORMAS_PAGO, REGIMENES_FISCALES, CATALOGO_SERVICIOS, USOS_CFDI_DEFAULT } from "@/lib/types";
 
@@ -74,7 +101,22 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [timbradoError, setTimbradoError] = useState<{ message: string; facturaId: string } | null>(null);
+  const [retrying, setRetrying] = useState<string | null>(null);
+  const [cancelModal, setCancelModal] = useState<{ id: string; tipo: string } | null>(null);
+  const [cancelMotive, setCancelMotive] = useState("02");
+  const [canceling, setCanceling] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
   const router = useRouter();
+
+  const showToast = useCallback((type: Toast["type"], message: string) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 5000);
+  }, []);
+
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   const usosFiltrados = USOS_CFDI.filter((u) => {
     const visibles = usosCfdiVisibles ?? USOS_CFDI_DEFAULT;
@@ -148,16 +190,55 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
     }
   }
 
-  async function handleCancel(id: string) {
-    if (!confirm("¿Cancelar esta factura? Esta acción no se puede deshacer.")) return;
-    const res = await fetch(`/api/admin/facturas/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "cancelada" }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      setFacturas((prev) => prev.map((f) => (f.id === id ? updated : f)));
+  async function handleRetry(id: string) {
+    setRetrying(id);
+    try {
+      const res = await fetch(`/api/admin/facturas/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "retry_timbrado" }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast("error", data.error ?? "Error al reintentar"); return; }
+      setFacturas((prev) => prev.map((f) => (f.id === id ? data : f)));
+      if (data.facturapi_error) {
+        showToast("error", "Error de timbrado: " + data.facturapi_error);
+      } else if (data.tipo === "cfdi") {
+        showToast("success", "Factura timbrada como CFDI · " + (data.cfdi_uuid?.substring(0, 18) ?? "") + "…");
+      }
+    } catch (e) {
+      showToast("error", "Error de red al reintentar: " + String(e));
+    } finally {
+      setRetrying(null);
+    }
+  }
+
+  function openCancelModal(id: string, tipo: string) {
+    setCancelModal({ id, tipo });
+    setCancelMotive("02");
+  }
+
+  async function confirmCancel() {
+    if (!cancelModal) return;
+    setCanceling(true);
+    try {
+      const res = await fetch(`/api/admin/facturas/${cancelModal.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelada", motive: cancelMotive }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast("error", "Error al cancelar: " + (data.error ?? "Error desconocido"));
+        return;
+      }
+      setFacturas((prev) => prev.map((f) => (f.id === cancelModal.id ? data : f)));
+      showToast("success", cancelModal.tipo === "cfdi" ? "CFDI cancelado ante el SAT" : "Factura marcada como cancelada");
+      setCancelModal(null);
+    } catch (e) {
+      showToast("error", "Error de red: " + String(e));
+    } finally {
+      setCanceling(false);
     }
   }
 
@@ -180,6 +261,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
 
   return (
     <>
+      <Toasts toasts={toasts} onDismiss={dismissToast} />
       <div style={{ padding: "28px 32px", maxWidth: 1000 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
@@ -305,9 +387,19 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                         >
                           <Eye size={15} />
                         </button>
+                        {f.tipo === "pdf" && f.facturapi_error && f.status === "activa" && (
+                          <button
+                            onClick={() => handleRetry(f.id)}
+                            disabled={retrying === f.id}
+                            title="Reintentar timbrado CFDI"
+                            style={{ background: "none", border: "none", cursor: retrying === f.id ? "wait" : "pointer", color: "oklch(0.65 0.18 293)", padding: 4, borderRadius: 5, opacity: retrying === f.id ? 0.5 : 1 }}
+                          >
+                            <ArrowsClockwise size={15} style={retrying === f.id ? { animation: "spin 1s linear infinite" } : undefined} />
+                          </button>
+                        )}
                         {f.status === "activa" && (
                           <button
-                            onClick={() => handleCancel(f.id)}
+                            onClick={() => openCancelModal(f.id, f.tipo)}
                             title="Cancelar factura"
                             style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 4, borderRadius: 5 }}
                           >
@@ -323,6 +415,72 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
           </div>
         )}
       </div>
+
+      {/* Modal cancelación */}
+      {cancelModal && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
+          onClick={() => !canceling && setCancelModal(null)}
+        >
+          <div
+            style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 28, width: "100%", maxWidth: 420 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>Cancelar factura</h2>
+              <button onClick={() => setCancelModal(null)} disabled={canceling} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {cancelModal.tipo === "cfdi" ? (
+              <>
+                <p style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 16, lineHeight: 1.6 }}>
+                  Esta factura se cancelará ante el <strong>SAT</strong> vía FacturAPI. Elige el motivo de cancelación:
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                  {[
+                    { value: "02", label: "02 — Errores sin relación", desc: "La factura tiene un error y no emitirás una sustituta." },
+                    { value: "03", label: "03 — No se llevó a cabo la operación", desc: "El servicio o venta no se concretó." },
+                    { value: "01", label: "01 — Errores con relación", desc: "Ya emitiste una factura sustituta que la reemplaza." },
+                  ].map((m) => (
+                    <label
+                      key={m.value}
+                      style={{ display: "flex", gap: 10, padding: "10px 12px", borderRadius: 8, cursor: "pointer", border: `1px solid ${cancelMotive === m.value ? "var(--violet)" : "var(--border)"}`, background: cancelMotive === m.value ? "oklch(0.58 0.22 293 / 0.08)" : "transparent" }}
+                    >
+                      <input type="radio" name="motive" value={m.value} checked={cancelMotive === m.value} onChange={() => setCancelMotive(m.value)} style={{ marginTop: 2, accentColor: "var(--violet)" }} />
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{m.label}</div>
+                        <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{m.desc}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div style={{ background: "oklch(0.22 0.04 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.3)", borderRadius: 7, padding: "8px 12px", fontSize: 12, color: "oklch(0.75 0.10 30)", marginBottom: 20 }}>
+                  Esta acción cancela el CFDI ante el SAT y no se puede deshacer.
+                </div>
+              </>
+            ) : (
+              <p style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 20, lineHeight: 1.6 }}>
+                Esta factura es <strong>PDF</strong> (no timbrada). Solo se marcará como cancelada en el sistema — no hay nada que cancelar ante el SAT.
+              </p>
+            )}
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setCancelModal(null)} disabled={canceling} className="btn-secondary" style={{ padding: "9px 20px" }}>
+                Volver
+              </button>
+              <button
+                onClick={confirmCancel}
+                disabled={canceling}
+                style={{ padding: "9px 20px", borderRadius: 8, border: "none", background: "oklch(0.50 0.18 25)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: canceling ? "wait" : "pointer", opacity: canceling ? 0.7 : 1 }}
+              >
+                {canceling ? "Cancelando..." : "Confirmar cancelación"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal crear factura */}
       {modal && (
