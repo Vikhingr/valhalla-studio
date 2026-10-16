@@ -28,7 +28,13 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* mobile-native baseline */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
 
 body {
   background-color: var(--bg);
@@ -37,6 +43,19 @@ body {
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+/* Prevent iOS input zoom — 16px minimum on touch devices */
+@media (pointer: coarse) {
+  input, textarea, select { font-size: 16px !important; }
+}
+
+/* Touch-action + user-select for all tappable elements */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 ::selection { background: var(--violet); color: white; }
@@ -62,13 +81,15 @@ body {
   white-space: nowrap;
 }
 
-.btn-primary:hover {
-  background: var(--violet-dim);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    background: var(--violet-dim);
+    transform: translateY(-1px);
+  }
 }
 
 .btn-primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.97);
 }
 
 .btn-secondary {
@@ -88,14 +109,16 @@ body {
   white-space: nowrap;
 }
 
-.btn-secondary:hover {
-  border-color: var(--violet-light);
-  color: var(--violet-light);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .btn-secondary:hover {
+    border-color: var(--violet-light);
+    color: var(--violet-light);
+    transform: translateY(-1px);
+  }
 }
 
 .btn-secondary:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.97);
 }
 
 h1, h2, h3 { text-wrap: balance; }

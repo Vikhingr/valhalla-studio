@@ -10,6 +10,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   useEffect(() => { setOpen(false); }, [pathname]);
 
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     window.addEventListener("keydown", h);
@@ -19,7 +25,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   if (pathname === "/admin/login") return <>{children}</>;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ display: "flex", minHeight: "100dvh", background: "var(--bg)" }}>
       {/* Overlay mobile */}
       <div
         className={`adm-overlay${open ? " adm-overlay--on" : ""}`}
@@ -65,6 +71,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           align-items: center;
           gap: 12px;
           padding: 11px 16px;
+          padding-top: calc(11px + env(safe-area-inset-top, 0px));
           background: var(--surface);
           border-bottom: 1px solid var(--border);
           position: sticky;
@@ -72,6 +79,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           z-index: 100;
           flex-shrink: 0;
         }
+        .adm-topbar button:active { opacity: 0.6; transform: scale(0.92); transition: transform 100ms, opacity 100ms; }
         @media (max-width: 768px) {
           .adm-overlay--on { display: block; }
           .adm-topbar { display: flex; }

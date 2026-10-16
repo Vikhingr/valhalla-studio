@@ -18,7 +18,7 @@ function pct(n: number) {
 }
 
 interface Factura {
-  id: string; folio?: number; fecha: string; receptor_nombre: string;
+  id: string; fecha: string; receptor_nombre: string;
   descripcion: string; subtotal: number; iva: number; total: number; tipo: string;
 }
 

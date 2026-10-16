@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
   const { data: facturas } = await db
     .from("facturas")
-    .select("id, folio, fecha, receptor_nombre, descripcion, subtotal, iva, iva_retenido, total, tipo, status")
+    .select("id, fecha, receptor_nombre, descripcion, subtotal, iva, iva_retenido, total, tipo, status")
     .neq("status", "cancelada")
     .gte("fecha", desde)
     .lte("fecha", hasta)

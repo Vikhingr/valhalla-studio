@@ -103,6 +103,7 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
             <Link
               key={href}
               href={href}
+              className="adm-nav-link"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -115,7 +116,7 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
                 background: active ? "var(--violet)" : "transparent",
                 textDecoration: "none",
                 marginBottom: 2,
-                transition: "background 0.15s, color 0.15s",
+                transition: "background 0.15s, color 0.15s, transform 0.1s, opacity 0.1s",
               }}
               onMouseEnter={(e) => {
                 if (!active) {
@@ -172,7 +173,9 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
     </aside>
 
     <style>{`
-      .adm-sidebar { transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+      .adm-sidebar { transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); }
+      .adm-sidebar-close:active { opacity: 0.6; transform: scale(0.9); }
+      .adm-nav-link:active { opacity: 0.7; transform: scale(0.97); }
       @media (max-width: 768px) {
         .adm-sidebar {
           position: fixed !important;
@@ -183,6 +186,7 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
           z-index: 200 !important;
           transform: translateX(-100%);
           box-shadow: 4px 0 32px rgba(0,0,0,0.4);
+          padding-top: env(safe-area-inset-top, 0px);
         }
         .adm-sidebar--open { transform: translateX(0) !important; }
         .adm-sidebar-close { display: flex !important; }
