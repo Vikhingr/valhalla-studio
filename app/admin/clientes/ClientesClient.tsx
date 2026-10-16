@@ -1,3 +1,16 @@
+/**
+ * ClientesClient — Módulo de gestión de clientes del panel admin.
+ *
+ * Lista todos los clientes con búsqueda en tiempo real (filtra por nombre,
+ * empresa, email o RFC). Permite crear, editar y eliminar clientes.
+ *
+ * El formulario incluye datos fiscales (RFC, régimen, CP, domicilio) necesarios
+ * para generar facturas CFDI. AddressInput usa la API de Google Places (proxy
+ * en /api/admin/places) para autocompletar el domicilio fiscal.
+ *
+ * protonpass_ref: campo libre para anotar el ID de la entrada en ProtonPass
+ * donde Gabriel guarda las credenciales del cliente (accesos a su hosting, etc.).
+ */
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

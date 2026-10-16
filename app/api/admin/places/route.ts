@@ -1,3 +1,13 @@
+/**
+ * GET /api/admin/places?q=texto
+ *
+ * Proxy para la API de Places de Google (New) — autocompletado de domicilios
+ * en el formulario de clientes. Se ejecuta en el servidor para no exponer
+ * GOOGLE_MAPS_API_KEY al cliente.
+ *
+ * Requiere mínimo 3 caracteres y restringe resultados a México (MX).
+ * Si la clave no está configurada o hay error, retorna suggestions:[] sin romper.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 

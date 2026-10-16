@@ -1,3 +1,16 @@
+/**
+ * FacturaDetailPage — Vista de impresión/detalle de una factura (Server Component).
+ *
+ * Carga en paralelo: la factura con datos del cliente, la config fiscal del emisor,
+ * y todos los IDs de facturas ordenados por fecha para calcular el folio.
+ *
+ * El `folio` es la posición 1-indexed de esta factura en orden cronológico.
+ * Se calcula aquí (no está almacenado en BD) y se pasa a PrintInvoice.
+ *
+ * `hasCfdiDownload`: true solo si tanto la factura tiene facturapi_id como
+ * existe la API key en configuracion — garantiza que los botones PDF/XML
+ * solo aparecen cuando el CFDI realmente fue timbrado.
+ */
 import { createServerClient } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import PrintInvoice from "./PrintInvoice";

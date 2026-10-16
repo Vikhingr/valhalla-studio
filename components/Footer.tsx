@@ -1,3 +1,7 @@
+/**
+ * Footer — Pie de página del sitio público.
+ * Componente minimal: solo marca y copyright. Sin links de contacto (privacidad).
+ */
 export default function Footer() {
   return (
     <footer

@@ -1,3 +1,10 @@
+/**
+ * LoginPage — Página de autenticación del panel admin.
+ *
+ * Formulario de una sola contraseña (ADMIN_PASSWORD en .env).
+ * En éxito, el server setea la cookie httpOnly `admin_token` y
+ * redirige al dashboard. En error muestra mensaje sin revelar detalles.
+ */
 "use client";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";

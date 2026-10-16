@@ -1,3 +1,12 @@
+/**
+ * ConfiguracionPage — Server Component que carga la configuración fiscal/global.
+ *
+ * Los campos sensibles (facturapi_key, cer_data, key_data, csd_password) se
+ * convierten en flags boolean (has_*) antes de pasar al Client Component.
+ * Nunca se exponen sus valores al navegador — solo se indica si están configurados.
+ *
+ * Existe una sola fila con id="global" en la tabla `configuracion`.
+ */
 import { createServerClient } from "@/lib/supabase";
 import ConfiguracionClient from "./ConfiguracionClient";
 

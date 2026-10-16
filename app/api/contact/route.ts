@@ -1,3 +1,17 @@
+/**
+ * POST /api/contact
+ *
+ * Recibe el formulario de contacto del sitio público y envía un email
+ * a contacto@valhallastudio.com.mx usando Resend.
+ *
+ * Seguridad: todos los valores del formulario se escapan con HTML entities
+ * antes de insertarlos en el template para prevenir XSS en el cliente de correo.
+ *
+ * El email tiene replyTo del visitante, así Gabriel puede responder directamente
+ * sin copiar el address manualmente.
+ *
+ * Variable de entorno: RESEND_API_KEY
+ */
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 

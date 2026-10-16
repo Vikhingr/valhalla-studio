@@ -1,3 +1,8 @@
+/**
+ * PendientesPage — Server Component que carga tareas y proyectos.
+ * Ambas queries en paralelo. Hidrata PendientesClient para evitar
+ * el spinner inicial de carga en el lado cliente.
+ */
 import { createServerClient } from "@/lib/supabase";
 import PendientesClient from "./PendientesClient";
 

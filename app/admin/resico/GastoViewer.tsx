@@ -1,3 +1,10 @@
+/**
+ * GastoViewer — Modal de detalle para un gasto RESICO.
+ *
+ * Muestra los datos del CFDI de egreso: emisor, RFC, concepto, importes.
+ * El cfdi_uuid es el folio fiscal oficial del SAT.
+ * Se abre desde la tabla de gastos en ResicоClient al presionar el ícono de ojo.
+ */
 "use client";
 import { X } from "@phosphor-icons/react";
 

@@ -1,3 +1,11 @@
+/**
+ * ClienteDetailPage — Vista de detalle de un cliente (Server Component).
+ *
+ * Carga en paralelo el cliente y sus proyectos asociados.
+ * Si el cliente no existe devuelve 404 vía notFound().
+ * Muestra: info básica, referencia ProtonPass (si existe) y lista de proyectos
+ * con su etapa actual renderizada como badge de color.
+ */
 import { createServerClient } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import Link from "next/link";

@@ -1,3 +1,20 @@
+/**
+ * GET/POST /api/admin/resico
+ *
+ * Módulo de estimación fiscal mensual para el Régimen Simplificado de Confianza
+ * (RESICO, Art. 113-E LISR), aplicable a personas físicas con ingresos ≤ 3.5 M MXN/año.
+ *
+ * GET ?mes=N&año=YYYY — calcula y retorna:
+ *   - ingresos: facturas activas del mes (base ISR + IVA cobrado)
+ *   - isr_estimado: ISR según tabla por tramos del Art. 113-E LISR (actualizada 2025)
+ *   - gastos: CFDIs de egresos del mes (tabla gastos_resico)
+ *   - iva_neto: IVA a pagar = IVA cobrado − IVA acreditable de gastos (mínimo 0)
+ *
+ * POST — registra un gasto con IVA acreditable a partir de un CFDI XML parseado
+ *        en el cliente. El CFDI UUID tiene restricción UNIQUE en la tabla.
+ *
+ * Nota: calcISR se exporta para que los tests puedan verificar los tramos.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

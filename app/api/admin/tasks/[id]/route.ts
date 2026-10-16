@@ -1,3 +1,10 @@
+/**
+ * PUT/PATCH/DELETE /api/admin/tasks/[id]
+ *
+ * PUT    — reemplaza todos los campos de una tarea (edición completa desde modal).
+ * PATCH  — actualiza campos parciales (usado para cambio rápido de status desde la UI).
+ * DELETE — elimina la tarea permanentemente.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

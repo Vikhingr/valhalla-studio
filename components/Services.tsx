@@ -1,3 +1,10 @@
+/**
+ * Services — Sección de servicios del sitio público.
+ *
+ * Muestra los tres servicios principales: Web, Apps Web y Automatizaciones.
+ * Componente de Server — sin estado, importa íconos del bundle /ssr para SSR.
+ * El diseño usa un grid de dos columnas (ícono + contenido) con lista de features.
+ */
 import { Globe, DeviceMobile, Gear } from "@phosphor-icons/react/dist/ssr";
 
 const services = [

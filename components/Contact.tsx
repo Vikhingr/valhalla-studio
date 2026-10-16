@@ -1,3 +1,13 @@
+/**
+ * Contact — Formulario de contacto del sitio público.
+ *
+ * Envía a POST /api/contact que usa Resend para mandar el email a Gabriel.
+ * El replyTo se setea con el email del visitante para respuesta directa.
+ * Muestra estados: enviando → enviado (success) | error.
+ *
+ * Datos que recopila: nombre, email, tipo de proyecto, mensaje.
+ * No guarda nada en base de datos; solo envía el email.
+ */
 "use client";
 import { useState, FormEvent } from "react";
 import { WhatsappLogo, Envelope } from "@phosphor-icons/react";

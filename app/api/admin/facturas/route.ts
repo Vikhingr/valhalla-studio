@@ -1,3 +1,19 @@
+/**
+ * GET/POST /api/admin/facturas
+ *
+ * GET  — lista todas las facturas con datos básicos del cliente (join).
+ *        Ordenadas por created_at descendente.
+ *
+ * POST — crea una factura nueva. Flujo:
+ *   1. Calcula IVA (16%) y retención de IVA si el receptor es Persona Moral
+ *      (RFC de 12 chars → retiene 2/3 del IVA = 10.67%, Art. 1-A LIVA).
+ *   2. Si FacturAPI está configurado, intenta timbrar el CFDI ante el SAT.
+ *      - Éxito: tipo='cfdi', guarda UUID y datos del sello.
+ *      - Error:  tipo='pdf' queda activo, guarda el mensaje de error.
+ *   3. Si FacturAPI no está configurado, crea solo el registro (tipo='pdf').
+ *
+ * El campo `folio` no existe en la tabla — se calcula en el frontend por posición.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

@@ -1,3 +1,12 @@
+/**
+ * GET /api/admin/facturas/[id]/pdf
+ *
+ * Proxy que obtiene el PDF de una factura timbrada desde FacturAPI y lo
+ * sirve al browser como descarga. La clave de FacturAPI se descifra en el
+ * servidor antes de usarla; nunca se expone al cliente.
+ *
+ * Solo funciona para facturas con tipo='cfdi' (timbradas con facturapi_id).
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

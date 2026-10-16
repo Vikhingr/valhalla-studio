@@ -1,3 +1,19 @@
+/**
+ * CotizadorPage — Herramienta interna para armar propuestas de precio por componentes.
+ *
+ * Flujo:
+ *   1. Seleccionar tipo de proyecto: web, app o automatización.
+ *   2. Elegir un preset (ej. "Landing") para preseleccionar features comunes.
+ *   3. Agregar/quitar funcionalidades individualmente.
+ *   4. Activar IVA 16% si el cliente es persona moral con RFC 12 chars.
+ *   5. Copiar la propuesta formateada para WhatsApp/email, o guardarla en BD.
+ *
+ * Los precios están hardcodeados como constantes en este archivo.
+ * Para actualizar tarifas: editar los objetos FEATURES y MAINT.
+ *
+ * Las cotizaciones guardadas se persisten en la tabla `cotizaciones` de Supabase
+ * y se pueden usar para crear proyectos desde ProyectosClient (?from=id).
+ */
 "use client";
 import { useState, useEffect } from "react";
 import { Copy, Check, FloppyDisk, Trash } from "@phosphor-icons/react";

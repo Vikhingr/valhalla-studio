@@ -1,3 +1,12 @@
+/**
+ * GET/POST /api/admin/proyectos
+ *
+ * GET  — lista todos los proyectos con datos básicos del cliente (join).
+ *        Ordenados por fecha de creación, más recientes primero.
+ *
+ * POST — crea un proyecto. El campo `stage` empieza siempre en 'cotizacion'
+ *        si no se especifica. paid_amount inicia en 0 (sin pagos recibidos).
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";
@@ -9,7 +18,7 @@ export async function GET() {
   const db = await createServerClient();
   const { data, error } = await db
     .from("projects")
-    .select("*, clients(id, name, company)")
+    .select("*, clients(id, name, company)")  // join parcial: solo lo necesario para la lista
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -21,19 +30,20 @@ export async function POST(req: NextRequest) {
   if (deny) return deny;
 
   const body = await req.json();
-  const db = await createServerClient();
+  const db   = await createServerClient();
+
   const { data, error } = await db
     .from("projects")
     .insert({
-      name: body.name,
-      client_id: body.client_id || null,
-      stage: body.stage || "cotizacion",
-      start_date: body.start_date || null,
-      deadline: body.deadline || null,
-      quoted_price: body.quoted_price ? Number(body.quoted_price) : null,
-      paid_amount: body.paid_amount ? Number(body.paid_amount) : 0,
-      project_url: body.project_url || null,
-      notes: body.notes || null,
+      name:          body.name,
+      client_id:     body.client_id      || null,
+      stage:         body.stage          || "cotizacion",
+      start_date:    body.start_date     || null,
+      deadline:      body.deadline       || null,
+      quoted_price:  body.quoted_price   ? Number(body.quoted_price)  : null,
+      paid_amount:   body.paid_amount    ? Number(body.paid_amount)   : 0,
+      project_url:   body.project_url    || null,
+      notes:         body.notes          || null,
       protonpass_ref: body.protonpass_ref || null,
     })
     .select("*, clients(id, name, company)")

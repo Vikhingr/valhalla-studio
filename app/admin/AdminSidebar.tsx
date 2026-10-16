@@ -1,3 +1,18 @@
+/**
+ * AdminSidebar — Barra de navegación lateral del panel admin.
+ *
+ * En escritorio es un panel fijo a la izquierda (siempre visible).
+ * En móvil se convierte en un drawer que entra desde la izquierda:
+ *   - Controlado por la prop `open` desde AdminShell.
+ *   - Easing iOS cubic-bezier(0.32, 0.72, 0, 1) para sensación nativa.
+ *   - safe-area-inset-top para respetar el notch / Dynamic Island.
+ *   - Botón de cerrar (X) visible solo en móvil.
+ *
+ * El link activo se detecta por coincidencia exacta (dashboard) o prefijo
+ * (cualquier subruta, ej. /admin/clientes/123 activa "Clientes").
+ *
+ * Logout: llama a /api/admin/logout, luego redirige a /admin/login.
+ */
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

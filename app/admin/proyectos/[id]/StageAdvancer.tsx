@@ -1,3 +1,14 @@
+/**
+ * StageAdvancer — Componente para avanzar la etapa de un proyecto con checklist guiada.
+ *
+ * Muestra un modal con una checklist específica para cada transición de etapa
+ * (ej. cotizacion → discovery incluye "cliente aceptó y hay acuerdo por escrito").
+ * La intención es que Gabriel no avance un proyecto sin completar los pasos críticos.
+ *
+ * Al confirmar, hace PATCH /api/admin/proyectos/[id] con la nueva stage.
+ * Las checklists son orientativas (no se persisten en BD) — solo bloquean el botón
+ * de confirmar visualmente hasta que el usuario marca todos los items.
+ */
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

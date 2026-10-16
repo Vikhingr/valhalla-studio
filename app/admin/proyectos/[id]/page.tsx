@@ -1,3 +1,15 @@
+/**
+ * ProyectoDetailPage — Vista de detalle de un proyecto (Server Component).
+ *
+ * Carga en paralelo el proyecto (con datos del cliente embebidos via join) y sus tareas.
+ * Renderiza:
+ *   - Timeline de etapas con indicador de completadas/activa/pendientes.
+ *   - KPIs financieros: cotizado, cobrado, saldo pendiente.
+ *   - StageAdvancer (Client Component) para avanzar la etapa con checklist guiada.
+ *   - Primeras 6 tareas del proyecto con badge de depends_on=client.
+ *
+ * El `folio` no se usa aquí; para verlo se navega a /admin/facturas/[id].
+ */
 import { createServerClient } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import Link from "next/link";

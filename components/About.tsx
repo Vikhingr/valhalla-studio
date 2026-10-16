@@ -1,3 +1,10 @@
+/**
+ * About — Sección "Sobre mí" del sitio público.
+ *
+ * Muestra la foto de Gabriel, una descripción personal y un grid de skills.
+ * Componente de Server (sin "use client") — todo es estático, sin interactividad.
+ * La imagen /gabriel.jpg está en /public y se sirve directamente por Next.js.
+ */
 import Image from "next/image";
 
 const skills = [

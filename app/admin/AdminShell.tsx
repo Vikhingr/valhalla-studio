@@ -1,3 +1,19 @@
+/**
+ * AdminShell — Layout wrapper del panel administrativo.
+ *
+ * Responsabilidades:
+ *  - En escritorio (>768px): muestra el sidebar fijo a la izquierda.
+ *  - En móvil  (≤768px): oculta el sidebar y muestra una topbar con hamburger.
+ *    Al presionar hamburger, abre AdminSidebar como drawer con overlay oscuro.
+ *
+ * Comportamiento del drawer:
+ *  - Se cierra automáticamente al navegar (cambio de pathname).
+ *  - Se cierra con tecla Escape.
+ *  - Bloquea el scroll del body mientras está abierto (document.body.style.overflow).
+ *  - El overlay tiene backdrop-filter:blur para dar sensación de profundidad.
+ *
+ * La ruta /admin/login se excluye del layout (devuelve children directo).
+ */
 "use client";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";

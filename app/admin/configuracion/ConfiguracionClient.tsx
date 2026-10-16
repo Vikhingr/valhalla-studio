@@ -1,3 +1,20 @@
+/**
+ * ConfiguracionClient — Módulo de configuración fiscal del emisor.
+ *
+ * Gestiona la fila única `id='global'` de la tabla `configuracion`.
+ * Secciones:
+ *   1. Datos fiscales básicos: RFC, nombre, régimen, CP, domicilio.
+ *   2. FacturAPI: clave de API (test/live), modo de operación.
+ *      La clave se cifra en el servidor (AES-256) antes de guardarse.
+ *   3. Certificado de Sello Digital (CSD): sube .cer, .key y contraseña.
+ *      Los tres archivos se cifran en el servidor.
+ *   4. Usos CFDI visibles: subset del catálogo SAT que aparece en el
+ *      formulario de factura (evita mostrar todos los ~20 usos).
+ *   5. Alertas RESICO: días de anticipación para avisar del vencimiento.
+ *
+ * Los campos sensibles nunca regresan al cliente (solo boolean has_*).
+ * El EyeSlash/Eye toggle muestra/oculta la clave de FacturAPI en el input.
+ */
 "use client";
 import { useState, useRef } from "react";
 import { CheckCircle, Warning, Eye, EyeSlash, UploadSimple, Gear } from "@phosphor-icons/react";

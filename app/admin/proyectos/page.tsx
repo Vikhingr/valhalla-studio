@@ -1,3 +1,10 @@
+/**
+ * ProyectosPage — Server Component que carga proyectos, clientes y cotizaciones.
+ *
+ * Las tres queries corren en paralelo (Promise.all).
+ * `searchParams.from` recibe el id de una cotización cuando el usuario navega
+ * desde CotizacionesClient → "Crear proyecto desde cotización".
+ */
 import { createServerClient } from "@/lib/supabase";
 import ProyectosClient from "./ProyectosClient";
 

@@ -1,3 +1,17 @@
+/**
+ * ProyectosClient — Módulo de gestión del pipeline de proyectos.
+ *
+ * Vista de tabla con todos los proyectos. Permite crear, editar y eliminar.
+ * El formulario de creación/edición incluye:
+ *   - Cliente asociado (dropdown de clientes existentes)
+ *   - Etapa del pipeline (STAGES: cotizacion → mantenimiento)
+ *   - Precio cotizado y monto pagado (para calcular revenue pendiente)
+ *   - Cotización asociada (opcional): al seleccionar una cotización existente,
+ *     pre-rellena el precio automáticamente
+ *
+ * Al hacer click en un proyecto navega al detalle (/admin/proyectos/[id]).
+ * protonpass_ref: ID de la entrada en ProtonPass con credenciales del proyecto.
+ */
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";

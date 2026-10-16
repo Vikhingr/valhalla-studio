@@ -1,3 +1,11 @@
+/**
+ * GET/PUT/PATCH/DELETE /api/admin/proyectos/[id]
+ *
+ * GET    — obtiene un proyecto con datos del cliente (join).
+ * PUT    — actualiza todos los campos del proyecto (edición completa desde modal).
+ * PATCH  — actualiza campos parciales (ej. avanzar stage desde el botón de etapa).
+ * DELETE — elimina el proyecto permanentemente.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

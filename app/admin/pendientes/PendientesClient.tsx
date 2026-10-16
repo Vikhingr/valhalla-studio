@@ -1,3 +1,15 @@
+/**
+ * PendientesClient — Módulo de gestión de tareas/pendientes.
+ *
+ * Lista de tareas con filtro por status (todas | pendiente | en_progreso | listo).
+ * Cada tarea tiene:
+ *   - depends_on: 'me' (Gabriel actúa) | 'client' (espera al cliente)
+ *   - priority: alta | media | baja (con color PRIORITY_COLORS)
+ *   - proyecto asociado (opcional)
+ *
+ * Las tareas completadas (listo) se pueden mostrar/ocultar con el filtro.
+ * El check rápido en la lista marca una tarea como 'listo' con PATCH.
+ */
 "use client";
 import { useState } from "react";
 import type { Task, TaskStatus, TaskPriority, TaskDependsOn } from "@/lib/types";

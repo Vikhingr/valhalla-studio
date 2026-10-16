@@ -1,3 +1,10 @@
+/**
+ * GET/PUT/DELETE /api/admin/clientes/[id]
+ *
+ * GET    — obtiene un cliente por su UUID (todos los campos).
+ * PUT    — actualiza todos los campos del cliente.
+ * DELETE — elimina el cliente permanentemente (no hay soft delete).
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

@@ -1,3 +1,8 @@
+/**
+ * ClientesPage — Server Component que carga la lista de clientes.
+ * Hidrata ClientesClient con los datos iniciales para evitar un fetch en el lado cliente.
+ * `instant = false` opta por renderizado dinámico (sin caché estática).
+ */
 import { createServerClient } from "@/lib/supabase";
 import ClientesClient from "./ClientesClient";
 

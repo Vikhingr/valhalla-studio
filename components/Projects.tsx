@@ -1,3 +1,17 @@
+/**
+ * Projects — Sección de portafolio del sitio público.
+ *
+ * Estructura:
+ *   - Proyecto destacado (Pepe's) en tarjeta hero con grid 50/50.
+ *   - Resto de proyectos en grid de tarjetas 280px+.
+ *   - Al hacer clic en cualquier tarjeta abre un Modal con galería de capturas.
+ *   - El Modal tiene navegación por flechas (teclado/botones) y un Lightbox
+ *     que muestra la imagen a pantalla completa con botón cerrar y contador.
+ *
+ * Todos los proyectos están definidos como constante en el mismo archivo.
+ * Para agregar un nuevo proyecto: añadir una entrada a `projects[]` y subir
+ * las imágenes a /public/projects/.
+ */
 "use client";
 import Image from "next/image";
 import { useState, useEffect } from "react";

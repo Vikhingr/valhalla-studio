@@ -1,3 +1,14 @@
+/**
+ * CotizacionesClient — Módulo de seguimiento de cotizaciones.
+ *
+ * Las cotizaciones se generan desde el cotizador interactivo (/admin/cotizador).
+ * Aquí se muestran y se puede registrar su estado de pago:
+ *   - anticipo_pagado: se recibió el anticipo
+ *   - pagado_completo: liquidación total
+ *
+ * El botón "Crear proyecto" navega al módulo de proyectos con la cotización
+ * pre-seleccionada para autocompletar el precio.
+ */
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";

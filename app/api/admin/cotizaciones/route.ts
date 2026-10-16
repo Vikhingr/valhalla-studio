@@ -1,3 +1,15 @@
+/**
+ * GET/POST/PATCH/DELETE /api/admin/cotizaciones
+ *
+ * GET    — lista todas las cotizaciones, más recientes primero.
+ * POST   — crea una cotización nueva desde el cotizador.
+ * PATCH  — actualiza campos individuales (ej. marcar anticipo_pagado o pagado_completo).
+ *          El id se incluye en el body (no en la URL) por conveniencia del cliente.
+ * DELETE — elimina una cotización. El id también va en el body.
+ *
+ * selected_features: array JSON de { id, label, price } — los servicios seleccionados
+ * en el cotizador interactivo.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

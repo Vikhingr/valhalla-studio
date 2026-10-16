@@ -1,3 +1,22 @@
+/**
+ * ResicоClient — Módulo de estimación fiscal mensual RESICO.
+ *
+ * Funcionalidad principal:
+ *   - Selector de mes/año → llama a GET /api/admin/resico?mes=N&año=YYYY
+ *   - Muestra ISR estimado según tabla Art. 113-E LISR y IVA neto a pagar
+ *   - Lista facturas activas del mes (ingresos base)
+ *   - Lista gastos con IVA acreditable (reducen el IVA a pagar)
+ *
+ * Registro de gastos:
+ *   - El usuario sube un XML de CFDI 4.0 (comprobante de gasto)
+ *   - parseCFDI() extrae los datos del XML en el cliente (DOMParser)
+ *   - Se muestra preview para confirmar antes de guardar
+ *   - POST /api/admin/resico guarda en la tabla gastos_resico
+ *   - El CFDI UUID tiene restricción UNIQUE para evitar duplicados
+ *
+ * Nota: El nombre del archivo (ResicоClient) tiene una "о" cirílica por
+ * compatibilidad con el sistema de archivos en Windows. No renombrar.
+ */
 "use client";
 import { useState, useEffect, useRef } from "react";
 import {

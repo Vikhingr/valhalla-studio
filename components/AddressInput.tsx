@@ -1,3 +1,17 @@
+/**
+ * AddressInput — Input con autocompletado de domicilios via Google Places.
+ *
+ * Estrategia dual para el autocompletado:
+ *   1. Si NEXT_PUBLIC_GOOGLE_MAPS_API_KEY está disponible en el cliente,
+ *      usa el Web Component <gmp-place-autocomplete> nativo de Google (más robusto).
+ *   2. Si no, hace un debounce de 300ms y llama a GET /api/admin/places?q=...
+ *      que actúa como proxy server-side para no exponer la API key.
+ *
+ * El fallback a texto libre siempre está disponible — si Places falla,
+ * el usuario simplemente escribe la dirección manualmente.
+ *
+ * Usado en: formulario de clientes y configuración fiscal (domicilio).
+ */
 "use client";
 import { useEffect, useRef, useState } from "react";
 

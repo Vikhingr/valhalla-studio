@@ -1,3 +1,13 @@
+/**
+ * RootLayout — Layout raíz de toda la aplicación Next.js.
+ *
+ * Aplica las fuentes Geist Sans y Mono via `next/font` (sin petición externa).
+ * El export `viewport` configura el comportamiento móvil nativo:
+ *   - viewportFit=cover: permite pintar bajo el notch/Dynamic Island.
+ *   - interactiveWidget=resizes-content: el teclado virtual en Android
+ *     encoge el viewport en lugar de hacer overlay, sincronizando con iOS.
+ *   - themeColor: colorea la barra de estado del sistema operativo.
+ */
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";

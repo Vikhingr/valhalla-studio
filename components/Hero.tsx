@@ -1,3 +1,12 @@
+/**
+ * Hero — Sección hero de la landing page.
+ *
+ * Animación de entrada con Framer Motion (split-screen: texto izquierda,
+ * imagen derecha). Respeta prefers-reduced-motion con useReducedMotion():
+ * si el sistema del usuario tiene la preferencia activa, no hay animación.
+ *
+ * Easing [0.22, 1, 0.36, 1] = strong ease-out, sensación de energía al cargar.
+ */
 "use client";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";

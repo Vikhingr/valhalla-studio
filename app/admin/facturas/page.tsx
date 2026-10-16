@@ -1,3 +1,11 @@
+/**
+ * FacturasPage — Server Component que carga facturas, clientes y config fiscal.
+ *
+ * Las tres queries corren en paralelo. Le pasa a FacturasClient:
+ *   - `facturapiconfigured`: si hay API key → habilita el botón "Timbrar CFDI".
+ *   - `emisorNombre`: se muestra en la vista previa antes de timbrar.
+ *   - `usosCfdiVisibles`: array de claves SAT permitidas en el selector (o null = todas).
+ */
 import { createServerClient } from "@/lib/supabase";
 import FacturasClient from "./FacturasClient";
 

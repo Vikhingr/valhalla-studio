@@ -1,3 +1,10 @@
+/**
+ * NotFound — Página 404 personalizada.
+ *
+ * Renderizada automáticamente por Next.js cuando ninguna ruta coincide.
+ * Mantiene la misma estética del Hero (glow de fondo + tipografía gradient).
+ * Reutiliza el Navbar del sitio público para que el usuario pueda volver al inicio.
+ */
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 

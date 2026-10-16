@@ -1,3 +1,14 @@
+/**
+ * Navbar — Barra de navegación fija del sitio público.
+ *
+ * Comportamiento:
+ *   - En desktop: muestra links de anclas + botón CTA.
+ *   - En móvil: muestra hamburger que despliega un menú vertical.
+ *   - Al hacer scroll > 40px, agrega fondo semitransparente con blur (efecto glassmorphism).
+ *
+ * Todos los links son anclas (#inicio, #sobre-mi…) — el sitio es una SPA de una sola página.
+ * El menú móvil se cierra automáticamente al seleccionar un link.
+ */
 "use client";
 import { useState, useEffect } from "react";
 import { List, X } from "@phosphor-icons/react";

@@ -1,3 +1,11 @@
+/**
+ * FloatingWhatsApp — Botón flotante de WhatsApp en la esquina inferior derecha.
+ *
+ * Enlace directo a WhatsApp con mensaje pre-escrito de cotización.
+ * El número de teléfono está en la URL (wa.me/52...) — nunca en texto visible
+ * del HTML público por política de privacidad del proyecto.
+ * El tooltip aparece al hacer hover en desktop.
+ */
 "use client";
 import { useState } from "react";
 import { WhatsappLogo } from "@phosphor-icons/react";

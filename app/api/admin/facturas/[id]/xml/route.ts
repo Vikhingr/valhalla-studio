@@ -1,3 +1,10 @@
+/**
+ * GET /api/admin/facturas/[id]/xml
+ *
+ * Proxy que obtiene el XML del CFDI timbrado desde FacturAPI y lo sirve como
+ * descarga. El XML es el comprobante fiscal oficial (archivo .xml sellado SAT).
+ * Mismo patrón que /pdf pero con Content-Type application/xml.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

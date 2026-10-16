@@ -1,3 +1,10 @@
+/**
+ * DELETE /api/admin/resico/[id]
+ *
+ * Elimina un gasto de la tabla gastos_resico por su UUID.
+ * Los gastos son CFDIs de egresos cargados manualmente para acreditar IVA
+ * en la declaración RESICO mensual.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";

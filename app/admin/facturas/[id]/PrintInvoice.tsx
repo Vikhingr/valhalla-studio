@@ -1,3 +1,24 @@
+/**
+ * PrintInvoice — Renderizador PDF de facturas para impresión / descarga.
+ *
+ * Genera una representación visual de la factura que cumple con los requisitos
+ * del SAT para comprobantes CFDI 4.0 (Art. 29-A CFF):
+ *   - Datos completos del emisor y receptor
+ *   - UUID (folio fiscal) como texto y como QR Code
+ *   - Importe en letra (numToWords) — requerimiento SAT
+ *   - Cadena original y sellos digitales (emisor y SAT) para CFDIs timbrados
+ *   - Régimen fiscal y uso CFDI con descripción completa del catálogo SAT
+ *
+ * Implementación:
+ *   - QR Code generado con la librería `qrcode` en el cliente (canvas → data URL)
+ *   - El QR apunta al verificador del SAT: verificacfdi.facturaelectronica.sat.gob.mx
+ *   - window.print() para imprimir / guardar como PDF desde el browser
+ *   - Para CFDIs timbrados también ofrece descarga del PDF oficial de FacturAPI
+ *     (botón "Descargar PDF oficial") via GET /api/admin/facturas/[id]/pdf
+ *
+ * numToWords: convierte el monto total a español (ej. "1,234.56" → "MIL DOSCIENTOS
+ * TREINTA Y CUATRO PESOS 56/100 M.N.") sin dependencia externa.
+ */
 "use client";
 import { Printer, FilePdf, ArrowLeft, Warning, ShieldCheck } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";

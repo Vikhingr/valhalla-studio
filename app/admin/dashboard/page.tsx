@@ -1,3 +1,20 @@
+/**
+ * Dashboard — Página principal del panel admin.
+ *
+ * Server Component que hace 3 queries en paralelo a Supabase:
+ *   - clients: solo el conteo
+ *   - projects: todos con nombre del cliente (para KPIs y cards)
+ *   - tasks: solo las NO terminadas (status != 'listo')
+ *
+ * Métricas calculadas:
+ *   - Proyectos activos: etapas intermedias (excluye cotizacion/entrega/cobranza/mantenimiento)
+ *   - Revenue pendiente: suma de (quoted_price - paid_amount) de todos los proyectos
+ *   - Tareas urgentes: las de prioridad 'alta'
+ *   - Alerta RESICO: avisa si la fecha límite de declaración está próxima
+ *     (día 17 de cada mes, zona horaria Mexico_City)
+ *
+ * export const instant = false → deshabilita ISR; siempre renderiza en tiempo real.
+ */
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase";
 import { STAGES } from "@/lib/types";

@@ -1,3 +1,13 @@
+/**
+ * GET/POST /api/admin/tasks
+ *
+ * GET  — lista todas las tareas con datos del proyecto asociado (join).
+ *        Acepta ?status=pendiente|en_progreso|listo para filtrar.
+ *        Ordenadas por created_at descendente (más recientes primero).
+ *
+ * POST — crea una tarea. depends_on indica el siguiente responsable:
+ *        'me' = Gabriel debe actuar; 'client' = el cliente debe actuar.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";
