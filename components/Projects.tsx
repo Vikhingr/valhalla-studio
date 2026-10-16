@@ -26,6 +26,7 @@ type Project = {
   img: string;
   screenshots: string[];
   featured: boolean;
+  showLink?: boolean;
 };
 
 const projects: Project[] = [
@@ -44,6 +45,7 @@ const projects: Project[] = [
       "/projects/pepe-servicios.png",
     ],
     featured: true,
+    showLink: true,
   },
   {
     id: "wardex",
@@ -64,6 +66,7 @@ const projects: Project[] = [
       "/projects/wardex.servicios.png",
     ],
     featured: false,
+    showLink: false,
   },
   {
     id: "eyldon",
@@ -82,6 +85,7 @@ const projects: Project[] = [
       "/projects/eyldon-perfil.png",
     ],
     featured: false,
+    showLink: false,
   },
   {
     id: "simulador",
@@ -98,6 +102,7 @@ const projects: Project[] = [
       "/projects/simulador-panel.png",
     ],
     featured: false,
+    showLink: false,
   },
 ];
 
@@ -240,9 +245,11 @@ function Modal({ project, onClose }: { project: Project; onClose: () => void }) 
           )}
           <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
             <p style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.6, flex: 1, minWidth: 160 }}>{project.desc}</p>
-            <a href={project.url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ flexShrink: 0 }}>
-              Ir al proyecto <ArrowUpRight size={15} weight="bold" />
-            </a>
+            {project.showLink !== false && (
+              <a href={project.url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ flexShrink: 0 }}>
+                Ir al proyecto <ArrowUpRight size={15} weight="bold" />
+              </a>
+            )}
           </div>
         </div>
 

@@ -496,7 +496,7 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
             --violet-light: #7c3aed !important;
           }
 
-          aside { display: none !important; }
+          aside, header, nav, .adm-topbar { display: none !important; }
           .no-print { display: none !important; }
 
           html, body {
