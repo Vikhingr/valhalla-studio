@@ -5,7 +5,9 @@ const scryptAsync = promisify(scrypt);
 const ALG = 'aes-256-cbc';
 
 async function derivedKey(): Promise<Buffer> {
-  const secret = process.env.SESSION_SECRET ?? 'valhalla-dev-insecure';
+  // ENCRYPTION_KEY is dedicated to data-at-rest encryption and must never rotate.
+  // SESSION_SECRET is for admin auth cookies only.
+  const secret = process.env.ENCRYPTION_KEY ?? process.env.SESSION_SECRET ?? 'valhalla-dev-insecure';
   return scryptAsync(secret, 'vs-fiscal-v1', 32) as Promise<Buffer>;
 }
 
