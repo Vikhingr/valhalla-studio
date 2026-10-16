@@ -41,6 +41,14 @@ export default async function DashboardPage() {
     return sum + (owed > 0 ? owed : 0);
   }, 0);
 
+  // Alerta RESICO — leer días configurados
+  const { data: configData } = await db.from("configuracion").select("resico_alerta_1, resico_alerta_2, resico_alerta_3").eq("id", "global").single();
+  const alertaDias = [
+    configData?.resico_alerta_1 ?? 5,
+    configData?.resico_alerta_2 ?? 10,
+    configData?.resico_alerta_3 ?? 15,
+  ].filter(Boolean).sort((a, b) => a - b);
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const in14 = new Date(today.getTime() + 14 * 86400000);
@@ -59,12 +67,41 @@ export default async function DashboardPage() {
 
   const blockingTasks = allTasks.filter((t) => t.depends_on === "client" && t.status !== "listo");
 
+  // Calcular si hoy es día de alerta RESICO
+  const diaHoy = today.getDate();
+  const mesHoy = today.getMonth() + 1;
+  const añoHoy = today.getFullYear();
+  const esDiaAlerta = alertaDias.includes(diaHoy);
+  const MESES_ES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const mesDeclaracion = mesHoy === 12 ? `Enero ${añoHoy + 1}` : `${MESES_ES[mesHoy + 1]} ${añoHoy}`;
+  const diasRestantes = 17 - diaHoy;
+
   return (
     <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
       <style>{`
         .dash-stat-card:hover { border-color: oklch(0.38 0.03 280) !important; }
         .dash-deadline-link:hover { background: var(--surface-2) !important; }
       `}</style>
+
+      {/* Alerta RESICO */}
+      {esDiaAlerta && diasRestantes > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, background: "oklch(0.22 0.08 60 / 0.2)", border: "1px solid oklch(0.65 0.18 60 / 0.5)", borderRadius: 10, padding: "14px 18px", marginBottom: 24 }}>
+          <Warning size={20} weight="fill" style={{ color: "oklch(0.80 0.18 60)", flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "oklch(0.85 0.15 60)" }}>
+              Declaración RESICO — faltan {diasRestantes} día{diasRestantes !== 1 ? "s" : ""} para el día 17
+            </div>
+            <div style={{ fontSize: 12, color: "oklch(0.72 0.12 60)", marginTop: 2 }}>
+              Ingresa al módulo RESICO para ver tu ISR e IVA de {MESES_ES[mesHoy]} y declarar antes del 17 de {mesDeclaracion}.
+            </div>
+          </div>
+          <a href="/admin/resico"
+            style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 7, background: "oklch(0.65 0.18 60)", color: "white", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+            Ver RESICO →
+          </a>
+        </div>
+      )}
 
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em" }}>

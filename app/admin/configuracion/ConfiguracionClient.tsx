@@ -65,7 +65,14 @@ async function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export default function ConfiguracionClient({ initial }: { initial: ConfiguracionFiscal & { updated_at: string | null } }) {
+type InitialConfig = ConfiguracionFiscal & {
+  updated_at: string | null;
+  resico_alerta_1?: number | null;
+  resico_alerta_2?: number | null;
+  resico_alerta_3?: number | null;
+};
+
+export default function ConfiguracionClient({ initial }: { initial: InitialConfig }) {
   const [form, setForm] = useState({
     rfc_emisor: initial.rfc_emisor ?? "",
     nombre_emisor: initial.nombre_emisor ?? "",
@@ -76,6 +83,12 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
     facturapi_mode: initial.facturapi_mode ?? "test",
     facturapi_key: "",
     csd_password: "",
+  });
+
+  const [alertas, setAlertas] = useState({
+    a1: initial.resico_alerta_1 ?? 5,
+    a2: initial.resico_alerta_2 ?? 10,
+    a3: initial.resico_alerta_3 ?? 15,
   });
 
   const [hasCer, setHasCer] = useState(initial.has_cer);
@@ -128,6 +141,9 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
       if (form.csd_password.trim()) payload.csd_password = form.csd_password.trim();
       if (cerFile) payload.cer_data = await fileToBase64(cerFile);
       if (keyFile) payload.key_data = await fileToBase64(keyFile);
+      payload.resico_alerta_1 = alertas.a1;
+      payload.resico_alerta_2 = alertas.a2;
+      payload.resico_alerta_3 = alertas.a3;
 
       const res = await fetch("/api/admin/configuracion", {
         method: "PUT",
@@ -374,6 +390,29 @@ export default function ConfiguracionClient({ initial }: { initial: Configuracio
             </div>
           </Field>
         </div>
+      </Section>
+
+      {/* Alertas RESICO */}
+      <Section title="Alertas RESICO — Declaración mensual">
+        <p style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.6 }}>
+          Configura los días del mes en que aparece el aviso en el Dashboard recordándote declarar antes del día 17.
+        </p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          {(["a1", "a2", "a3"] as const).map((k, i) => (
+            <Field key={k} label={`Alerta ${i + 1} — día del mes`} hint="Debe ser menor al 17">
+              <input
+                type="number"
+                min={1} max={16}
+                style={{ ...inputStyle, width: 90 }}
+                value={alertas[k]}
+                onChange={(e) => setAlertas((prev) => ({ ...prev, [k]: Math.min(16, Math.max(1, Number(e.target.value))) }))}
+              />
+            </Field>
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: "var(--muted)" }}>
+          Valores por defecto: día 5, 10 y 15. El aviso aparece solo el día exacto si aún no ha pasado el día 17.
+        </p>
       </Section>
 
       {error && (

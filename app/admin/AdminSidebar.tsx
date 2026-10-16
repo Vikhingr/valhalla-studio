@@ -11,6 +11,7 @@ import {
   FilePdf,
   Gear,
   SignOut,
+  ChartBar,
 } from "@phosphor-icons/react";
 
 const NAV = [
@@ -21,6 +22,7 @@ const NAV = [
   { href: "/admin/cotizaciones",  label: "Cotizaciones",  icon: Receipt },
   { href: "/admin/cotizador",     label: "Cotizador",     icon: Calculator },
   { href: "/admin/facturas",      label: "Facturas",      icon: FilePdf },
+  { href: "/admin/resico",        label: "RESICO",        icon: ChartBar },
   { href: "/admin/configuracion", label: "Configuración", icon: Gear },
 ];
 

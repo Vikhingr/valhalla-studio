@@ -31,6 +31,9 @@ export async function GET() {
     has_password: !!data.csd_password,
     updated_at: data.updated_at,
     usos_cfdi_visibles: data.usos_cfdi_visibles ?? null,
+    resico_alerta_1: data.resico_alerta_1 ?? 5,
+    resico_alerta_2: data.resico_alerta_2 ?? 10,
+    resico_alerta_3: data.resico_alerta_3 ?? 15,
   });
 }
 
@@ -51,6 +54,11 @@ export async function PUT(req: NextRequest) {
     if (body[f] !== undefined) update[f] = body[f] || null;
   }
   if (body.facturapi_mode) update.facturapi_mode = body.facturapi_mode;
+
+  // RESICO alert days
+  if (body.resico_alerta_1 !== undefined) update.resico_alerta_1 = Number(body.resico_alerta_1) || 5;
+  if (body.resico_alerta_2 !== undefined) update.resico_alerta_2 = Number(body.resico_alerta_2) || 10;
+  if (body.resico_alerta_3 !== undefined) update.resico_alerta_3 = Number(body.resico_alerta_3) || 15;
 
   // Array field: usos CFDI visibles en formulario de factura
   if (body.usos_cfdi_visibles !== undefined) {
