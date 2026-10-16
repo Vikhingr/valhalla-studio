@@ -67,10 +67,11 @@ export default async function DashboardPage() {
 
   const blockingTasks = allTasks.filter((t) => t.depends_on === "client" && t.status !== "listo");
 
-  // Calcular si hoy es día de alerta RESICO
-  const diaHoy = today.getDate();
-  const mesHoy = today.getMonth() + 1;
-  const añoHoy = today.getFullYear();
+  // Calcular si hoy es día de alerta RESICO (en hora México, no UTC del servidor)
+  const nowMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  const diaHoy = nowMX.getDate();
+  const mesHoy = nowMX.getMonth() + 1;
+  const añoHoy = nowMX.getFullYear();
   const esDiaAlerta = alertaDias.includes(diaHoy);
   const MESES_ES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
