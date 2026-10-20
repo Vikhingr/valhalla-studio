@@ -357,13 +357,13 @@ export default function PrintInvoice({ factura, emisor, hasCfdiDownload, folio }
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "11%" }}>Clave ProdServ</th>
-                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "35%" }}>Concepto</th>
-                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "6%", textAlign: "right" }}>Cant.</th>
-                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "7%", textAlign: "center" }}>Obj. Imp.</th>
-                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "8%", textAlign: "center" }}>Unidad</th>
-                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "16%", textAlign: "right" }}>P. Unitario</th>
-                  <th style={{ ...th, background: "oklch(0.26 0.08 293)", color: "white", borderBottom: "none", width: "16%", textAlign: "right" }}>Importe</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 262)", color: "white", borderBottom: "none", width: "11%" }}>Clave ProdServ</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 262)", color: "white", borderBottom: "none", width: "35%" }}>Concepto</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 262)", color: "white", borderBottom: "none", width: "6%", textAlign: "right" }}>Cant.</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 262)", color: "white", borderBottom: "none", width: "7%", textAlign: "center" }}>Obj. Imp.</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 262)", color: "white", borderBottom: "none", width: "8%", textAlign: "center" }}>Unidad</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 262)", color: "white", borderBottom: "none", width: "16%", textAlign: "right" }}>P. Unitario</th>
+                  <th style={{ ...th, background: "oklch(0.26 0.08 262)", color: "white", borderBottom: "none", width: "16%", textAlign: "right" }}>Importe</th>
                 </tr>
               </thead>
               <tbody>

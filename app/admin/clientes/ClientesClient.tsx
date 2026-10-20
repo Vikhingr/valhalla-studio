@@ -35,7 +35,7 @@ function Modal({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.6)",
+        background: "rgba(42,42,46,0.35)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -263,7 +263,7 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
         </div>
       </div>
       {saveError && (
-        <div style={{ background: "oklch(0.30 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.80 0.12 25)" }}>
+        <div style={{ background: "oklch(0.88 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.62 0.12 25)" }}>
           {saveError}
         </div>
       )}
@@ -337,7 +337,7 @@ export default function ClientesClient({ initial }: { initial: Client[] }) {
                     <td style={{ padding: "12px 16px", fontSize: 13, color: "var(--muted)" }}>{c.email ?? "—"}</td>
                     <td style={{ padding: "12px 16px" }}>
                       {c.protonpass_ref ? (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--violet-light)", background: "oklch(0.58 0.22 293 / 0.12)", padding: "3px 9px", borderRadius: 100 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--violet-light)", background: "oklch(0.58 0.22 262 / 0.12)", padding: "3px 9px", borderRadius: 100 }}>
                           <Key size={10} /> {c.protonpass_ref}
                         </span>
                       ) : "—"}

@@ -14,14 +14,14 @@ function Toasts({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number
       {toasts.map((t) => (
         <div key={t.id} style={{
           display: "flex", alignItems: "flex-start", gap: 10,
-          background: t.type === "success" ? "oklch(0.20 0.04 160)" : "oklch(0.20 0.04 25)",
+          background: t.type === "success" ? "oklch(0.98 0.04 160)" : "oklch(0.98 0.04 25)",
           border: `1px solid ${t.type === "success" ? "oklch(0.55 0.18 160 / 0.5)" : "oklch(0.55 0.18 25 / 0.5)"}`,
-          borderRadius: 10, padding: "12px 14px", boxShadow: "0 4px 20px oklch(0 0 0 / 0.4)",
+          borderRadius: 10, padding: "12px 14px", boxShadow: "4px 6px 0 rgba(42,42,46,0.14)",
           animation: "slideIn 0.2s ease",
         }}>
           {t.type === "success"
-            ? <CheckCircle size={16} weight="fill" style={{ color: "oklch(0.70 0.18 160)", flexShrink: 0, marginTop: 1 }} />
-            : <Warning size={16} weight="fill" style={{ color: "oklch(0.70 0.18 30)", flexShrink: 0, marginTop: 1 }} />}
+            ? <CheckCircle size={16} weight="fill" style={{ color: "oklch(0.52 0.18 160)", flexShrink: 0, marginTop: 1 }} />
+            : <Warning size={16} weight="fill" style={{ color: "oklch(0.52 0.18 30)", flexShrink: 0, marginTop: 1 }} />}
           <span style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.5, flex: 1 }}>{t.message}</span>
           <button onClick={() => onDismiss(t.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, flexShrink: 0 }}>
             <X size={14} />
@@ -272,7 +272,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
               {facturas.length > 0 && <> · <strong style={{ color: "var(--ink)" }}>{fmt(totalActivas)}</strong> emitidos</>}
             </p>
             {!facturapiconfigured && (
-              <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: "oklch(0.65 0.12 40)", background: "oklch(0.65 0.12 40 / 0.1)", border: "1px solid oklch(0.65 0.12 40 / 0.3)", borderRadius: 100, padding: "4px 10px" }}>
+              <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: "oklch(0.47 0.12 40)", background: "oklch(0.57 0.12 40 / 0.1)", border: "1px solid oklch(0.57 0.12 40 / 0.3)", borderRadius: 100, padding: "4px 10px" }}>
                 <Warning size={12} weight="fill" />
                 Facturapi no configurado — se emitirán como PDF
               </div>
@@ -355,14 +355,14 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{
                           display: "inline-block", fontSize: 11, fontWeight: 600, borderRadius: 100, padding: "2px 9px",
-                          color: f.tipo === "cfdi" ? "oklch(0.68 0.18 293)" : "oklch(0.65 0.12 40)",
-                          background: f.tipo === "cfdi" ? "oklch(0.68 0.18 293 / 0.1)" : "oklch(0.65 0.12 40 / 0.1)",
-                          border: `1px solid ${f.tipo === "cfdi" ? "oklch(0.68 0.18 293 / 0.3)" : "oklch(0.65 0.12 40 / 0.3)"}`,
+                          color: f.tipo === "cfdi" ? "oklch(0.50 0.18 262)" : "oklch(0.47 0.12 40)",
+                          background: f.tipo === "cfdi" ? "oklch(0.60 0.18 262 / 0.1)" : "oklch(0.57 0.12 40 / 0.1)",
+                          border: `1px solid ${f.tipo === "cfdi" ? "oklch(0.60 0.18 262 / 0.3)" : "oklch(0.57 0.12 40 / 0.3)"}`,
                         }}>
                           {f.tipo === "cfdi" ? "CFDI" : "PDF"}
                         </span>
                         {f.facturapi_error && (
-                          <span title={f.facturapi_error} style={{ color: "oklch(0.70 0.18 30)", cursor: "help", display: "flex" }}>
+                          <span title={f.facturapi_error} style={{ color: "oklch(0.52 0.18 30)", cursor: "help", display: "flex" }}>
                             <Warning size={13} weight="fill" />
                           </span>
                         )}
@@ -371,9 +371,9 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                     <td style={{ padding: "12px 16px" }}>
                       <span style={{
                         display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: "2px 9px",
-                        color: f.status === "activa" ? "oklch(0.70 0.18 160)" : "var(--muted)",
-                        background: f.status === "activa" ? "oklch(0.70 0.18 160 / 0.1)" : "var(--surface-2)",
-                        border: `1px solid ${f.status === "activa" ? "oklch(0.70 0.18 160 / 0.3)" : "var(--border)"}`,
+                        color: f.status === "activa" ? "oklch(0.52 0.18 160)" : "var(--muted)",
+                        background: f.status === "activa" ? "oklch(0.62 0.18 160 / 0.1)" : "var(--surface-2)",
+                        border: `1px solid ${f.status === "activa" ? "oklch(0.62 0.18 160 / 0.3)" : "var(--border)"}`,
                       }}>
                         {f.status === "activa" ? <CheckCircle size={11} weight="fill" /> : <Prohibit size={11} />}
                         {f.status === "activa" ? "Activa" : "Cancelada"}
@@ -393,7 +393,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                             onClick={() => handleRetry(f.id)}
                             disabled={retrying === f.id}
                             title="Reintentar timbrado CFDI"
-                            style={{ background: "none", border: "none", cursor: retrying === f.id ? "wait" : "pointer", color: "oklch(0.65 0.18 293)", padding: 4, borderRadius: 5, opacity: retrying === f.id ? 0.5 : 1 }}
+                            style={{ background: "none", border: "none", cursor: retrying === f.id ? "wait" : "pointer", color: "oklch(0.47 0.18 262)", padding: 4, borderRadius: 5, opacity: retrying === f.id ? 0.5 : 1 }}
                           >
                             <ArrowsClockwise size={15} style={retrying === f.id ? { animation: "spin 1s linear infinite" } : undefined} />
                           </button>
@@ -421,7 +421,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
       {/* Modal cancelación */}
       {cancelModal && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
+          style={{ position: "fixed", inset: 0, background: "rgba(42,42,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
           onClick={() => !canceling && setCancelModal(null)}
         >
           <div
@@ -448,7 +448,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                   ].map((m) => (
                     <label
                       key={m.value}
-                      style={{ display: "flex", gap: 10, padding: "10px 12px", borderRadius: 8, cursor: "pointer", border: `1px solid ${cancelMotive === m.value ? "var(--violet)" : "var(--border)"}`, background: cancelMotive === m.value ? "oklch(0.58 0.22 293 / 0.08)" : "transparent" }}
+                      style={{ display: "flex", gap: 10, padding: "10px 12px", borderRadius: 8, cursor: "pointer", border: `1px solid ${cancelMotive === m.value ? "var(--violet)" : "var(--border)"}`, background: cancelMotive === m.value ? "oklch(0.58 0.22 262 / 0.08)" : "transparent" }}
                     >
                       <input type="radio" name="motive" value={m.value} checked={cancelMotive === m.value} onChange={() => setCancelMotive(m.value)} style={{ marginTop: 2, accentColor: "var(--violet)" }} />
                       <div>
@@ -458,7 +458,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                     </label>
                   ))}
                 </div>
-                <div style={{ background: "oklch(0.22 0.04 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.3)", borderRadius: 7, padding: "8px 12px", fontSize: 12, color: "oklch(0.75 0.10 30)", marginBottom: 20 }}>
+                <div style={{ background: "oklch(0.96 0.04 25 / 0.7)", border: "1px solid oklch(0.50 0.15 25 / 0.3)", borderRadius: 7, padding: "8px 12px", fontSize: 12, color: "oklch(0.57 0.10 30)", marginBottom: 20 }}>
                   Esta acción cancela el CFDI ante el SAT y no se puede deshacer.
                 </div>
               </>
@@ -487,7 +487,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
       {/* Modal crear factura */}
       {modal && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
+          style={{ position: "fixed", inset: 0, background: "rgba(42,42,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
           onClick={closeModal}
         >
           <div
@@ -506,8 +506,8 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
             {/* Panel de error de timbrado — reemplaza el form */}
             {timbradoError && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "oklch(0.22 0.05 25 / 0.15)", border: "1px solid oklch(0.50 0.15 25 / 0.35)", borderRadius: 8, padding: "14px 16px" }}>
-                  <Warning size={18} weight="fill" style={{ color: "oklch(0.70 0.18 30)", flexShrink: 0, marginTop: 1 }} />
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "oklch(0.96 0.05 25 / 0.7)", border: "1px solid oklch(0.50 0.15 25 / 0.35)", borderRadius: 8, padding: "14px 16px" }}>
+                  <Warning size={18} weight="fill" style={{ color: "oklch(0.52 0.18 30)", flexShrink: 0, marginTop: 1 }} />
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 6 }}>
                       Facturapi no pudo timbrar el CFDI
@@ -515,7 +515,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                     <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10, lineHeight: 1.5 }}>
                       La factura fue guardada como <strong>PDF</strong>. Resuelve el error y vuelve a intentarlo desde Configuración.
                     </p>
-                    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px", fontFamily: "monospace", fontSize: 12, color: "oklch(0.75 0.12 30)", wordBreak: "break-word", lineHeight: 1.6 }}>
+                    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px", fontFamily: "monospace", fontSize: 12, color: "oklch(0.57 0.12 30)", wordBreak: "break-word", lineHeight: 1.6 }}>
                       {timbradoError.message}
                     </div>
                   </div>
@@ -616,7 +616,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                       </div>
                     )}
                     {ivaRetenido > 0 && (
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "oklch(0.65 0.15 200)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "oklch(0.47 0.15 200)" }}>
                         <span>− IVA retenido (Persona Moral)</span><span>−{fmt(ivaRetenido)}</span>
                       </div>
                     )}
@@ -624,7 +624,7 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
                 )}
 
                 {esPM && form.with_iva && (
-                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "oklch(0.65 0.15 200)", background: "oklch(0.65 0.15 200 / 0.08)", border: "1px solid oklch(0.65 0.15 200 / 0.25)", borderRadius: 6, padding: "5px 10px" }}>
+                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "oklch(0.47 0.15 200)", background: "oklch(0.57 0.15 200 / 0.08)", border: "1px solid oklch(0.57 0.15 200 / 0.25)", borderRadius: 6, padding: "5px 10px" }}>
                     <Warning size={12} weight="fill" />
                     Persona Moral — retención de IVA aplicada automáticamente
                   </div>
@@ -673,13 +673,13 @@ export default function FacturasClient({ initial, clients, facturapiconfigured, 
               </div>
 
               {!facturapiconfigured && (
-                <div style={{ fontSize: 12, color: "oklch(0.65 0.12 40)", background: "oklch(0.65 0.12 40 / 0.1)", border: "1px solid oklch(0.65 0.12 40 / 0.3)", borderRadius: 7, padding: "9px 12px" }}>
+                <div style={{ fontSize: 12, color: "oklch(0.47 0.12 40)", background: "oklch(0.57 0.12 40 / 0.1)", border: "1px solid oklch(0.57 0.12 40 / 0.3)", borderRadius: 7, padding: "9px 12px" }}>
                   Facturapi no configurado — esta factura se guardará como PDF. Configura Facturapi en Configuración para emitir CFDI válidos.
                 </div>
               )}
 
               {saveError && (
-                <div style={{ background: "oklch(0.30 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.80 0.12 25)" }}>
+                <div style={{ background: "oklch(0.88 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.62 0.12 25)" }}>
                   {saveError}
                 </div>
               )}

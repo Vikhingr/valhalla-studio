@@ -107,18 +107,18 @@ export default async function DashboardPage() {
 
       {/* Alerta RESICO */}
       {esDiaAlerta && diasRestantes > 0 && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12, background: "oklch(0.22 0.08 60 / 0.2)", border: "1px solid oklch(0.65 0.18 60 / 0.5)", borderRadius: 10, padding: "14px 18px", marginBottom: 24 }}>
-          <Warning size={20} weight="fill" style={{ color: "oklch(0.80 0.18 60)", flexShrink: 0 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, background: "oklch(0.96 0.08 60 / 0.7)", border: "1px solid oklch(0.57 0.18 60 / 0.5)", borderRadius: 10, padding: "14px 18px", marginBottom: 24 }}>
+          <Warning size={20} weight="fill" style={{ color: "oklch(0.62 0.18 60)", flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "oklch(0.85 0.15 60)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "oklch(0.67 0.15 60)" }}>
               Declaración RESICO — faltan {diasRestantes} día{diasRestantes !== 1 ? "s" : ""} para el día 17
             </div>
-            <div style={{ fontSize: 12, color: "oklch(0.72 0.12 60)", marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: "oklch(0.54 0.12 60)", marginTop: 2 }}>
               Ingresa al módulo RESICO para ver tu ISR e IVA de {MESES_ES[mesHoy]} y declarar antes del 17 de {mesDeclaracion}.
             </div>
           </div>
           <a href="/admin/resico"
-            style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 7, background: "oklch(0.65 0.18 60)", color: "white", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+            style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 7, background: "oklch(0.47 0.18 60)", color: "white", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
             Ver RESICO →
           </a>
         </div>
@@ -136,10 +136,10 @@ export default async function DashboardPage() {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 32 }}>
         {[
-          { label: "Clientes", value: clients?.length ?? 0, icon: Users, href: "/admin/clientes", color: "oklch(0.65 0.15 200)" },
+          { label: "Clientes", value: clients?.length ?? 0, icon: Users, href: "/admin/clientes", color: "oklch(0.47 0.15 200)" },
           { label: "Proyectos activos", value: activeProjects.length, icon: Briefcase, href: "/admin/proyectos", color: "var(--violet-light)" },
-          { label: "Pendientes urgentes", value: urgentTasks.length, icon: CheckSquare, href: "/admin/pendientes", color: "oklch(0.65 0.18 25)" },
-          { label: "Cobro pendiente", value: fmt(pendingRevenue), icon: CurrencyDollar, href: "/admin/proyectos", color: "oklch(0.70 0.18 160)" },
+          { label: "Pendientes urgentes", value: urgentTasks.length, icon: CheckSquare, href: "/admin/pendientes", color: "oklch(0.47 0.18 25)" },
+          { label: "Cobro pendiente", value: fmt(pendingRevenue), icon: CurrencyDollar, href: "/admin/proyectos", color: "oklch(0.52 0.18 160)" },
         ].map(({ label, value, icon: Icon, href, color }) => (
           <Link
             key={label}
@@ -194,7 +194,7 @@ export default async function DashboardPage() {
                     <span style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      color: urgent ? "oklch(0.70 0.18 25)" : "var(--muted)",
+                      color: urgent ? "oklch(0.52 0.18 25)" : "var(--muted)",
                       display: "flex",
                       alignItems: "center",
                       gap: 4,
@@ -228,7 +228,7 @@ export default async function DashboardPage() {
                 >
                   <div style={{
                     width: 6, height: 6, borderRadius: "50%",
-                    background: t.depends_on === "client" ? "oklch(0.65 0.15 60)" : "oklch(0.65 0.18 25)",
+                    background: t.depends_on === "client" ? "oklch(0.47 0.15 60)" : "oklch(0.47 0.18 25)",
                     flexShrink: 0,
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
                     )}
                   </div>
                   {t.depends_on === "client" && (
-                    <span style={{ fontSize: 10, color: "oklch(0.65 0.15 60)", background: "oklch(0.65 0.15 60 / 0.12)", padding: "2px 7px", borderRadius: 100, flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, color: "oklch(0.47 0.15 60)", background: "oklch(0.57 0.15 60 / 0.12)", padding: "2px 7px", borderRadius: 100, flexShrink: 0 }}>
                       Cliente
                     </span>
                   )}
@@ -277,16 +277,16 @@ export default async function DashboardPage() {
       {blockingTasks.length > 0 && (
         <div style={{
           marginTop: 20,
-          background: "oklch(0.65 0.15 60 / 0.08)",
-          border: "1px solid oklch(0.65 0.15 60 / 0.3)",
+          background: "oklch(0.57 0.15 60 / 0.08)",
+          border: "1px solid oklch(0.57 0.15 60 / 0.3)",
           borderRadius: 10, padding: "14px 18px",
           display: "flex", alignItems: "center", gap: 10,
         }}>
-          <Warning size={16} weight="fill" style={{ color: "oklch(0.70 0.18 60)", flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: "oklch(0.80 0.08 60)" }}>
+          <Warning size={16} weight="fill" style={{ color: "oklch(0.52 0.18 60)", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "oklch(0.62 0.08 60)" }}>
             <strong>{blockingTasks.length}</strong> pendiente{blockingTasks.length > 1 ? "s están bloqueados" : " está bloqueado"} esperando respuesta del cliente.
           </span>
-          <Link href="/admin/pendientes" style={{ marginLeft: "auto", fontSize: 12, color: "oklch(0.70 0.18 60)", textDecoration: "none", fontWeight: 600, flexShrink: 0 }}>
+          <Link href="/admin/pendientes" style={{ marginLeft: "auto", fontSize: 12, color: "oklch(0.52 0.18 60)", textDecoration: "none", fontWeight: 600, flexShrink: 0 }}>
             Ver →
           </Link>
         </div>

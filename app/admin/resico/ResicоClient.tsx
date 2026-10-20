@@ -101,7 +101,7 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 
 function StatBox({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
   return (
-    <div style={{ background: "var(--surface-2)", border: `1px solid ${accent ? "oklch(0.58 0.22 293 / 0.4)" : "var(--border)"}`, borderRadius: 8, padding: "14px 18px", flex: 1, minWidth: 140 }}>
+    <div style={{ background: "var(--surface-2)", border: `1px solid ${accent ? "oklch(0.58 0.22 262 / 0.4)" : "var(--border)"}`, borderRadius: 8, padding: "14px 18px", flex: 1, minWidth: 140 }}>
       <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 800, color: accent ? "var(--violet-light)" : "var(--ink)", letterSpacing: "-0.02em" }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>{sub}</div>}
@@ -207,9 +207,9 @@ export default function ResicоClient() {
       </div>
 
       {/* Disclaimer */}
-      <div style={{ display: "flex", gap: 10, background: "oklch(0.22 0.05 60 / 0.15)", border: "1px solid oklch(0.65 0.15 60 / 0.3)", borderRadius: 8, padding: "12px 16px", marginBottom: 24 }}>
-        <Info size={16} style={{ color: "oklch(0.75 0.15 60)", flexShrink: 0, marginTop: 1 }} />
-        <p style={{ fontSize: 12, color: "oklch(0.75 0.15 60)", lineHeight: 1.6 }}>
+      <div style={{ display: "flex", gap: 10, background: "oklch(0.96 0.05 60 / 0.7)", border: "1px solid oklch(0.57 0.15 60 / 0.3)", borderRadius: 8, padding: "12px 16px", marginBottom: 24 }}>
+        <Info size={16} style={{ color: "oklch(0.57 0.15 60)", flexShrink: 0, marginTop: 1 }} />
+        <p style={{ fontSize: 12, color: "oklch(0.57 0.15 60)", lineHeight: 1.6 }}>
           <strong>Estimación orientativa.</strong> Estos cálculos se basan en la tabla RESICO Art. 113-E LISR vigente a 2025 y en las facturas registradas en esta app. Verifica siempre con tu contador antes de declarar.
         </p>
       </div>
@@ -250,7 +250,7 @@ export default function ResicоClient() {
           </div>
 
           {/* ── Ingresos ── */}
-          <Section title={`Ingresos — ${MESES[mes]} ${año}`} icon={<CheckCircle size={15} weight="fill" style={{ color: "oklch(0.70 0.18 160)" }} />}>
+          <Section title={`Ingresos — ${MESES[mes]} ${año}`} icon={<CheckCircle size={15} weight="fill" style={{ color: "oklch(0.52 0.18 160)" }} />}>
             {data.ingresos.length === 0 ? (
               <p style={{ fontSize: 13, color: "var(--muted)", textAlign: "center", padding: "20px 0" }}>Sin facturas activas en este mes</p>
             ) : (
@@ -300,7 +300,7 @@ export default function ResicоClient() {
 
               {!preview ? (
                 <button onClick={() => fileRef.current?.click()}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 8, border: "1px dashed var(--violet)", background: "oklch(0.58 0.22 293 / 0.06)", color: "var(--violet-light)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 8, border: "1px dashed var(--violet)", background: "oklch(0.58 0.22 262 / 0.06)", color: "var(--violet-light)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                   <UploadSimple size={15} /> Subir XML de gasto
                 </button>
               ) : (
@@ -337,7 +337,7 @@ export default function ResicоClient() {
               )}
 
               {uploadErr && (
-                <div style={{ display: "flex", gap: 8, marginTop: 10, color: "oklch(0.72 0.18 25)", fontSize: 12, background: "oklch(0.22 0.06 25 / 0.15)", border: "1px solid oklch(0.50 0.15 25 / 0.35)", borderRadius: 7, padding: "8px 12px" }}>
+                <div style={{ display: "flex", gap: 8, marginTop: 10, color: "oklch(0.54 0.18 25)", fontSize: 12, background: "oklch(0.96 0.06 25 / 0.7)", border: "1px solid oklch(0.50 0.15 25 / 0.35)", borderRadius: 7, padding: "8px 12px" }}>
                   <Warning size={14} style={{ flexShrink: 0, marginTop: 1 }} /> {uploadErr}
                 </div>
               )}
@@ -366,14 +366,14 @@ export default function ResicоClient() {
                         <td style={tdStyle}>{g.emisor_nombre}</td>
                         <td style={{ ...tdStyle, color: "var(--muted)", fontSize: 11 }}>{g.concepto}</td>
                         <td style={tdStyle}>{g.fecha}</td>
-                        <td style={{ ...tdR, color: "oklch(0.70 0.18 160)", fontWeight: 600 }}>{fmt(g.iva)}</td>
+                        <td style={{ ...tdR, color: "oklch(0.52 0.18 160)", fontWeight: 600 }}>{fmt(g.iva)}</td>
                         <td style={tdR}>{fmt(g.total)}</td>
                         <td style={{ ...tdStyle, textAlign: "right" }}>
                           <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                             <button onClick={() => setViewGasto(g)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 4, borderRadius: 5 }}>
                               <Eye size={14} />
                             </button>
-                            <button onClick={() => deleteGasto(g.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "oklch(0.65 0.15 25)", padding: 4, borderRadius: 5 }}>
+                            <button onClick={() => deleteGasto(g.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "oklch(0.47 0.15 25)", padding: 4, borderRadius: 5 }}>
                               <Trash size={14} />
                             </button>
                           </div>
@@ -382,7 +382,7 @@ export default function ResicоClient() {
                     ))}
                     <tr style={{ background: "var(--surface-2)" }}>
                       <td colSpan={3} style={{ ...tdStyle, fontWeight: 700, borderBottom: "none" }}>Total IVA acreditable</td>
-                      <td style={{ ...tdR, fontWeight: 700, color: "oklch(0.70 0.18 160)", borderBottom: "none" }}>{fmt(data.iva_acreditable)}</td>
+                      <td style={{ ...tdR, fontWeight: 700, color: "oklch(0.52 0.18 160)", borderBottom: "none" }}>{fmt(data.iva_acreditable)}</td>
                       <td colSpan={2} style={{ ...tdStyle, borderBottom: "none" }}></td>
                     </tr>
                   </tbody>
@@ -422,7 +422,7 @@ export default function ResicоClient() {
               </div>
             </div>
 
-            <div style={{ marginTop: 16, padding: "12px 16px", background: "oklch(0.22 0.05 60 / 0.10)", border: "1px solid oklch(0.65 0.15 60 / 0.25)", borderRadius: 8, fontSize: 12, color: "oklch(0.75 0.12 60)", lineHeight: 1.7 }}>
+            <div style={{ marginTop: 16, padding: "12px 16px", background: "oklch(0.96 0.05 60 / 0.7)", border: "1px solid oklch(0.57 0.15 60 / 0.25)", borderRadius: 8, fontSize: 12, color: "oklch(0.57 0.12 60)", lineHeight: 1.7 }}>
               <strong>Recuerda:</strong> declara antes del <strong>día 17 de {MESES[mes === 12 ? 1 : mes + 1]}</strong>. ISR e IVA se declaran en la misma sesión del portal SAT.
             </div>
           </Section>

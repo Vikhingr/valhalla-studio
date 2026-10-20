@@ -1,98 +1,55 @@
 /**
- * NotFound — Página 404 personalizada.
+ * NotFound — Página 404 con el estilo a lápiz del portafolio.
  *
  * Renderizada automáticamente por Next.js cuando ninguna ruta coincide.
- * Mantiene la misma estética del Hero (glow de fondo + tipografía gradient).
- * Reutiliza el Navbar del sitio público para que el usuario pueda volver al inicio.
+ * Una hoja de cuaderno con cinta, un "404" escrito a mano y un botón de regreso al inicio.
  */
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 
 export default function NotFound() {
   return (
-    <>
-      <Navbar />
-      <main
+    <main
+      style={{
+        minHeight: "100dvh",
+        display: "grid",
+        placeItems: "center",
+        padding: "48px 16px",
+        textAlign: "center",
+      }}
+    >
+      <div
         style={{
-          minHeight: "100dvh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "120px 24px 80px",
           position: "relative",
-          overflow: "hidden",
-          textAlign: "center",
+          width: "min(460px, 100%)",
+          background: "var(--surface)",
+          backgroundImage:
+            "linear-gradient(90deg, transparent 30px, var(--margin-red) 30px, var(--margin-red) 32px, transparent 32px), repeating-linear-gradient(var(--surface) 0 31px, var(--rule-blue) 31px 32px)",
+          border: "2px solid var(--ink)",
+          borderRadius: "var(--card-radius)",
+          boxShadow: "6px 8px 0 rgba(42,42,46,0.16)",
+          transform: "rotate(-0.8deg)",
+          padding: "40px 28px 32px 48px",
         }}
       >
-        {/* Ambient glow — misma estética que Hero */}
-        <div
+        <span
           aria-hidden
           style={{
-            position: "absolute",
-            top: "10%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 600,
-            height: 600,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, oklch(0.58 0.22 293 / 0.12) 0%, transparent 70%)",
-            pointerEvents: "none",
+            position: "absolute", top: -14, left: "50%", width: 110, height: 28,
+            transform: "translateX(-50%) rotate(-3deg)",
+            background: "rgba(215,205,170,0.78)", border: "1px solid rgba(42,42,46,0.15)",
           }}
         />
-
-        <div style={{ position: "relative", maxWidth: 480 }}>
-          {/* Número 404 grande */}
-          <p
-            style={{
-              fontSize: "clamp(80px, 18vw, 140px)",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              lineHeight: 1,
-              background: "linear-gradient(135deg, oklch(0.70 0.22 293), oklch(0.50 0.20 293))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              marginBottom: 8,
-              userSelect: "none",
-            }}
-          >
-            404
-          </p>
-
-          <h1
-            style={{
-              fontSize: "clamp(22px, 4vw, 30px)",
-              fontWeight: 700,
-              color: "var(--ink)",
-              letterSpacing: "-0.02em",
-              marginBottom: 14,
-            }}
-          >
-            Página no encontrada
-          </h1>
-
-          <p
-            style={{
-              fontSize: 15,
-              color: "var(--muted)",
-              lineHeight: 1.7,
-              marginBottom: 36,
-            }}
-          >
-            La página que buscas no existe o fue movida.
-            <br />
-            Vuelve al inicio y sigue explorando.
-          </p>
-
-          <Link
-            href="/"
-            className="btn-primary"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
-          >
-            Volver al inicio
-          </Link>
-        </div>
-      </main>
-    </>
+        <p style={{ fontFamily: "var(--font-hand), cursive", fontSize: "clamp(90px, 22vw, 140px)", fontWeight: 700, lineHeight: 0.9, color: "var(--ink)", margin: 0, userSelect: "none" }}>
+          404
+        </p>
+        <h1 style={{ fontFamily: "var(--font-hand), cursive", fontSize: 34, fontWeight: 700, color: "var(--ink)", margin: "10px 0 8px" }}>
+          Esta hoja está en blanco
+        </h1>
+        <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.6, margin: "0 0 26px" }}>
+          La página que buscas no existe o cambió de lugar.
+        </p>
+        <Link href="/" className="btn-primary">Volver al inicio</Link>
+      </div>
+    </main>
   );
 }

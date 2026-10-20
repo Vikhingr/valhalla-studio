@@ -75,7 +75,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
               ProtonPass
             </div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--violet-light)", background: "oklch(0.58 0.22 293 / 0.12)", padding: "4px 10px", borderRadius: 100 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--violet-light)", background: "oklch(0.58 0.22 262 / 0.12)", padding: "4px 10px", borderRadius: 100 }}>
               <Key size={11} /> {client.protonpass_ref}
             </span>
           </div>

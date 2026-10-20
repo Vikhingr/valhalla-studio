@@ -61,14 +61,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <List size={22} />
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 26, height: 26, background: "var(--violet)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>V</div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>
-              Valhalla<span style={{ color: "var(--violet-light)" }}>Studio</span>
+            <div style={{ width: 28, height: 28, border: "2px solid var(--ink)", borderRadius: "var(--hand-radius)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-hand), cursive", fontSize: 19, fontWeight: 700, color: "var(--ink)", transform: "rotate(-4deg)" }}>V</div>
+            <span style={{ fontFamily: "var(--font-hand), cursive", fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>
+              Valhalla <span style={{ color: "var(--violet)" }}>Studio</span>
             </span>
           </div>
         </div>
 
-        <main style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
+        <main className="adm-main" style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
           {children}
         </main>
       </div>
@@ -78,9 +78,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           display: none;
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.65);
+          background: rgba(42,42,46,0.35);
           z-index: 199;
-          backdrop-filter: blur(2px);
         }
         .adm-topbar {
           display: none;
@@ -89,7 +88,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           padding: 11px 16px;
           padding-top: calc(11px + env(safe-area-inset-top, 0px));
           background: var(--surface);
-          border-bottom: 1px solid var(--border);
+          border-bottom: 2px solid var(--ink);
           position: sticky;
           top: 0;
           z-index: 100;

@@ -246,21 +246,21 @@ export const FORMAS_PAGO = [
 
 /** Color oklch para cada etapa del pipeline — usado en badges y timeline */
 export const STAGES: { id: ProjectStage; label: string; color: string }[] = [
-  { id: 'cotizacion',    label: 'Cotización',    color: 'oklch(0.65 0.10 60)' },
-  { id: 'discovery',    label: 'Discovery',     color: 'oklch(0.65 0.15 200)' },
-  { id: 'diseno',       label: 'Diseño',        color: 'oklch(0.68 0.18 293)' },
-  { id: 'desarrollo',   label: 'Desarrollo',    color: 'oklch(0.65 0.20 250)' },
-  { id: 'revision',     label: 'Revisión',      color: 'oklch(0.65 0.15 170)' },
-  { id: 'entrega',      label: 'Entrega',       color: 'oklch(0.70 0.18 160)' },
-  { id: 'cobranza',     label: 'Cobranza',      color: 'oklch(0.65 0.12 40)' },
-  { id: 'mantenimiento',label: 'Mantenimiento', color: 'oklch(0.65 0.08 280)' },
+  { id: 'cotizacion',    label: 'Cotización',    color: 'oklch(0.47 0.10 60)' },
+  { id: 'discovery',    label: 'Discovery',     color: 'oklch(0.47 0.15 200)' },
+  { id: 'diseno',       label: 'Diseño',        color: 'oklch(0.50 0.18 262)' },
+  { id: 'desarrollo',   label: 'Desarrollo',    color: 'oklch(0.47 0.20 250)' },
+  { id: 'revision',     label: 'Revisión',      color: 'oklch(0.47 0.15 170)' },
+  { id: 'entrega',      label: 'Entrega',       color: 'oklch(0.52 0.18 160)' },
+  { id: 'cobranza',     label: 'Cobranza',      color: 'oklch(0.47 0.12 40)' },
+  { id: 'mantenimiento',label: 'Mantenimiento', color: 'oklch(0.47 0.08 280)' },
 ]
 
 /** Color oklch para cada nivel de prioridad de tareas */
 export const PRIORITY_COLORS: Record<TaskPriority, string> = {
-  alta:  'oklch(0.65 0.18 25)',
-  media: 'oklch(0.65 0.15 60)',
-  baja:  'oklch(0.65 0.08 280)',
+  alta:  'oklch(0.47 0.18 25)',
+  media: 'oklch(0.47 0.15 60)',
+  baja:  'oklch(0.47 0.08 280)',
 }
 
 /** Etiquetas en español para los estados de una tarea */

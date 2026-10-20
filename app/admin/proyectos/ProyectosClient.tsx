@@ -33,7 +33,7 @@ const EMPTY_FORM = {
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(42,42,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }} onClick={onClose}>
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 28, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>{title}</h2>
@@ -142,7 +142,7 @@ export default function ProyectosClient({ initial, clients, cotizaciones, defaul
 
       {/* Picker de cotización guardada */}
       {cotizaciones.length > 0 && (
-        <div style={{ background: "oklch(0.58 0.22 293 / 0.07)", border: "1px solid oklch(0.58 0.22 293 / 0.25)", borderRadius: 8, padding: "12px 14px" }}>
+        <div style={{ background: "oklch(0.58 0.22 262 / 0.07)", border: "1px solid oklch(0.58 0.22 262 / 0.25)", borderRadius: 8, padding: "12px 14px" }}>
           <label style={{ ...labelStyle, color: "var(--violet-light)" }}>Usar cotización guardada</label>
           <select
             style={{ ...inputStyle, cursor: "pointer" }}
@@ -215,7 +215,7 @@ export default function ProyectosClient({ initial, clients, cotizaciones, defaul
       <div><label style={labelStyle}>Notas</label><textarea rows={3} style={{ ...inputStyle, resize: "vertical" }} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
 
       {saveError && (
-        <div style={{ background: "oklch(0.30 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.80 0.12 25)" }}>
+        <div style={{ background: "oklch(0.88 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 7, padding: "9px 12px", fontSize: 12, color: "oklch(0.62 0.12 25)" }}>
           {saveError}
         </div>
       )}
@@ -291,7 +291,7 @@ export default function ProyectosClient({ initial, clients, cotizaciones, defaul
                           {p.quoted_price.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 })}
                         </div>
                         {pending > 0 && (
-                          <div style={{ fontSize: 11, color: "oklch(0.65 0.12 40)" }}>
+                          <div style={{ fontSize: 11, color: "oklch(0.47 0.12 40)" }}>
                             Pendiente: {pending.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 })}
                           </div>
                         )}

@@ -71,8 +71,8 @@ export default async function ProyectoDetailPage({ params }: { params: Promise<{
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
                   <div style={{
                     width: 28, height: 28, borderRadius: "50%",
-                    background: active ? s.color : done ? "oklch(0.70 0.18 160)" : "var(--surface-2)",
-                    border: `2px solid ${active ? s.color : done ? "oklch(0.70 0.18 160)" : "var(--border)"}`,
+                    background: active ? s.color : done ? "oklch(0.52 0.18 160)" : "var(--surface-2)",
+                    border: `2px solid ${active ? s.color : done ? "oklch(0.52 0.18 160)" : "var(--border)"}`,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
                     {done ? <CheckCircle size={14} weight="fill" style={{ color: "#fff" }} /> : <Circle size={10} style={{ color: active ? "#fff" : "var(--muted)" }} weight={active ? "fill" : "regular"} />}
@@ -82,7 +82,7 @@ export default async function ProyectoDetailPage({ params }: { params: Promise<{
                   </span>
                 </div>
                 {i < STAGES.length - 1 && (
-                  <div style={{ width: 24, height: 2, background: i < currentStageIndex ? "oklch(0.70 0.18 160)" : "var(--border)", marginBottom: 18, flexShrink: 0 }} />
+                  <div style={{ width: 24, height: 2, background: i < currentStageIndex ? "oklch(0.52 0.18 160)" : "var(--border)", marginBottom: 18, flexShrink: 0 }} />
                 )}
               </div>
             );
@@ -101,7 +101,7 @@ export default async function ProyectoDetailPage({ params }: { params: Promise<{
         ].filter((item) => item.value !== null).map(({ label, value }) => (
           <div key={label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "14px 16px" }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>{label}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: label === "Pendiente de cobro" ? "oklch(0.65 0.12 40)" : "var(--ink)" }}>{value}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: label === "Pendiente de cobro" ? "oklch(0.47 0.12 40)" : "var(--ink)" }}>{value}</div>
           </div>
         ))}
       </div>
@@ -117,7 +117,7 @@ export default async function ProyectoDetailPage({ params }: { params: Promise<{
               </a>
             )}
             {project.protonpass_ref && (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--violet-light)", background: "oklch(0.58 0.22 293 / 0.12)", padding: "4px 10px", borderRadius: 100, marginBottom: 8 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--violet-light)", background: "oklch(0.58 0.22 262 / 0.12)", padding: "4px 10px", borderRadius: 100, marginBottom: 8 }}>
                 <Key size={11} /> {project.protonpass_ref}
               </div>
             )}
@@ -137,9 +137,9 @@ export default async function ProyectoDetailPage({ params }: { params: Promise<{
             ) : (
               (tasks as Task[]).slice(0, 6).map((t) => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderBottom: "1px solid var(--border-subtle)" }}>
-                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: t.priority === "alta" ? "oklch(0.65 0.18 25)" : t.priority === "media" ? "oklch(0.65 0.15 60)" : "var(--muted)", flexShrink: 0 }} />
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: t.priority === "alta" ? "oklch(0.47 0.18 25)" : t.priority === "media" ? "oklch(0.47 0.15 60)" : "var(--muted)", flexShrink: 0 }} />
                   <span style={{ fontSize: 12, color: t.status === "listo" ? "var(--muted)" : "var(--ink-2)", flex: 1, textDecoration: t.status === "listo" ? "line-through" : "none" }}>{t.title}</span>
-                  {t.depends_on === "client" && <span style={{ fontSize: 10, color: "oklch(0.65 0.15 60)", background: "oklch(0.65 0.15 60 / 0.12)", padding: "2px 7px", borderRadius: 100 }}>Cliente</span>}
+                  {t.depends_on === "client" && <span style={{ fontSize: 10, color: "oklch(0.47 0.15 60)", background: "oklch(0.57 0.15 60 / 0.12)", padding: "2px 7px", borderRadius: 100 }}>Cliente</span>}
                 </div>
               ))
             )}

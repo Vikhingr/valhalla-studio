@@ -57,10 +57,13 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
     <aside
       className={`adm-sidebar${open ? " adm-sidebar--open" : ""}`}
       style={{
-        width: 220,
+        width: 232,
         minHeight: "100vh",
         background: "var(--surface)",
-        borderRight: "1px solid var(--border)",
+        // Hoja de cuaderno: margen rojo + renglones azules
+        backgroundImage:
+          "linear-gradient(90deg, transparent 26px, var(--margin-red) 26px, var(--margin-red) 28px, transparent 28px), repeating-linear-gradient(var(--surface) 0 37px, var(--rule-blue) 37px 38px)",
+        borderRight: "2px solid var(--ink)",
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
@@ -69,8 +72,8 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
       {/* Logo */}
       <div
         style={{
-          padding: "20px 16px 18px",
-          borderBottom: "1px solid var(--border)",
+          padding: "20px 12px 16px 36px",
+          borderBottom: "2px solid var(--ink)",
           display: "flex",
           alignItems: "center",
           gap: 9,
@@ -78,26 +81,29 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
       >
         <div
           style={{
-            width: 30,
-            height: 30,
-            background: "var(--violet)",
-            borderRadius: 7,
+            width: 34,
+            height: 34,
+            background: "var(--surface)",
+            border: "2px solid var(--ink)",
+            borderRadius: "var(--hand-radius)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 13,
-            fontWeight: 800,
-            color: "#fff",
+            fontFamily: "var(--font-hand), cursive",
+            fontSize: 24,
+            fontWeight: 700,
+            color: "var(--ink)",
+            transform: "rotate(-4deg)",
             flexShrink: 0,
           }}
         >
           V
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
-            Valhalla<span style={{ color: "var(--violet-light)" }}>Studio</span>
+          <div style={{ fontFamily: "var(--font-hand), cursive", fontSize: 23, fontWeight: 700, color: "var(--ink)", lineHeight: 1, whiteSpace: "nowrap" }}>
+            Valhalla <span style={{ color: "var(--violet)" }}>Studio</span>
           </div>
-          <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 1 }}>Oficina Virtual</div>
+          <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginTop: 3 }}>Oficina Virtual</div>
         </div>
         {/* Botón cerrar — solo mobile */}
         <button
@@ -111,7 +117,7 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
       </div>
 
       {/* Nav */}
-      <nav style={{ padding: "10px 8px", flex: 1 }}>
+      <nav style={{ padding: "12px 10px 12px 34px", flex: 1 }}>
         {NAV.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || (href !== "/admin/dashboard" && pathname.startsWith(href));
           return (
@@ -123,30 +129,33 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
                 display: "flex",
                 alignItems: "center",
                 gap: 9,
-                padding: "9px 10px",
-                borderRadius: 7,
-                fontSize: 13,
-                fontWeight: active ? 600 : 500,
-                color: active ? "#fff" : "var(--ink-2)",
-                background: active ? "var(--violet)" : "transparent",
+                padding: "6px 10px",
+                minHeight: 38,
+                borderRadius: "var(--hand-radius)",
+                border: active ? "2px solid var(--violet)" : "2px solid transparent",
+                fontSize: 15,
+                fontWeight: active ? 700 : 400,
+                color: active ? "var(--violet)" : "var(--ink-2)",
+                background: active ? "rgba(42,91,215,0.08)" : "transparent",
                 textDecoration: "none",
-                marginBottom: 2,
+                marginBottom: 0,
+                transform: active ? "rotate(-1deg)" : "none",
                 transition: "background 0.15s, color 0.15s, transform 0.1s, opacity 0.1s",
               }}
               onMouseEnter={(e) => {
                 if (!active) {
-                  e.currentTarget.style.background = "var(--surface-2)";
+                  e.currentTarget.style.borderColor = "var(--ink)";
                   e.currentTarget.style.color = "var(--ink)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!active) {
-                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "transparent";
                   e.currentTarget.style.color = "var(--ink-2)";
                 }
               }}
             >
-              <Icon size={16} weight={active ? "fill" : "regular"} />
+              <Icon size={18} weight={active ? "bold" : "regular"} />
               {label}
             </Link>
           );
@@ -154,30 +163,31 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
       </nav>
 
       {/* Logout */}
-      <div style={{ padding: "10px 8px", borderTop: "1px solid var(--border)" }}>
+      <div style={{ padding: "10px 10px 14px 34px", borderTop: "2px solid var(--ink)" }}>
         <button
           onClick={handleLogout}
           style={{
             display: "flex",
             alignItems: "center",
             gap: 9,
-            padding: "9px 10px",
-            borderRadius: 7,
-            fontSize: 13,
-            fontWeight: 500,
+            padding: "6px 10px",
+            borderRadius: "var(--hand-radius)",
+            fontSize: 15,
+            fontWeight: 400,
+            fontFamily: "inherit",
             color: "var(--muted)",
             background: "transparent",
-            border: "none",
+            border: "2px solid transparent",
             cursor: "pointer",
             width: "100%",
             transition: "background 0.15s, color 0.15s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "oklch(0.25 0.06 25 / 0.3)";
-            e.currentTarget.style.color = "oklch(0.75 0.14 25)";
+            e.currentTarget.style.borderColor = "oklch(0.52 0.16 25)";
+            e.currentTarget.style.color = "oklch(0.52 0.16 25)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "transparent";
             e.currentTarget.style.color = "var(--muted)";
           }}
         >
@@ -200,7 +210,7 @@ export default function AdminSidebar({ open = false, onClose }: { open?: boolean
           min-height: 100dvh !important;
           z-index: 200 !important;
           transform: translateX(-100%);
-          box-shadow: 4px 0 32px rgba(0,0,0,0.4);
+          box-shadow: 6px 0 0 rgba(42,42,46,0.12);
           padding-top: env(safe-area-inset-top, 0px);
         }
         .adm-sidebar--open { transform: translateX(0) !important; }

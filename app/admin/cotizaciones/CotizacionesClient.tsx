@@ -28,20 +28,20 @@ const TYPE_LABEL: Record<string, string> = {
 function PaymentStatus({ cot }: { cot: Cotizacion }) {
   if (cot.pagado_completo) {
     return (
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "oklch(0.70 0.18 160)", background: "oklch(0.70 0.18 160 / 0.1)", border: "1px solid oklch(0.70 0.18 160 / 0.3)", borderRadius: 100, padding: "3px 10px" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "oklch(0.52 0.18 160)", background: "oklch(0.62 0.18 160 / 0.1)", border: "1px solid oklch(0.62 0.18 160 / 0.3)", borderRadius: 100, padding: "3px 10px" }}>
         <CheckCircle size={12} weight="fill" /> Pagado completo
       </div>
     );
   }
   if (cot.anticipo_pagado) {
     return (
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "oklch(0.65 0.15 200)", background: "oklch(0.65 0.15 200 / 0.1)", border: "1px solid oklch(0.65 0.15 200 / 0.3)", borderRadius: 100, padding: "3px 10px" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "oklch(0.47 0.15 200)", background: "oklch(0.57 0.15 200 / 0.1)", border: "1px solid oklch(0.57 0.15 200 / 0.3)", borderRadius: 100, padding: "3px 10px" }}>
         <CheckCircle size={12} weight="fill" /> Anticipo cobrado
       </div>
     );
   }
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "oklch(0.65 0.12 40)", background: "oklch(0.65 0.12 40 / 0.1)", border: "1px solid oklch(0.65 0.12 40 / 0.3)", borderRadius: 100, padding: "3px 10px" }}>
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "oklch(0.47 0.12 40)", background: "oklch(0.57 0.12 40 / 0.1)", border: "1px solid oklch(0.57 0.12 40 / 0.3)", borderRadius: 100, padding: "3px 10px" }}>
       <Warning size={12} weight="fill" /> Sin cobrar
     </div>
   );
@@ -176,8 +176,8 @@ export default function CotizacionesClient() {
                       onClick={() => !isUpdating && toggleField(c.id, "anticipo_pagado", !c.anticipo_pagado)}
                       style={{
                         width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                        border: `1.5px solid ${c.anticipo_pagado ? "oklch(0.70 0.18 160)" : "var(--border)"}`,
-                        background: c.anticipo_pagado ? "oklch(0.70 0.18 160)" : "transparent",
+                        border: `1.5px solid ${c.anticipo_pagado ? "oklch(0.52 0.18 160)" : "var(--border)"}`,
+                        background: c.anticipo_pagado ? "oklch(0.52 0.18 160)" : "transparent",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         cursor: isUpdating ? "not-allowed" : "pointer",
                         transition: "all 0.15s",
@@ -190,7 +190,7 @@ export default function CotizacionesClient() {
                         50% anticipo para iniciar
                       </span>
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: c.anticipo_pagado ? "oklch(0.70 0.18 160)" : "var(--ink)" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: c.anticipo_pagado ? "oklch(0.52 0.18 160)" : "var(--ink)" }}>
                       {fmt(c.anticipo)}
                     </span>
                   </label>
@@ -208,8 +208,8 @@ export default function CotizacionesClient() {
                       onClick={() => !isUpdating && c.anticipo_pagado && toggleField(c.id, "pagado_completo", !c.pagado_completo)}
                       style={{
                         width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                        border: `1.5px solid ${c.pagado_completo ? "oklch(0.70 0.18 160)" : "var(--border)"}`,
-                        background: c.pagado_completo ? "oklch(0.70 0.18 160)" : "transparent",
+                        border: `1.5px solid ${c.pagado_completo ? "oklch(0.52 0.18 160)" : "var(--border)"}`,
+                        background: c.pagado_completo ? "oklch(0.52 0.18 160)" : "transparent",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         cursor: c.anticipo_pagado && !isUpdating ? "pointer" : "not-allowed",
                         opacity: c.anticipo_pagado ? 1 : 0.4,
@@ -226,7 +226,7 @@ export default function CotizacionesClient() {
                         <span style={{ fontSize: 10, color: "var(--muted)", marginLeft: 6 }}>(cobra anticipo primero)</span>
                       )}
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: c.pagado_completo ? "oklch(0.70 0.18 160)" : "var(--muted)" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: c.pagado_completo ? "oklch(0.52 0.18 160)" : "var(--muted)" }}>
                       {fmt(pagoFinal)}
                     </span>
                   </label>

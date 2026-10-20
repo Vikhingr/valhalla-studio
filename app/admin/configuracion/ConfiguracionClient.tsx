@@ -39,7 +39,7 @@ function Field({ label, required, hint, children }: { label: string; required?: 
   return (
     <div>
       <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>
-        {label} {required && <span style={{ color: "oklch(0.65 0.18 25)" }}>*</span>}
+        {label} {required && <span style={{ color: "oklch(0.47 0.18 25)" }}>*</span>}
       </label>
       {children}
       {hint && <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>{hint}</p>}
@@ -62,9 +62,9 @@ function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12,
-      color: ok ? "oklch(0.70 0.18 160)" : "var(--muted)",
-      background: ok ? "oklch(0.70 0.18 160 / 0.1)" : "var(--surface-2)",
-      border: `1px solid ${ok ? "oklch(0.70 0.18 160 / 0.3)" : "var(--border)"}`,
+      color: ok ? "oklch(0.52 0.18 160)" : "var(--muted)",
+      background: ok ? "oklch(0.62 0.18 160 / 0.1)" : "var(--surface-2)",
+      border: `1px solid ${ok ? "oklch(0.62 0.18 160 / 0.3)" : "var(--border)"}`,
       borderRadius: 100, padding: "3px 10px",
     }}>
       {ok ? <CheckCircle size={12} weight="fill" /> : <Warning size={12} weight="fill" />}
@@ -198,7 +198,7 @@ export default function ConfiguracionClient({ initial }: { initial: InitialConfi
         <p style={{ fontSize: 13, color: "var(--muted)" }}>
           Datos del emisor y credenciales para emitir CFDI con Facturapi.
           {savedAt && (
-            <span style={{ marginLeft: 8, color: "oklch(0.70 0.18 160)" }}>
+            <span style={{ marginLeft: 8, color: "oklch(0.52 0.18 160)" }}>
               ✓ Guardado {new Date(savedAt).toLocaleDateString("es-MX", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
@@ -278,8 +278,8 @@ export default function ConfiguracionClient({ initial }: { initial: InitialConfi
                 key={uso.value}
                 style={{
                   display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
-                  background: activo ? "oklch(0.68 0.18 293 / 0.06)" : "var(--surface-2)",
-                  border: `1px solid ${activo ? "oklch(0.68 0.18 293 / 0.3)" : "var(--border)"}`,
+                  background: activo ? "oklch(0.60 0.18 262 / 0.06)" : "var(--surface-2)",
+                  border: `1px solid ${activo ? "oklch(0.60 0.18 262 / 0.3)" : "var(--border)"}`,
                   borderRadius: 7, padding: "7px 10px", fontSize: 12, transition: "all 0.1s",
                 }}
                 onClick={() => toggleUso(uso.value)}
@@ -433,7 +433,7 @@ export default function ConfiguracionClient({ initial }: { initial: InitialConfi
       </Section>
 
       {error && (
-        <div style={{ background: "oklch(0.30 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "oklch(0.80 0.12 25)", marginBottom: 16 }}>
+        <div style={{ background: "oklch(0.88 0.10 25 / 0.2)", border: "1px solid oklch(0.50 0.15 25 / 0.4)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "oklch(0.62 0.12 25)", marginBottom: 16 }}>
           {error}
         </div>
       )}

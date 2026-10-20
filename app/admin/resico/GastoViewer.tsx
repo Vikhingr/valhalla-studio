@@ -43,7 +43,7 @@ export default function GastoViewer({ gasto, receptorNombre, receptorRfc, onClos
 
   return (
     <div style={{
-      position: "fixed", inset: 0, background: "oklch(0 0 0 / 0.65)",
+      position: "fixed", inset: 0, background: "oklch(0.00 0 0 / 0.65)",
       zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
       padding: 24,
     }} onClick={onClose}>
@@ -97,7 +97,7 @@ export default function GastoViewer({ gasto, receptorNombre, receptorRfc, onClos
 
           {/* Concepto */}
           <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden", marginBottom: 20 }}>
-            <div style={{ display: "flex", padding: "8px 14px", background: "oklch(0.26 0.08 293)", gap: 0 }}>
+            <div style={{ display: "flex", padding: "8px 14px", background: "oklch(0.26 0.08 262)", gap: 0 }}>
               {["Concepto", "Importe"].map((h) => (
                 <div key={h} style={{ fontSize: 9, fontWeight: 700, color: "white", textTransform: "uppercase", letterSpacing: "0.05em", flex: h === "Concepto" ? 1 : 0 }}>{h}</div>
               ))}

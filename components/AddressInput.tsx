@@ -116,7 +116,7 @@ export function AddressInput({ value, onChange, placeholder, style }: Props) {
           background: "var(--surface)",
           border: "1px solid var(--border)",
           borderRadius: 8,
-          boxShadow: "0 8px 24px oklch(0 0 0 / 0.5)",
+          boxShadow: "4px 6px 0 rgba(42,42,46,0.14)",
           zIndex: 9999,
           overflow: "hidden",
         }}>

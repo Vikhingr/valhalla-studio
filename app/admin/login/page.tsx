@@ -40,9 +40,9 @@ export default function LoginPage() {
 
   return (
     <div
+      className="adm-main"
       style={{
         minHeight: "100vh",
-        background: "var(--bg)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -59,35 +59,43 @@ export default function LoginPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 36, justifyContent: "center" }}>
           <div
             style={{
-              width: 36,
-              height: 36,
-              background: "var(--violet)",
-              borderRadius: 8,
+              width: 40,
+              height: 40,
+              border: "2px solid var(--ink)",
+              borderRadius: "var(--hand-radius)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 16,
-              fontWeight: 800,
-              color: "#fff",
+              fontFamily: "var(--font-hand), cursive",
+              fontSize: 28,
+              fontWeight: 700,
+              color: "var(--ink)",
+              transform: "rotate(-4deg)",
             }}
           >
             V
           </div>
-          <span style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em" }}>
-            Valhalla<span style={{ color: "var(--violet-light)" }}>Studio</span>
+          <span style={{ fontFamily: "var(--font-hand), cursive", fontSize: 30, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>
+            Valhalla <span style={{ color: "var(--violet)" }}>Studio</span>
           </span>
         </div>
 
-        {/* Card */}
+        {/* Card: hoja de cuaderno con cinta */}
         <div
           style={{
+            position: "relative",
             background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: "28px 28px 32px",
+            backgroundImage:
+              "linear-gradient(90deg, transparent 30px, var(--margin-red) 30px, var(--margin-red) 32px, transparent 32px), repeating-linear-gradient(var(--surface) 0 31px, var(--rule-blue) 31px 32px)",
+            border: "2px solid var(--ink)",
+            borderRadius: "var(--card-radius)",
+            boxShadow: "6px 8px 0 rgba(42,42,46,0.16)",
+            transform: "rotate(-0.6deg)",
+            padding: "34px 28px 32px 48px",
           }}
         >
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)", marginBottom: 6 }}>
+          <span aria-hidden style={{ position: "absolute", top: -14, left: "50%", width: 110, height: 28, transform: "translateX(-50%) rotate(-3deg)", background: "rgba(215,205,170,0.78)", border: "1px solid rgba(42,42,46,0.15)" }} />
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)", marginBottom: 2 }}>
             Acceso privado
           </h1>
           <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 24 }}>
@@ -134,7 +142,7 @@ export default function LoginPage() {
             {error && (
               <p
                 role="alert"
-                style={{ fontSize: 12, color: "oklch(0.75 0.14 25)", margin: 0 }}
+                style={{ fontSize: 13, color: "oklch(0.50 0.16 25)", margin: 0 }}
               >
                 Contraseña incorrecta. Inténtalo de nuevo.
               </p>

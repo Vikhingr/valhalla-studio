@@ -99,7 +99,7 @@ export default function PendientesClient({
     const colors: Record<TaskStatus, string> = {
       pendiente: "var(--muted)",
       en_progreso: "var(--violet-light)",
-      listo: "oklch(0.70 0.18 160)",
+      listo: "oklch(0.52 0.18 160)",
     };
     return colors[status];
   };
@@ -169,8 +169,8 @@ export default function PendientesClient({
                         title="Cambiar estado"
                         style={{
                           width: 18, height: 18, borderRadius: "50%", flexShrink: 0, marginTop: 1,
-                          border: `2px solid ${t.status === "listo" ? "oklch(0.70 0.18 160)" : "var(--border)"}`,
-                          background: t.status === "listo" ? "oklch(0.70 0.18 160)" : "transparent",
+                          border: `2px solid ${t.status === "listo" ? "oklch(0.52 0.18 160)" : "var(--border)"}`,
+                          background: t.status === "listo" ? "oklch(0.52 0.18 160)" : "transparent",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           cursor: "pointer",
                         }}
@@ -194,7 +194,7 @@ export default function PendientesClient({
                         {t.priority.charAt(0).toUpperCase() + t.priority.slice(1)}
                       </span>
                       {t.depends_on === "client" && (
-                        <span style={{ fontSize: 10, color: "oklch(0.65 0.15 60)", background: "oklch(0.65 0.15 60 / 0.12)", padding: "2px 7px", borderRadius: 100 }}>
+                        <span style={{ fontSize: 10, color: "oklch(0.47 0.15 60)", background: "oklch(0.57 0.15 60 / 0.12)", padding: "2px 7px", borderRadius: 100 }}>
                           Cliente
                         </span>
                       )}
@@ -224,7 +224,7 @@ export default function PendientesClient({
 
       {/* New task modal */}
       {showForm && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }} onClick={() => setShowForm(false)}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(42,42,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }} onClick={() => setShowForm(false)}>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 28, width: "100%", maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>Nueva tarea</h2>

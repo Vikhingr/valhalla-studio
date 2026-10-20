@@ -130,7 +130,7 @@ export default function StageAdvancer({ projectId, currentStage }: { projectId: 
   }
 
   if (!nextStage) return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "oklch(0.70 0.18 160)", background: "oklch(0.70 0.18 160 / 0.1)", border: "1px solid oklch(0.70 0.18 160 / 0.3)", borderRadius: 8, padding: "8px 14px" }}>
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "oklch(0.52 0.18 160)", background: "oklch(0.62 0.18 160 / 0.1)", border: "1px solid oklch(0.62 0.18 160 / 0.3)", borderRadius: 8, padding: "8px 14px" }}>
       <CheckCircle size={14} weight="fill" /> Proyecto en mantenimiento
     </div>
   );
@@ -151,7 +151,7 @@ export default function StageAdvancer({ projectId, currentStage }: { projectId: 
 
       {open && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
+          style={{ position: "fixed", inset: 0, background: "rgba(42,42,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }}
           onClick={() => setOpen(false)}
         >
           <div
@@ -160,7 +160,7 @@ export default function StageAdvancer({ projectId, currentStage }: { projectId: 
           >
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
               <div>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "var(--violet-light)", background: "oklch(0.58 0.22 293 / 0.12)", borderRadius: 100, padding: "3px 10px", marginBottom: 8 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "var(--violet-light)", background: "oklch(0.58 0.22 262 / 0.12)", borderRadius: 100, padding: "3px 10px", marginBottom: 8 }}>
                   {STAGES[currentIndex].label} → {nextStage.label}
                 </div>
                 <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>{guide.title}</h2>
@@ -179,14 +179,14 @@ export default function StageAdvancer({ projectId, currentStage }: { projectId: 
                   style={{
                     display: "flex", alignItems: "flex-start", gap: 12,
                     padding: "12px 14px", borderRadius: 9, cursor: "pointer",
-                    border: `1px solid ${checked[i] ? "oklch(0.70 0.18 160 / 0.4)" : "var(--border)"}`,
-                    background: checked[i] ? "oklch(0.70 0.18 160 / 0.07)" : "var(--surface-2)",
+                    border: `1px solid ${checked[i] ? "oklch(0.62 0.18 160 / 0.4)" : "var(--border)"}`,
+                    background: checked[i] ? "oklch(0.62 0.18 160 / 0.07)" : "var(--surface-2)",
                     transition: "all 0.15s",
                   }}
                 >
                   <div style={{ flexShrink: 0, marginTop: 1 }}>
                     {checked[i]
-                      ? <CheckCircle size={18} weight="fill" style={{ color: "oklch(0.70 0.18 160)" }} />
+                      ? <CheckCircle size={18} weight="fill" style={{ color: "oklch(0.52 0.18 160)" }} />
                       : <Circle size={18} style={{ color: "var(--muted)" }} />
                     }
                   </div>
@@ -213,7 +213,7 @@ export default function StageAdvancer({ projectId, currentStage }: { projectId: 
                 disabled={loading}
                 style={{
                   padding: "9px 20px", borderRadius: 8, border: "none",
-                  background: allChecked ? "var(--violet)" : "oklch(0.58 0.22 293 / 0.4)",
+                  background: allChecked ? "var(--violet)" : "oklch(0.58 0.22 262 / 0.4)",
                   color: "#fff", fontSize: 13, fontWeight: 600, cursor: loading ? "wait" : "pointer",
                   transition: "background 0.2s",
                 }}

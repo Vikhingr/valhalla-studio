@@ -270,7 +270,7 @@ export default function CotizadorPage() {
             style={{
               display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 8, cursor: "pointer",
               border: `1px solid ${type === t.id ? "var(--violet)" : "var(--border)"}`,
-              background: type === t.id ? "oklch(0.58 0.22 293 / 0.12)" : "transparent",
+              background: type === t.id ? "oklch(0.58 0.22 262 / 0.12)" : "transparent",
               fontSize: 13, fontWeight: 600,
               color: type === t.id ? "var(--violet-light)" : "var(--ink-2)",
             }}
@@ -318,7 +318,7 @@ export default function CotizadorPage() {
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "10px 16px", cursor: "pointer", textAlign: "left",
                         border: "none", borderBottom: "1px solid var(--border-subtle)",
-                        background: active ? "oklch(0.58 0.22 293 / 0.07)" : "transparent",
+                        background: active ? "oklch(0.58 0.22 262 / 0.07)" : "transparent",
                         transition: "background 0.1s",
                       }}
                     >
@@ -355,7 +355,7 @@ export default function CotizadorPage() {
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
 
             {/* Total */}
-            <div style={{ padding: "20px 22px", borderBottom: "1px solid var(--border)", background: "oklch(0.58 0.22 293 / 0.07)" }}>
+            <div style={{ padding: "20px 22px", borderBottom: "1px solid var(--border)", background: "oklch(0.58 0.22 262 / 0.07)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total del proyecto</div>
                 <button
@@ -363,7 +363,7 @@ export default function CotizadorPage() {
                   style={{
                     display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 100,
                     border: `1px solid ${withIVA ? "var(--violet)" : "var(--border)"}`,
-                    background: withIVA ? "oklch(0.58 0.22 293 / 0.15)" : "transparent",
+                    background: withIVA ? "oklch(0.58 0.22 262 / 0.15)" : "transparent",
                     cursor: "pointer", fontSize: 11, fontWeight: 600,
                     color: withIVA ? "var(--violet-light)" : "var(--muted)",
                   }}
@@ -442,7 +442,7 @@ export default function CotizadorPage() {
                 style={{
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   padding: "11px 16px", borderRadius: 8, border: "none", cursor: total === 0 ? "not-allowed" : "pointer",
-                  background: copied ? "oklch(0.65 0.18 160)" : "var(--violet)",
+                  background: copied ? "oklch(0.47 0.18 160)" : "var(--violet)",
                   color: "#fff", fontSize: 13, fontWeight: 600, transition: "background 0.2s",
                   opacity: total === 0 ? 0.5 : 1,
                 }}
@@ -499,7 +499,7 @@ export default function CotizadorPage() {
 
       {/* Modal guardar cotización */}
       {showSaveModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }} onClick={() => setShowSaveModal(false)}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(42,42,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 24 }} onClick={() => setShowSaveModal(false)}>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 24, width: "100%", maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", marginBottom: 16 }}>Guardar cotización</h3>
             <div style={{ marginBottom: 16 }}>
