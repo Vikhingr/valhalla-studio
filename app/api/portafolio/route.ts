@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     from: `Valhalla Studio <${CORREO}>`,
     to: CORREO,
     replyTo: correo,
-    subject: `[Valhalla Studio] Nuevo mensaje · ${nombre}`,
+    subject: `Valhalla Studio · Nuevo mensaje de ${nombre}`,
     html: emailPortafolio(datos),
     text: textoPortafolio(datos),
   });
