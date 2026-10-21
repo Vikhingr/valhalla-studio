@@ -6,7 +6,6 @@ import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { emailPortafolio, textoPortafolio } from './email';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const CORREO = 'contacto@valhallastudio.com.mx';
 
 // Sitios desde donde se permite enviar (si el portafolio vive en otro dominio, agrégalo aquí)
@@ -54,6 +53,7 @@ export async function POST(req: Request) {
   const fecha = `${dia} · ${hora}`;
   const datos = { nombre, correo, telefono, mensaje, fecha };
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const { error } = await resend.emails.send({
     from: `Valhalla Studio <${CORREO}>`,
     to: CORREO,
