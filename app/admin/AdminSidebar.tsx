@@ -27,6 +27,7 @@ import {
   Gear,
   SignOut,
   ChartBar,
+  Confetti,
   X,
 } from "@phosphor-icons/react";
 
@@ -39,6 +40,7 @@ const NAV = [
   { href: "/admin/cotizador",     label: "Cotizador",     icon: Calculator },
   { href: "/admin/facturas",      label: "Facturas",      icon: FilePdf },
   { href: "/admin/resico",        label: "RESICO",        icon: ChartBar },
+  { href: "/admin/decoraciones",  label: "Decoraciones",  icon: Confetti },
   { href: "/admin/configuracion", label: "Configuración", icon: Gear },
 ];
 

@@ -87,7 +87,7 @@ export function emailPortafolio(d: DatosMensaje) {
             </td>
           </tr>
         </table>
-        <div style="font-family:${MANO};font-size:30px;font-weight:700;line-height:1.1;color:${C.grafito};padding:6px 0 2px;">Nuevo mensaje de ${nombre}</div>
+        <div style="font-family:${MANO};font-size:24px;font-weight:700;line-height:1.2;color:${C.grafito};padding:8px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nuevo mensaje de ${nombre}</div>
         <div style="width:180px;border-bottom:2px solid ${C.grafito};margin:6px 0 18px;"></div>
 
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
