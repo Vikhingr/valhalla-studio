@@ -1,20 +1,35 @@
 /**
  * RootLayout — Layout raíz de toda la aplicación Next.js.
  *
- * Carga las fuentes del estilo a lápiz (Caveat, Kalam y Courier Prime) desde Google Fonts;
- * las variables --font-hand, --font-body y --font-mono están en globals.css.
- * El export `viewport` configura el comportamiento móvil nativo:
- *   - viewportFit=cover: permite pintar bajo el notch/Dynamic Island.
- *   - interactiveWidget=resizes-content: el teclado virtual en Android
- *     encoge el viewport en lugar de hacer overlay, sincronizando con iOS.
- *   - themeColor: colorea la barra de estado del sistema operativo.
+ * Fuentes autoalojadas con next/font/google: se descargan en build y se sirven
+ * desde _next/static/, sin peticiones a fonts.googleapis.com en runtime.
+ * Las variables --font-caveat, --font-kalam y --font-courier se aplican al <html>
+ * y se usan en globals.css a través de --font-hand, --font-body y --font-mono.
  */
 import type { Metadata, Viewport } from "next";
+import { Caveat, Kalam, Courier_Prime } from "next/font/google";
 import "./globals.css";
 
-// Mismas tipografías del portafolio a lápiz (Google Fonts, igual que en public/index.html)
-const FONTS =
-  "https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=Courier+Prime:wght@400;700&display=swap";
+const caveat = Caveat({
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "700"],
+  variable: "--font-caveat",
+  display: "swap",
+});
+
+const kalam = Kalam({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  variable: "--font-kalam",
+  display: "swap",
+});
+
+const courierPrime = Courier_Prime({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  variable: "--font-courier",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Valhalla Studio · Gabriel Castañeda",
@@ -34,12 +49,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href={FONTS} />
-      </head>
+    <html lang="es" className={`${caveat.variable} ${kalam.variable} ${courierPrime.variable}`}>
       <body>
         <a href="#inicio" className="skip-link">Ir al contenido principal</a>
         {children}
