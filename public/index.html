@@ -72,7 +72,7 @@ body{font-family:var(--f-body);font-size:16px;line-height:1.5;
 .ch-btn path{fill:none;stroke:var(--blue);stroke-width:2.4;stroke-linecap:round}
 .ch-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
 .ch-btn small::after{content:" · toca para saltar";color:var(--blue)}
-@media (max-width:520px){.ch-btn small::after{content:none}}
+@media (max-width:520px){.ch-btn small::after{content:none}.hint{bottom:calc(env(safe-area-inset-bottom,0px) + 100px)!important}}
 .chapter:has(.ch-btn[aria-expanded="true"]) ~ .hint{opacity:0!important}
 .ch-btn.nudge{animation:nudge .9s ease}
 @keyframes nudge{20%{transform:rotate(3deg) scale(1.08)}45%{transform:rotate(-3deg) scale(1.08)}70%{transform:rotate(1deg)}}
@@ -699,7 +699,7 @@ const DECO_SPEC = {
   reyes:     { garland:{ t:'estrella', colors:['dorado','azul'] }, ground:[{t:'rosca',n:1},{t:'regalo',c:'azul',n:3},{t:'regalo',c:'rojo',n:2},{t:'regalo',c:'dorado',n:2}], cartel:'Feliz Día de Reyes' },
   amor:      { garland:{ t:'corazon', colors:['rojo','papel','rojo'] }, ground:[{t:'globoCorazon',c:'rojo',n:6},{t:'regalo',c:'rojo',n:2}], part:{ t:'corazones' }, cartel:'Feliz Día del Amor y la Amistad' },
   patrias:   { garland:{ t:'picado', colors:['verde','papel','rojo'] }, ground:[{t:'globo',c:'verde',n:2},{t:'globo',c:'papel',n:2},{t:'globo',c:'rojo',n:2}], part:{ t:'confeti', colors:['verde','papel','rojo'] }, cartel:'¡Viva México!' },
-  halloween: { garland:{ t:'murcielago' }, ground:[{t:'calabaza',c:'cara',n:6},{t:'vela',n:4}], part:{ t:'murcielagos' }, telarana:true, cartel:'¡Feliz Halloween!' },
+  halloween: { garland:{ t:'murcielago' }, ground:[{t:'vela',n:4},{t:'calabaza',c:'cara',n:6}], part:{ t:'murcielagos' }, telarana:true, cartel:'¡Feliz Halloween!' },
   muertos:   { garland:{ t:'picado', colors:['naranja','azul','papel'] }, ground:[{t:'flor',n:8},{t:'vela',n:6}], petalos:true, cartel:'Día de Muertos' },
   constitucion: { garland:{ t:'banderin', colors:['verde','papel','rojo'] }, ground:[{t:'pergamino',n:4},{t:'libros',n:2}], cartel:'Constitución de 1917' },
   juarez:    { garland:{ t:'banderin', colors:['verde','papel','rojo'] }, ground:[{t:'flor',c:'morado',n:6},{t:'libros',n:2}], cartel:'«El respeto al derecho ajeno es la paz»' },
