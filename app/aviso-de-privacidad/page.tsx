@@ -77,7 +77,7 @@ export default function AvisoPrivacidad() {
               margin: "0 0 6px",
             }}
           >
-            Última actualización: 21 de octubre de 2026
+            Última actualización: 21 de octubre de 2026 (rev. 2)
           </p>
 
           <h1
@@ -161,21 +161,6 @@ export default function AvisoPrivacidad() {
             </p>
             <p>Tecnologías técnicas presentes:</p>
             <ul>
-              <li>
-                <strong>Google Fonts</strong> (Google LLC): al cargar las
-                tipografías del sitio, Google puede registrar técnicamente la
-                dirección IP del visitante. No controlamos este proceso. Consulte
-                la{" "}
-                <a
-                  href="https://policies.google.com/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "var(--violet)" }}
-                >
-                  política de privacidad de Google
-                </a>
-                .
-              </li>
               <li>
                 <strong>Cloudflare Turnstile</strong>: puede establecer cookies
                 técnicas durante la verificación anti-bot del formulario.
