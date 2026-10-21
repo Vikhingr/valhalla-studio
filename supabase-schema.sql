@@ -51,3 +51,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER projects_updated_at
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Grants para service_role (el proyecto usa solo este rol desde el servidor)
+GRANT ALL ON clients, projects, tasks TO service_role;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;

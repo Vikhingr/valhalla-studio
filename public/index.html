@@ -258,16 +258,19 @@ body{font-family:var(--f-body);font-size:16px;line-height:1.5;
       <div class="field"><label for="e-mail">Tu correo</label><input id="e-mail" type="email" autocomplete="email" placeholder="ana@minegocio.com" required></div>
       <div class="field"><label for="e-tel">Teléfono (opcional)</label><input id="e-tel" type="tel" autocomplete="tel" placeholder="55 1234 5678"></div>
       <div class="field"><label for="e-msg">¿Qué necesitas?</label><textarea id="e-msg" rows="3" placeholder="Una página para mi negocio con reservas en línea" required></textarea></div>
+      <div id="e-turnstile" style="margin:4px 0 2px"></div>
       <div class="actions"><button class="btn primary" id="e-send" type="submit">Enviar mensaje</button></div>
       <p class="status" id="e-status" role="status" hidden></p>
       <div class="actions" id="e-fallback" hidden><a class="btn" id="e-mailto" href="#">Abrir mi correo</a></div>
     </form>
-    <p class="muted" style="margin-top:14px">O escríbeme directo a <span class="num" id="e-addr"></span> <button class="linkbtn" id="e-copy" type="button">Copiar</button></p>
+    <p class="muted" style="margin-top:10px;font-size:12px">Al enviar aceptas el <a href="/aviso-de-privacidad" target="_blank" rel="noopener" style="color:var(--blue)">Aviso de Privacidad</a>.</p>
+    <p class="muted" style="margin-top:8px">O escríbeme directo a <span class="num" id="e-addr"></span> <button class="linkbtn" id="e-copy" type="button">Copiar</button></p>
   </div>
 </div>
 
 <div class="loader" id="loader"><div><span id="ld-t">Afilando el lápiz… 0%</span><svg viewBox="0 0 240 20"><path id="ld-p" d="M4 12 C 50 6, 90 15, 130 10 S 200 6, 236 11"/></svg></div></div>
 
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ================== EDITA AQUÍ TUS DATOS ================== */
@@ -280,6 +283,10 @@ const CONFIG = {
   correo: 'contacto@valhallastudio.com.mx', // ← aquí llegan los mensajes del formulario
   asunto: 'Valhalla Studio · Nuevo mensaje', // ← así empieza el asunto de cada correo
   envio: '/api/portafolio', // ← ruta de tu web que envía con Resend
+  // Cloudflare Turnstile — clave pública (safe to expose).
+  // Prueba (siempre pasa): 1x00000000000000000000AA
+  // Real: https://dash.cloudflare.com → Turnstile → Add site
+  turnstileSiteKey: '1x00000000000000000000AA',
   // Decoraciones de temporada (hora de CDMX). En tu web se controlan desde el panel › Decoraciones;
   // esta lista es el respaldo si el panel no responde.
   decoraciones: [
@@ -1259,6 +1266,17 @@ $('e-copy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(CONFIG.correo); $('e-copy').textContent = 'Copiado'; }
   catch(e){ const s = getSelection(), rg = document.createRange(); rg.selectNodeContents($('e-addr')); s.removeAllRanges(); s.addRange(rg); }
 });
+// Turnstile: renderizar cuando el script cargue
+window.onTurnstileLoad = function(){
+  turnstile.render('#e-turnstile', {
+    sitekey: CONFIG.turnstileSiteKey,
+    theme: 'light',
+    size: 'normal',
+    callback: t => { window._tsToken = t; },
+    'error-callback': () => { window._tsToken = ''; },
+    'expired-callback': () => { window._tsToken = ''; },
+  });
+};
 $('e-form').addEventListener('submit', async e => {
   e.preventDefault();
   if ($('e-hp').value) return;
@@ -1271,11 +1289,12 @@ $('e-form').addEventListener('submit', async e => {
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
     const res = await fetch(CONFIG.envio, { method:'POST', signal:ctl.signal,
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ nombre:f.nombre, correo:f.correo, telefono:f.tel, mensaje:f.msg, _honey:$('e-hp').value }) });
+      body: JSON.stringify({ nombre:f.nombre, correo:f.correo, telefono:f.tel, mensaje:f.msg, _honey:$('e-hp').value, 'cf-turnstile-response': window._tsToken ?? '' }) });
     clearTimeout(to);
     const j = await res.json().catch(() => ({}));
     if (!res.ok || j.ok !== true) throw new Error('no enviado');
     st.className = 'status ok'; st.textContent = '¡Listo! Recibí tu mensaje y te respondo pronto a tu correo.'; $('e-form').reset();
+    if (window.turnstile) turnstile.reset('#e-turnstile'); window._tsToken = '';
   } catch(err){
     st.textContent = 'No se pudo enviar desde aquí. Usa este botón para mandarlo desde tu correo, ya va con todo escrito:';
     $('e-mailto').href = `mailto:${CONFIG.correo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody(f))}`;

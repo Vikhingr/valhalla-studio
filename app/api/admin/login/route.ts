@@ -2,29 +2,55 @@
  * POST /api/admin/login
  *
  * Autenticación del panel admin con contraseña única.
- * Si ADMIN_PASSWORD coincide, crea la cookie httpOnly `admin_token` con el valor
- * de SESSION_SECRET. Esa cookie es verificada en cada request protegido por requireAdmin().
+ * Protecciones activas:
+ *   1. Cloudflare Turnstile — bloquea bots antes de comparar contraseñas.
+ *   2. Rate limiting en memoria — máximo 5 intentos fallidos por IP / 15 min.
+ *   3. Delay artificial de 300 ms en fallos — desacelera ataques manuales.
  *
- * La cookie tiene maxAge de 7 días; después hay que volver a hacer login.
- * secure:true en producción garantiza que solo viaje por HTTPS.
+ * En éxito: setea cookie httpOnly `admin_token` (SESSION_SECRET, 7 días).
  */
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import { verifyTurnstile } from "@/lib/turnstile";
+import { checkRateLimit, resetRateLimit } from "@/lib/ratelimit";
+
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function POST(req: NextRequest) {
-  const { password } = await req.json()
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
 
-  if (!password || password !== process.env.ADMIN_PASSWORD) {
-    return NextResponse.json({ ok: false }, { status: 401 })
+  // 1. Rate limiting
+  const rl = checkRateLimit(ip);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { ok: false, error: "demasiados_intentos" },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } },
+    );
   }
 
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set('admin_token', process.env.SESSION_SECRET!, {
-    httpOnly: true,                                    // no accesible por JS del cliente
-    secure: process.env.NODE_ENV === 'production',     // solo HTTPS en prod
-    sameSite: 'strict',                                // protección CSRF
-    maxAge: 7 * 24 * 60 * 60,                          // 7 días en segundos
-    path: '/',
-  })
+  const body = await req.json().catch(() => ({}));
 
-  return response
+  // 2. Turnstile
+  const turnstileOk = await verifyTurnstile(body["cf-turnstile-response"], ip);
+  if (!turnstileOk) {
+    await delay(300);
+    return NextResponse.json({ ok: false, error: "captcha" }, { status: 403 });
+  }
+
+  // 3. Contraseña
+  if (!body.password || body.password !== process.env.ADMIN_PASSWORD) {
+    await delay(300);
+    return NextResponse.json({ ok: false }, { status: 401 });
+  }
+
+  // Éxito: limpiar contador y setear cookie
+  resetRateLimit(ip);
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set("admin_token", process.env.SESSION_SECRET!, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60,
+    path: "/",
+  });
+  return response;
 }

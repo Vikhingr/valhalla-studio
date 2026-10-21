@@ -5,6 +5,7 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { emailPortafolio, textoPortafolio } from './email';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 const CORREO = 'contacto@valhallastudio.com.mx';
 
@@ -35,6 +36,11 @@ export async function POST(req: Request) {
 
   // Campo trampa: las personas no lo ven, los bots sí lo llenan
   if (body._honey) return NextResponse.json({ ok: true }, { headers });
+
+  // Turnstile anti-bot
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim();
+  const tsOk = await verifyTurnstile(String(body['cf-turnstile-response'] ?? ''), ip);
+  if (!tsOk) return NextResponse.json({ ok: false, error: 'captcha' }, { status: 403, headers });
 
   const nombre = limpio(body.nombre, 80);
   const correo = limpio(body.correo, 120);

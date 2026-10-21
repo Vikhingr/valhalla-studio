@@ -4,3 +4,5 @@
 
 ALTER TABLE configuracion
   ADD COLUMN IF NOT EXISTS decoraciones JSONB;
+
+GRANT ALL ON configuracion TO service_role;
