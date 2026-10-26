@@ -77,7 +77,7 @@ export default function AvisoPrivacidad() {
               margin: "0 0 6px",
             }}
           >
-            Última actualización: 21 de octubre de 2026 (rev. 2)
+            Última actualización: 26 de octubre de 2026 (rev. 3)
           </p>
 
           <h1
@@ -130,8 +130,12 @@ export default function AvisoPrivacidad() {
               trabajo freelance.
             </p>
             <p>
-              No utilizamos sus datos para publicidad propia, venta a terceros
-              ni análisis estadístico.
+              <strong>Finalidad secundaria:</strong> análisis estadístico
+              anónimo del tráfico web mediante Google Analytics 4, con el fin
+              de mejorar el sitio. No se vinculan estos datos con su identidad.
+            </p>
+            <p>
+              No utilizamos sus datos para publicidad propia ni venta a terceros.
             </p>
           </Seccion>
 
@@ -151,15 +155,30 @@ export default function AvisoPrivacidad() {
                 <strong>Cloudflare Inc.</strong> — para la verificación
                 anti-bot (Turnstile) al enviar el formulario.
               </li>
+              <li>
+                <strong>Google LLC</strong> — proveedor de Google Analytics 4,
+                que recopila datos anónimos de navegación (páginas visitadas,
+                dispositivo, país aproximado). Consulte la{" "}
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "var(--violet)" }}
+                >
+                  política de privacidad de Google
+                </a>
+                .
+              </li>
             </ul>
           </Seccion>
 
           <Seccion titulo="Uso de cookies y tecnologías de seguimiento">
             <p>
-              Este sitio <strong>no usa cookies de publicidad ni de análisis</strong>{" "}
-              (sin Google Analytics, sin píxeles de seguimiento).
+              Este sitio utiliza <strong>Google Analytics 4</strong> para
+              análisis estadístico anónimo del tráfico. No se usan cookies de
+              publicidad ni píxeles de seguimiento comercial.
             </p>
-            <p>Tecnologías técnicas presentes:</p>
+            <p>Tecnologías presentes:</p>
             <ul>
               <li>
                 <strong>Cloudflare Turnstile</strong>: puede establecer cookies
