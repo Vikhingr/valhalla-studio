@@ -123,11 +123,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${caveat.variable} ${kalam.variable} ${courierPrime.variable}`}>
       <body>
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-W1VYBJ3WM0"
+          src="https://www.googletagmanager.com/gtag/js?id=G-T1PRR77DDY"
           strategy="afterInteractive"
         />
         <Script id="ga4" strategy="afterInteractive">
-          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-W1VYBJ3WM0');`}
+          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-T1PRR77DDY');`}
         </Script>
         <script
           type="application/ld+json"
