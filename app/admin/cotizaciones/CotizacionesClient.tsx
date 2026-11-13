@@ -12,7 +12,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Trash, ArrowRight, CheckCircle, Warning } from "@phosphor-icons/react";
+import { Trash, ArrowRight, CheckCircle, Warning, FilePdf } from "@phosphor-icons/react";
 import type { Cotizacion } from "@/lib/types";
 
 function fmt(n: number) {
@@ -253,17 +253,33 @@ export default function CotizacionesClient() {
                 >
                   <Trash size={13} /> Eliminar
                 </button>
-                <button
-                  onClick={() => handleCrearProyecto(c.id)}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 7,
-                    padding: "9px 16px", borderRadius: 8, border: "none",
-                    background: "var(--violet)", color: "#fff",
-                    fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  }}
-                >
-                  Crear proyecto <ArrowRight size={14} weight="bold" />
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <a
+                    href={`/admin/cotizaciones/${c.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "9px 14px", borderRadius: 8,
+                      border: "1px solid var(--border)", background: "transparent",
+                      color: "var(--ink-2)", fontSize: 13, fontWeight: 500,
+                      textDecoration: "none",
+                    }}
+                  >
+                    <FilePdf size={14} /> PDF
+                  </a>
+                  <button
+                    onClick={() => handleCrearProyecto(c.id)}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 7,
+                      padding: "9px 16px", borderRadius: 8, border: "none",
+                      background: "var(--violet)", color: "#fff",
+                      fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    }}
+                  >
+                    Crear proyecto <ArrowRight size={14} weight="bold" />
+                  </button>
+                </div>
               </div>
             </div>
           );
