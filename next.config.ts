@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/", destination: "/index.html" },
       { source: "/limpiador", destination: "/limpiador.html" },
+      { source: "/herramientas", destination: "/herramientas.html" },
     ];
   },
 

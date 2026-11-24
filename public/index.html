@@ -111,6 +111,11 @@ body{font-family:var(--f-body);font-size:16px;line-height:1.5;
 .brand{top:calc(env(safe-area-inset-top,0px) + 30px);left:max(16px,env(safe-area-inset-left,0px));pointer-events:auto;
   font:700 22px/1 var(--f-display);color:var(--graphite);text-decoration:none;letter-spacing:.01em}
 .brand span{color:var(--blue)}
+.tools-hud{top:calc(env(safe-area-inset-top,0px) + 32px);right:max(16px,env(safe-area-inset-right,0px));pointer-events:auto;
+  font:700 18px/1 var(--f-display);color:var(--graphite);text-decoration:none;letter-spacing:.01em;
+  display:inline-flex;align-items:center;gap:4px;transition:color .15s}
+.tools-hud:hover{color:var(--blue)}
+.tools-hud span{color:var(--blue)}
 .chapter{bottom:calc(env(safe-area-inset-bottom,0px) + 18px);left:max(16px,env(safe-area-inset-left,0px));
   font:700 26px/1 var(--f-display);transform:rotate(-2deg);transform-origin:left bottom}
 .chapter small{display:block;font:400 12px/1.2 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--graphite-soft);margin-bottom:4px}
@@ -240,6 +245,7 @@ body{font-family:var(--f-body);font-size:16px;line-height:1.5;
 <div class="hits" id="hits"></div>
 
 <a class="hud brand" id="brand" href="https://www.valhallastudio.com.mx/" target="_blank" rel="noopener">Valhalla <span>Studio</span></a>
+<a class="hud tools-hud" href="/herramientas">Herramientas <span>→</span></a>
 <div class="hud progress" aria-hidden="true"><svg viewBox="0 0 1000 14" preserveAspectRatio="none"><path id="prog" d="M2 8 C 120 4, 240 11, 360 7 S 600 4, 720 8 S 900 11, 998 6"/></svg></div>
 <nav class="hud chapter" id="chapter" aria-label="Capítulos">
   <ol class="ch-menu" id="ch-menu" hidden></ol>
