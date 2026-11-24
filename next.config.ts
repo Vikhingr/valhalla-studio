@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // La página principal es el portafolio a lápiz (public/index.html)
   async rewrites() {
-    return [{ source: "/", destination: "/index.html" }];
+    return [
+      { source: "/", destination: "/index.html" },
+      { source: "/limpiador", destination: "/limpiador.html" },
+    ];
   },
 
   async headers() {

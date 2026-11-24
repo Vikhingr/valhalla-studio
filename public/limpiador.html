@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Limpiador de Excel — Valhalla Studio</title>
+  <meta name="description" content="Herramienta gratuita: sube un Excel con todo en una columna y descárgalo limpio, con sus columnas separadas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=Courier+Prime:wght@400;700&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    /* ─── Tokens ─── */
+    :root {
+      --paper:   #efece4;
+      --ink:     #2a2a2e;
+      --ink-2:   #6b6b70;
+      --ink-3:   #9b9ba0;
+      --blue:    #2a5bd7;
+      --blue-lt: rgba(42,91,215,.08);
+      --line:    rgba(42,42,46,.13);
+      --white:   rgba(255,255,255,.55);
+      --shadow:  rgba(42,42,46,.12);
+      --red:     #c0392b;
+      --red-lt:  rgba(192,57,43,.08);
+      --safe-t:  env(safe-area-inset-top, 0px);
+      --safe-b:  env(safe-area-inset-bottom, 0px);
+    }
+
+    /* ─── Reset ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    img { max-width: 100%; }
+    button { cursor: pointer; }
+
+    /* ─── Page ─── */
+    html, body { height: 100%; }
+    body {
+      background: var(--paper);
+      background-image:
+        repeating-linear-gradient(var(--paper) 0 31px, rgba(42,91,215,.09) 31px 32px);
+      color: var(--ink);
+      font-family: 'Kalam', cursive;
+      padding:
+        calc(var(--safe-t) + 24px)
+        max(16px, env(safe-area-inset-right, 0px))
+        calc(var(--safe-b) + 64px)
+        max(16px, env(safe-area-inset-left, 0px));
+      min-height: 100%;
+    }
+
+    .wrap { max-width: 760px; margin: 0 auto; }
+
+    /* ─── Header ─── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .logo {
+      font-family: 'Caveat', cursive;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .logo span { color: var(--blue); }
+    .header-tag {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--ink-3);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 3px 8px;
+    }
+
+    /* ─── Hero text ─── */
+    h1 {
+      font-family: 'Caveat', cursive;
+      font-size: clamp(32px, 8vw, 52px);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 10px;
+      text-wrap: balance;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: var(--ink-2);
+      line-height: 1.6;
+      max-width: 540px;
+      margin-bottom: 32px;
+    }
+
+    /* ─── Drop zone ─── */
+    .drop-zone {
+      border: 2.5px dashed var(--ink);
+      border-radius: 14px;
+      padding: 48px 20px 36px;
+      text-align: center;
+      background: var(--white);
+      transition: border-color 140ms, background 140ms, transform 140ms;
+      position: relative;
+    }
+    .drop-zone:hover {
+      border-color: var(--blue);
+      background: var(--blue-lt);
+    }
+    .drop-zone.over {
+      border-color: var(--blue);
+      background: var(--blue-lt);
+      transform: scale(1.012);
+    }
+    .drop-icon {
+      display: block;
+      margin: 0 auto 14px;
+      opacity: .55;
+    }
+    .drop-title {
+      font-family: 'Caveat', cursive;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .drop-sub {
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-bottom: 24px;
+    }
+    .btn-pick {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 26px;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Kalam', cursive;
+      font-size: 16px;
+      font-weight: 700;
+      transition: transform 140ms;
+    }
+    .btn-pick:active { transform: scale(0.97); }
+    #fileInput { display: none; }
+
+    /* ─── Error ─── */
+    .error {
+      margin-top: 14px;
+      padding: 11px 16px;
+      background: var(--red-lt);
+      border: 1.5px solid rgba(192,57,43,.25);
+      border-radius: 8px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 13px;
+      color: var(--red);
+    }
+
+    /* ─── Result card ─── */
+    .card {
+      margin-top: 24px;
+      background: rgba(255,255,255,.65);
+      border: 2px solid var(--ink);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 4px 6px 0 var(--shadow);
+      transform: rotate(-.2deg);
+    }
+    .card-head {
+      background: var(--blue);
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .card-head-title {
+      font-family: 'Caveat', cursive;
+      font-size: 21px;
+      font-weight: 700;
+    }
+    .meta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      opacity: .85;
+    }
+    .card-body { padding: 20px; }
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 13px;
+      color: var(--ink-2);
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: var(--blue-lt);
+      color: var(--blue);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Courier Prime', monospace;
+    }
+
+    /* ─── Preview table ─── */
+    .table-label {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--ink-3);
+      margin-bottom: 8px;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      min-width: 360px;
+    }
+    thead tr { background: rgba(42,42,46,.05); }
+    th {
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1.5px solid var(--line);
+      white-space: nowrap;
+      color: var(--ink);
+    }
+    td {
+      padding: 6px 12px;
+      border-bottom: 1px solid rgba(42,42,46,.07);
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--ink);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--blue-lt); }
+    .more-rows {
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--ink-3);
+      font-family: 'Courier Prime', monospace;
+      border-top: 1px solid var(--line);
+    }
+
+    /* ─── Download button ─── */
+    .btn-dl {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 15px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Caveat', cursive;
+      font-size: 22px;
+      font-weight: 700;
+      box-shadow: 3px 4px 0 rgba(42,91,215,.28);
+      transition: transform 140ms, box-shadow 140ms;
+    }
+    .btn-dl:hover { transform: translateY(-1px); box-shadow: 4px 6px 0 rgba(42,91,215,.28); }
+    .btn-dl:active { transform: scale(.98); box-shadow: 2px 2px 0 rgba(42,91,215,.28); }
+
+    /* ─── Steps ─── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 48px;
+    }
+    .step {
+      background: var(--white);
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      padding: 16px 14px;
+      text-align: center;
+    }
+    .step-n {
+      font-family: 'Caveat', cursive;
+      font-size: 36px;
+      font-weight: 700;
+      color: rgba(42,91,215,.22);
+      line-height: 1;
+    }
+    .step-txt {
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+
+    /* ─── Footer ─── */
+    .footer {
+      margin-top: 56px;
+      text-align: center;
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+    .footer a { color: var(--blue); text-decoration: none; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 540px) {
+      .steps { grid-template-columns: 1fr; }
+      .meta { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <a class="logo" href="/">Valhalla <span>Studio</span></a>
+    <span class="header-tag">Herramienta gratuita</span>
+  </div>
+
+  <!-- Hero -->
+  <h1>Limpiador de Excel</h1>
+  <p class="subtitle">
+    ¿Tu archivo tiene todo apilado en una sola columna? Súbelo aquí —
+    detectamos el separador automáticamente y te entregamos el Excel
+    ya ordenado en sus columnas.
+  </p>
+
+  <!-- Drop zone -->
+  <div class="drop-zone" id="dropZone" role="button" tabindex="0"
+       aria-label="Zona para arrastrar o seleccionar archivo">
+    <svg class="drop-icon" width="52" height="52" viewBox="0 0 52 52" fill="none"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="8" y="6" width="28" height="36" rx="3" stroke="#2a2a2e" stroke-width="2"/>
+      <rect x="14" y="6" width="22" height="8" rx="2" fill="#2a2a2e" opacity=".12"/>
+      <line x1="13" y1="22" x2="31" y2="22" stroke="#2a2a2e" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="13" y1="27" x2="31" y2="27" stroke="#2a2a2e" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="13" y1="32" x2="24" y2="32" stroke="#2a2a2e" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="38" cy="38" r="10" fill="#2a5bd7"/>
+      <line x1="38" y1="33" x2="38" y2="43" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="33" y1="38" x2="43" y2="38" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div class="drop-title">Arrastra tu archivo aquí</div>
+    <div class="drop-sub">.csv · .xlsx · .xls</div>
+    <button class="btn-pick" type="button" id="pickBtn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 3v7M5 7l3-3 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3 12h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      Seleccionar archivo
+    </button>
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+  </div>
+
+  <div id="errorMsg" class="error" hidden></div>
+  <div id="resultCard" class="card" hidden></div>
+
+  <!-- How it works -->
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <div class="step-txt">Sube el archivo con todo en una columna</div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div class="step-txt">Detectamos el separador (;  ,  tabulación…)</div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div class="step-txt">Descarga el Excel ya ordenado en columnas</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    Herramienta gratuita de <a href="/">Valhalla Studio</a> &middot; Todo el procesamiento ocurre en tu navegador, no subimos tus datos a ningún servidor.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const dropZone  = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const pickBtn   = document.getElementById('pickBtn');
+  const errorMsg  = document.getElementById('errorMsg');
+  const resultCard= document.getElementById('resultCard');
+
+  // ── Drag & drop ────────────────────────────────────────────────────
+  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  dropZone.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+  pickBtn.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+  fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f) handleFile(f); });
+
+  // ── Utilities ──────────────────────────────────────────────────────
+  function readAsArrayBuffer(file) {
+    return new Promise((ok, err) => {
+      const r = new FileReader();
+      r.onload  = e => ok(e.target.result);
+      r.onerror = err;
+      r.readAsArrayBuffer(file);
+    });
+  }
+
+  function bufferToText(buf) {
+    // Try UTF-8; if replacement chars appear, fall back to Latin-1
+    const utf8 = new TextDecoder('utf-8').decode(buf);
+    if (utf8.includes('�')) {
+      return new TextDecoder('iso-8859-1').decode(buf);
+    }
+    return utf8;
+  }
+
+  function detectDelimiter(text) {
+    const candidates = [';', ',', '\t', '|'];
+    const lines = text.split('\n').slice(0, 15).filter(l => l.trim());
+    let best = ',', bestScore = -1;
+    for (const d of candidates) {
+      const counts = lines.map(l => (l.match(new RegExp('\\' + (d === '\t' ? '\\t' : d), 'g')) || []).length);
+      const avg   = counts.reduce((a, b) => a + b, 0) / counts.length;
+      const mode  = counts.reduce((acc, c) => { acc[c] = (acc[c] || 0) + 1; return acc; }, {});
+      const maxFreq = Math.max(...Object.values(mode));
+      const score = avg * maxFreq;
+      if (avg > 0 && score > bestScore) { bestScore = score; best = d; }
+    }
+    return best;
+  }
+
+  function delimName(d) {
+    if (d === ';')  return 'punto y coma (;)';
+    if (d === ',')  return 'coma (,)';
+    if (d === '\t') return 'tabulación';
+    if (d === '|')  return 'barra vertical (|)';
+    return d;
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function clip(s, n) {
+    s = String(s);
+    return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  // ── Core processor ─────────────────────────────────────────────────
+  async function handleFile(file) {
+    clearUI();
+
+    try {
+      const buf       = await readAsArrayBuffer(file);
+      const isCSV     = /\.(csv)$/i.test(file.name) || file.type === 'text/csv';
+      let workbook, delimiter;
+
+      if (isCSV) {
+        const text = bufferToText(buf);
+        delimiter  = detectDelimiter(text);
+        workbook   = XLSX.read(text, { type: 'string', FS: delimiter });
+      } else {
+        // Excel: parse normally first
+        const rawWb  = XLSX.read(new Uint8Array(buf), { type: 'array' });
+        const ws     = rawWb.Sheets[rawWb.SheetNames[0]];
+        const rawRows= XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+        // Check single-column problem: ≥70 % of non-empty rows have only 1 filled cell
+        const noEmpty = rawRows.filter(r => r.some(c => String(c).trim()));
+        const single  = noEmpty.filter(r => r.filter(c => String(c).trim()).length === 1).length;
+
+        if (noEmpty.length > 0 && single / noEmpty.length >= 0.70) {
+          // Extract the single column text and re-parse as delimited
+          const colText = noEmpty.map(r => String(r.find(c => String(c).trim()) || '')).join('\n');
+          delimiter = detectDelimiter(colText);
+          workbook  = XLSX.read(colText, { type: 'string', FS: delimiter });
+        } else {
+          workbook  = rawWb;
+        }
+      }
+
+      // Build clean data matrix
+      const wsName = workbook.SheetNames[0];
+      const ws     = workbook.Sheets[wsName];
+      const rows   = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      const clean  = rows.filter(r => r.some(c => String(c).trim()));
+      const cols   = Math.max(...clean.map(r => r.length));
+
+      if (clean.length === 0 || cols === 0) {
+        throw new Error('El archivo parece estar vacío o no tiene datos legibles.');
+      }
+
+      // Build output workbook
+      const outWs = XLSX.utils.aoa_to_sheet(clean);
+      const outWb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(outWb, outWs, 'Datos');
+
+      const baseName = file.name.replace(/\.[^.]+$/, '');
+      const outName  = baseName + '_limpio.xlsx';
+
+      showResult({ file, delimiter, rows: clean, cols, outWb, outName });
+
+    } catch (err) {
+      showError(err.message || 'No se pudo procesar el archivo.');
+    }
+  }
+
+  // ── UI helpers ─────────────────────────────────────────────────────
+  function clearUI() {
+    errorMsg.hidden  = true;
+    errorMsg.textContent = '';
+    resultCard.hidden = true;
+    resultCard.innerHTML = '';
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = '⚠ ' + msg;
+    errorMsg.hidden = false;
+  }
+
+  function showResult({ file, delimiter, rows, cols, outWb, outName }) {
+    const header  = rows[0] || [];
+    const preview = rows.slice(1, 7);
+    const extra   = rows.length - 1 - preview.length;
+
+    resultCard.innerHTML = `
+      <div class="card-head">
+        <div class="card-head-title">✓ Archivo procesado</div>
+        <div class="meta">
+          <span>${rows.length} filas</span>
+          <span>${cols} columnas</span>
+          ${delimiter ? `<span>Separador: ${esc(delimName(delimiter))}</span>` : ''}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="12" height="12" rx="2" stroke="#6b6b70" stroke-width="1.3"/>
+            <line x1="4" y1="5" x2="10" y2="5" stroke="#6b6b70" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="4" y1="7.5" x2="10" y2="7.5" stroke="#6b6b70" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="4" y1="10" x2="7"  y2="10" stroke="#6b6b70" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          <span>${esc(file.name)}</span>
+          <span class="badge">${cols} columnas detectadas</span>
+        </div>
+
+        <div class="table-label">Vista previa (primeras filas)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>${header.map((h, i) => `<th>${esc(clip(h || 'Col ' + (i + 1), 24))}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${preview.map(r =>
+                `<tr>${header.map((_, i) => `<td title="${esc(String(r[i] ?? ''))}">${esc(clip(r[i] ?? '', 28))}</td>`).join('')}</tr>`
+              ).join('')}
+            </tbody>
+          </table>
+          ${extra > 0 ? `<div class="more-rows">… y ${extra} fila${extra !== 1 ? 's' : ''} más</div>` : ''}
+        </div>
+
+        <button class="btn-dl" id="dlBtn" type="button">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M10 3v10M6 10l4 4 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 16h12" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Descargar Excel limpio
+        </button>
+      </div>
+    `;
+
+    resultCard.hidden = false;
+    document.getElementById('dlBtn').addEventListener('click', () => {
+      XLSX.writeFile(outWb, outName);
+    });
+
+    setTimeout(() => resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  }
+})();
+</script>
+</body>
+</html>
