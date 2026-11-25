@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       { source: "/", destination: "/index.html" },
       { source: "/limpiador", destination: "/limpiador.html" },
       { source: "/herramientas", destination: "/herramientas.html" },
+      { source: "/visor-xml", destination: "/visor-xml.html" },
     ];
   },
 

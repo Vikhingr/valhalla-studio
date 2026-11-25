@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Visor de XML CFDI — Valhalla Studio</title>
+  <meta name="description" content="Visualiza e imprime tus archivos XML CFDI como facturas en PDF. Gratuito, sin registros, todo en tu navegador.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=Courier+Prime:wght@400;700&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    /* ─── UI tokens ─── */
+    :root {
+      --paper:   #efece4;
+      --ink:     #2a2a2e;
+      --ink-2:   #6b6b70;
+      --ink-3:   #9b9ba0;
+      --blue:    #2a5bd7;
+      --blue-lt: rgba(42,91,215,.08);
+      --line:    rgba(42,42,46,.13);
+      --shadow:  rgba(42,42,46,.12);
+      --white55: rgba(255,255,255,.55);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--paper);
+      background-image: repeating-linear-gradient(var(--paper) 0 31px, rgba(42,91,215,.09) 31px 32px);
+      color: var(--ink);
+      font-family: 'Kalam', cursive;
+      min-height: 100vh;
+    }
+
+    /* ─── Toolbar ─── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));
+      background: rgba(239,236,228,.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1.5px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .tbar-logo { font-family:'Caveat',cursive; font-size:18px; font-weight:700; color:var(--ink); text-decoration:none; white-space:nowrap; }
+    .tbar-logo span { color:var(--blue); }
+    .tbar-back {
+      font-family:'Courier Prime',monospace; font-size:12px; color:var(--ink-2);
+      text-decoration:none; display:inline-flex; align-items:center; gap:4px;
+      transition:color .14s; white-space:nowrap;
+    }
+    .tbar-back:hover { color:var(--blue); }
+    .tbar-sep { flex:1; }
+    .btn-reset {
+      font-family:'Courier Prime',monospace; font-size:12px; color:var(--ink-2);
+      background:none; border:1.5px solid var(--line); border-radius:6px;
+      padding:5px 12px; cursor:pointer; transition:color .14s, border-color .14s;
+    }
+    .btn-reset:hover { color:var(--blue); border-color:var(--blue); }
+    .btn-print {
+      font-family:'Caveat',cursive; font-size:17px; font-weight:700; color:white;
+      background:var(--blue); border:none; border-radius:8px;
+      padding:7px 16px; cursor:pointer; transition:opacity .14s;
+    }
+    .btn-print:hover { opacity:.88; }
+    .btn-print:active { transform:scale(.97); }
+
+    /* ─── Upload section ─── */
+    .upload-wrap {
+      max-width:680px; margin:0 auto;
+      padding:calc(env(safe-area-inset-top,0px)+36px) max(16px,env(safe-area-inset-right,0px)) 72px max(16px,env(safe-area-inset-left,0px));
+      display:flex; flex-direction:column; align-items:center; text-align:center; gap:20px;
+    }
+    .upload-wrap h1 { font-family:'Caveat',cursive; font-size:clamp(32px,8vw,52px); font-weight:700; line-height:1; text-wrap:balance; }
+    .upload-wrap > p { font-size:15px; color:var(--ink-2); line-height:1.6; max-width:420px; }
+    .drop-zone {
+      width:100%; max-width:500px;
+      border:2.5px dashed var(--blue); border-radius:16px; background:var(--white55);
+      padding:40px 20px; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+      transition:background .15s;
+    }
+    .drop-zone:hover, .drop-zone.drag { background:var(--blue-lt); }
+    .drop-zone svg { opacity:.5; }
+    .drop-zone p { font-size:14px; color:var(--ink-2); }
+    .drop-zone p strong { color:var(--blue); }
+    .drop-label { font-family:'Courier Prime',monospace; font-size:12px; color:var(--ink-3); letter-spacing:.05em; }
+    #file-input { display:none; }
+    .error-msg {
+      color:#c0392b; font-size:14px; max-width:500px; width:100%;
+      background:rgba(192,57,43,.08); border:1.5px solid rgba(192,57,43,.25);
+      border-radius:8px; padding:10px 16px;
+    }
+
+    /* ─── Invoice outer ─── */
+    .invoice-outer {
+      padding:24px max(16px,env(safe-area-inset-right,0px)) 72px max(16px,env(safe-area-inset-left,0px));
+    }
+
+    /* ─── Invoice (clean/formal, no pencil style) ─── */
+    #factura-print {
+      max-width:900px; margin:0 auto;
+      background:white; border-radius:8px; overflow:hidden;
+      box-shadow:0 4px 24px rgba(0,0,0,.12);
+      font-family:'Courier Prime',monospace; font-size:11.5px; color:#111;
+    }
+
+    .f-header { background:#2a5bd7; color:white; padding:20px 24px 16px; }
+    .f-header-row { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+    .f-emisor-name { font-size:22px; font-weight:700; line-height:1.1; }
+    .f-rfc-hdr { font-size:11px; opacity:.82; margin-top:4px; }
+    .f-header-right { text-align:right; flex-shrink:0; }
+    .f-badge { display:inline-block; font-size:10px; letter-spacing:.08em; text-transform:uppercase; background:rgba(255,255,255,.18); border-radius:4px; padding:2px 8px; margin-bottom:4px; }
+    .f-folio { font-size:13px; font-weight:700; opacity:.9; }
+    .f-total-hdr { font-size:26px; font-weight:700; margin-top:4px; letter-spacing:-.01em; }
+    .f-fecha-hdr { font-size:11px; opacity:.75; margin-top:2px; }
+    .f-uuid { font-size:9px; opacity:.6; margin-top:8px; word-break:break-all; line-height:1.4; }
+
+    .f-boxes { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid #e0e0e8; }
+    .f-box { padding:14px 18px; }
+    .f-box:first-child { border-right:1px solid #e0e0e8; }
+    .f-box-title { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#2a5bd7; font-weight:700; margin-bottom:8px; }
+    .f-row { display:flex; gap:6px; margin-bottom:3px; line-height:1.45; font-size:11px; flex-wrap:wrap; }
+    .f-lbl { color:#666; white-space:nowrap; flex-shrink:0; }
+    .f-val { color:#111; font-weight:700; word-break:break-word; }
+
+    .f-meta { display:flex; flex-wrap:wrap; background:#f7f7fb; border-bottom:1px solid #e0e0e8; }
+    .f-meta-item { padding:8px 14px; border-right:1px solid #e0e0e8; flex:1 1 140px; font-size:10.5px; }
+    .f-meta-item:last-child { border-right:none; }
+
+    .f-concepts-wrap { overflow-x:auto; }
+    .f-concepts { width:100%; border-collapse:collapse; table-layout:fixed; }
+    .f-concepts thead th {
+      background:#1a2a4a; color:white; padding:7px 8px;
+      text-align:left; font-size:9px; letter-spacing:.08em; text-transform:uppercase; font-weight:700;
+    }
+    .f-concepts thead th.r { text-align:right; }
+    .f-concepts tbody td { padding:7px 8px; border-bottom:1px solid #e0e0e8; vertical-align:top; word-break:break-word; font-size:11px; }
+    .f-concepts tbody td.r { text-align:right; }
+    .f-concepts tbody tr.even td { background:#f7f7fb; }
+
+    .f-bottom { display:flex; border-top:1px solid #e0e0e8; }
+    .f-payment { flex:1; min-width:0; padding:14px 18px; border-right:1px solid #e0e0e8; }
+    .f-totals { width:220px; flex-shrink:0; }
+    .f-total-row { display:flex; justify-content:space-between; align-items:center; padding:5px 14px; gap:16px; border-bottom:1px solid #e0e0e8; font-size:11px; }
+    .f-total-row:last-child { border-bottom:none; }
+    .f-total-row.grand { background:#2a5bd7; color:white; font-weight:700; font-size:13px; }
+
+    .f-letra { border-top:1px solid #e0e0e8; padding:8px 18px; font-size:10px; color:#555; line-height:1.5; }
+    .f-letra strong { color:#111; }
+
+    .f-seals { border-top:1px solid #e0e0e8; padding:14px 18px; }
+    .f-seals-title { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#2a5bd7; font-weight:700; margin-bottom:10px; }
+    .f-seals-inner { display:flex; gap:18px; align-items:flex-start; }
+    .f-qr { flex-shrink:0; display:flex; flex-direction:column; gap:6px; align-items:center; }
+    .f-qr a { font-size:8px; color:#2a5bd7; text-decoration:none; }
+    .f-seal-data { flex:1; min-width:0; }
+    .f-seal-label { font-size:8.5px; text-transform:uppercase; letter-spacing:.08em; color:#888; margin-top:6px; margin-bottom:1px; }
+    .f-seal-label:first-child { margin-top:0; }
+    .f-seal-val { font-size:8px; word-break:break-all; color:#333; line-height:1.4; }
+
+    .f-footer { border-top:1px solid #e0e0e8; padding:8px 18px; text-align:center; font-size:9px; color:#999; display:flex; flex-direction:column; gap:3px; }
+    .f-footer-brand { font-size:9px; color:#2a5bd7; font-weight:700; letter-spacing:.06em; }
+
+    @media (max-width:620px) {
+      .f-boxes { grid-template-columns:1fr; }
+      .f-box:first-child { border-right:none; border-bottom:1px solid #e0e0e8; }
+      .f-bottom { flex-direction:column; }
+      .f-payment { border-right:none; border-bottom:1px solid #e0e0e8; }
+      .f-totals { width:100%; }
+    }
+
+    /* ─── Print ─── */
+    @media print {
+      .no-print { display:none !important; }
+      body { background:white !important; background-image:none !important; padding:0 !important; }
+      .invoice-outer { padding:0 !important; }
+      #factura-print { max-width:100% !important; border-radius:0 !important; box-shadow:none !important; }
+      .f-concepts-wrap { overflow-x:visible !important; }
+      a[href]::after { content:none !important; }
+      @page { size:letter; margin:8mm 10mm; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a class="tbar-logo" href="/herramientas">Valhalla <span>Studio</span></a>
+  <a class="tbar-back" href="/herramientas">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Herramientas
+  </a>
+  <div class="tbar-sep"></div>
+  <button class="btn-reset" id="btn-reset" onclick="resetPage()" hidden>Cargar otro</button>
+  <button class="btn-print" id="btn-print" onclick="window.print()" hidden>🖨 Imprimir / PDF</button>
+</div>
+
+<div id="upload-section" class="upload-wrap">
+  <h1>Visor de XML <span style="color:var(--blue)">CFDI</span></h1>
+  <p>Sube tu archivo XML y visualiza la factura. Genera el PDF con un clic. Compatible con CFDI 4.0 y 3.3.</p>
+
+  <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <rect x="8" y="6" width="24" height="30" rx="3" stroke="#2a5bd7" stroke-width="2"/>
+      <path d="M28 6v9h9M37 15L28 6" stroke="#2a5bd7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 24v10M16 28l4-4 4 4" stroke="#2a5bd7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p><strong>Haz clic o arrastra</strong> tu archivo XML aquí</p>
+    <span class="drop-label">Archivos .xml — CFDI 4.0 y 3.3</span>
+  </div>
+  <input type="file" id="file-input" accept=".xml,text/xml,application/xml">
+
+  <div id="error-msg" class="error-msg" hidden></div>
+
+  <p style="font-size:12px;color:var(--ink-3);font-family:'Courier Prime',monospace">
+    Tu archivo nunca sale de tu navegador · Procesamiento local
+  </p>
+</div>
+
+<div id="invoice-section" class="invoice-outer" hidden>
+  <div id="factura-print"></div>
+</div>
+
+<script>
+// ─── Catálogos SAT ───────────────────────────────────────────────
+const CAT_REGIMEN = {
+  '601':'General de Ley Personas Morales','603':'Personas Morales con Fines no Lucrativos',
+  '605':'Sueldos y Salarios e Ingresos Asimilados a Salarios','606':'Arrendamiento',
+  '607':'Régimen de Enajenación o Adquisición de Bienes','608':'Demás ingresos',
+  '612':'Personas Físicas con Actividades Empresariales y Profesionales',
+  '616':'Sin obligaciones fiscales','621':'Incorporación Fiscal',
+  '622':'Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras',
+  '625':'Actividades Empresariales vía Plataformas Tecnológicas',
+  '626':'Régimen Simplificado de Confianza (RESICO)',
+};
+const CAT_USO = {
+  'G01':'Adquisición de mercancias','G02':'Devoluciones, descuentos o bonificaciones',
+  'G03':'Gastos en general','I01':'Construcciones','I02':'Mobilario y equipo de oficina',
+  'I03':'Equipo de transporte','I04':'Equipo de cómputo y accesorios',
+  'D01':'Honorarios médicos, dentales y gastos hospitalarios',
+  'D02':'Gastos médicos por incapacidad','D03':'Gastos funerales','D04':'Donativos',
+  'D07':'Primas por seguros de gastos médicos',
+  'S01':'Sin efectos fiscales','CP01':'Pagos','CN01':'Nómina',
+};
+const CAT_FORMA = {
+  '01':'Efectivo','02':'Cheque nominativo','03':'Transferencia electrónica de fondos',
+  '04':'Tarjeta de crédito','05':'Monedero electrónico','06':'Dinero electrónico',
+  '28':'Tarjeta de débito','29':'Tarjeta de servicios','30':'Aplicación de anticipos','99':'Por definir',
+};
+const CAT_TIPO    = {'I':'Ingreso','E':'Egreso','T':'Traslado','N':'Nómina','P':'Pago'};
+const CAT_METODO  = {'PUE':'Pago en una sola exhibición','PPD':'Pago en parcialidades o diferido'};
+const CAT_OBJIMP  = {'01':'No objeto','02':'Sí objeto','03':'Sí objeto (sin desglose)','04':'Sí objeto (sin causa)'};
+const CAT_IMP     = {'001':'ISR','002':'IVA','003':'IEPS'};
+
+// ─── Helpers ─────────────────────────────────────────────────────
+const escH = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const cat  = (m, k) => k ? (m[k] ? m[k]+' ('+k+')' : k) : '—';
+const fmt  = n => parseFloat(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN',minimumFractionDigits:2});
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s.replace('T',' ').replace(/-/g,'/'));
+  if (isNaN(d)) return s;
+  const f = d.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  return s.length > 10 ? f + ' ' + s.slice(11,16) : f;
+}
+
+// ─── Número a letras ─────────────────────────────────────────────
+function numToWords(n) {
+  n = Math.floor(n);
+  if (n === 0) return 'CERO';
+  const W = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE',
+    'DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE',
+    'VEINTE','VEINTIÚN','VEINTIDÓS','VEINTITRÉS','VEINTICUATRO','VEINTICINCO',
+    'VEINTISÉIS','VEINTISIETE','VEINTIOCHO','VEINTINUEVE'];
+  const W10  = ['','','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+  const W100 = ['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS',
+    'SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+  let r = '';
+  if (n >= 1000000) { const m=Math.floor(n/1000000); r+=(m===1?'UN MILLÓN':numToWords(m)+' MILLONES')+' '; n%=1000000; }
+  if (n >= 1000)    { const t=Math.floor(n/1000);    r+=(t===1?'MIL':numToWords(t)+' MIL')+' '; n%=1000; }
+  if (n >= 100)     { r+=(n===100?'CIEN':W100[Math.floor(n/100)])+' '; n%=100; }
+  if (n >= 30)      { r+=W10[Math.floor(n/10)]+(n%10?' Y '+W[n%10]:'')+' '; }
+  else if (n > 0)   { r+=W[n]+' '; }
+  return r.trim();
+}
+function importeEnLetra(total) {
+  const n = parseFloat(total)||0;
+  const p = Math.floor(n);
+  const c = Math.round((n-p)*100);
+  return numToWords(p)+' PESOS '+String(c).padStart(2,'0')+'/100 MXN';
+}
+
+// ─── XML helpers ─────────────────────────────────────────────────
+function findEl(doc, name) {
+  for (const el of doc.getElementsByTagName('*')) if (el.localName===name) return el;
+  return null;
+}
+function findEls(doc, name) {
+  const r=[];
+  for (const el of doc.getElementsByTagName('*')) if (el.localName===name) r.push(el);
+  return r;
+}
+function childEls(parent, name) {
+  if (!parent) return [];
+  const r=[];
+  for (const el of parent.getElementsByTagName('*')) if (el.localName===name) r.push(el);
+  return r;
+}
+function a(el, name, def='') { return el ? (el.getAttribute(name)||def) : def; }
+
+// ─── Parse CFDI ──────────────────────────────────────────────────
+function parseCfdi(xml) {
+  const doc = new DOMParser().parseFromString(xml,'application/xml');
+  const err = doc.querySelector('parsererror');
+  if (err) throw new Error('XML inválido: '+err.textContent.slice(0,120));
+
+  const comp = findEl(doc,'Comprobante');
+  if (!comp) throw new Error('No se encontró el nodo Comprobante. ¿Es un CFDI válido?');
+
+  const emisor   = findEl(doc,'Emisor');
+  const receptor = findEl(doc,'Receptor');
+  const tfd      = findEl(doc,'TimbreFiscalDigital');
+
+  // Global Impuestos (direct child of Comprobante)
+  const impEls = findEls(doc,'Impuestos');
+  const impEl  = impEls.find(el => el.parentElement?.localName==='Comprobante') || impEls[0];
+
+  const globalTras = childEls(impEl,'Traslado').map(t=>({
+    impuesto:a(t,'Impuesto'), tasa:a(t,'TasaOCuota'), importe:a(t,'Importe'), tipo:a(t,'TipoFactor'),
+  }));
+  const globalRet = childEls(impEl,'Retencion').map(r=>({
+    impuesto:a(r,'Impuesto'), importe:a(r,'Importe'),
+  }));
+
+  // Conceptos
+  const conceptos = findEls(doc,'Concepto').map(c => ({
+    claveProd:    a(c,'ClaveProdServ'),
+    descripcion:  a(c,'Descripcion'),
+    cantidad:     a(c,'Cantidad'),
+    claveUnidad:  a(c,'ClaveUnidad'),
+    unidad:       a(c,'Unidad'),
+    valorUnitario:a(c,'ValorUnitario'),
+    importe:      a(c,'Importe'),
+    descuento:    a(c,'Descuento'),
+    objetoImp:    a(c,'ObjetoImp'),
+  }));
+
+  return {
+    version:   a(comp,'Version'),
+    folio:     a(comp,'Folio'),  serie:     a(comp,'Serie'),
+    fecha:     a(comp,'Fecha'),  subtotal:  a(comp,'SubTotal'),
+    total:     a(comp,'Total'),  moneda:    a(comp,'Moneda','MXN'),
+    tipoCambio:a(comp,'TipoCambio'),
+    tipo:      a(comp,'TipoDeComprobante'),
+    formaPago: a(comp,'FormaPago'),
+    metodoPago:a(comp,'MetodoPago'),
+    lugarExp:  a(comp,'LugarExpedicion'),
+    sello:     a(comp,'Sello'),
+    exportacion:a(comp,'Exportacion'),
+    emisor: {
+      rfc:    a(emisor,'Rfc'),    nombre: a(emisor,'Nombre'),
+      regimen:a(emisor,'RegimenFiscal'),
+    },
+    receptor: {
+      rfc:      a(receptor,'Rfc'),       nombre:    a(receptor,'Nombre'),
+      regimen:  a(receptor,'RegimenFiscalReceptor'),
+      domicilio:a(receptor,'DomicilioFiscalReceptor'),
+      uso:      a(receptor,'UsoCFDI'),
+      residencia:a(receptor,'ResidenciaFiscal'),
+      numRegId: a(receptor,'NumRegIdTrib'),
+    },
+    conceptos,
+    impuestos: {
+      totalTraslados:  a(impEl,'TotalImpuestosTrasladados'),
+      totalRetenciones:a(impEl,'TotalImpuestosRetenidos'),
+      traslados: globalTras,
+      retenciones: globalRet,
+    },
+    tfd: {
+      uuid:          a(tfd,'UUID'),
+      noCertSat:     a(tfd,'NoCertificadoSAT'),
+      selloCfdi:     a(tfd,'SelloCFDI'),
+      selloSat:      a(tfd,'SelloSAT'),
+      fechaTimbrado: a(tfd,'FechaTimbrado'),
+      rfcPac:        a(tfd,'RfcProvCertif'),
+      version:       a(tfd,'Version','1.1'),
+    },
+  };
+}
+
+// ─── SAT URL ─────────────────────────────────────────────────────
+function satUrl(c) {
+  if (!c.tfd.uuid) return null;
+  const tt = parseFloat(c.total||0).toFixed(6);
+  const fe = (c.tfd.selloCfdi||c.sello||'').slice(-8);
+  return `https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${c.tfd.uuid}&re=${c.emisor.rfc}&rr=${c.receptor.rfc}&tt=${tt}&fe=${fe}`;
+}
+
+// ─── Render ───────────────────────────────────────────────────────
+function renderInvoice(c) {
+  const url     = satUrl(c);
+  const selloCfdi = c.tfd.selloCfdi || c.sello || '';
+  const cadena  = c.tfd.uuid
+    ? `||${c.tfd.version}|${c.tfd.uuid}|${c.tfd.fechaTimbrado}|${c.tfd.rfcPac}|${selloCfdi}|${c.tfd.noCertSat}||`
+    : '(sin timbrar)';
+  const folioStr = [c.serie, c.folio].filter(Boolean).join('') || '—';
+
+  // Impuestos rows
+  let impRows = '';
+  if (c.impuestos.traslados.length) {
+    for (const t of c.impuestos.traslados) {
+      const pct  = t.tipo==='Exento' ? 'Exento' : `${(parseFloat(t.tasa||0)*100).toFixed(0)}%`;
+      const name = CAT_IMP[t.impuesto]||t.impuesto;
+      impRows += `<div class="f-total-row"><span>${name} ${pct}</span><span>${fmt(t.importe)}</span></div>`;
+    }
+  } else if (parseFloat(c.impuestos.totalTraslados||0) > 0) {
+    impRows += `<div class="f-total-row"><span>IVA</span><span>${fmt(c.impuestos.totalTraslados)}</span></div>`;
+  }
+  for (const r of c.impuestos.retenciones) {
+    const name = CAT_IMP[r.impuesto]||r.impuesto;
+    impRows += `<div class="f-total-row"><span>${name} Ret.</span><span style="color:#c0392b">−${fmt(r.importe)}</span></div>`;
+  }
+
+  const totalDesc = c.conceptos.reduce((s,con)=>s+parseFloat(con.descuento||0),0);
+  const descRow   = totalDesc > 0 ? `<div class="f-total-row"><span>Descuento</span><span style="color:#c0392b">−${fmt(totalDesc)}</span></div>` : '';
+
+  // Concepts rows
+  const conRows = c.conceptos.map((con,i) => {
+    const cls = i%2===1 ? ' class="even"' : '';
+    return `<tr${cls}>
+      <td style="font-size:9px">${escH(con.claveProd)}</td>
+      <td>${escH(con.descripcion)}</td>
+      <td class="r">${parseFloat(con.cantidad||0).toLocaleString('es-MX',{maximumFractionDigits:4})}</td>
+      <td style="font-size:9px">${escH(CAT_OBJIMP[con.objetoImp]||con.objetoImp||'—')}</td>
+      <td style="font-size:9px">${escH(con.claveUnidad)}${con.unidad&&con.unidad!==con.claveUnidad?' / '+escH(con.unidad):''}</td>
+      <td class="r">${fmt(con.valorUnitario)}</td>
+      <td class="r" style="font-weight:700">${fmt(con.importe)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `
+    <div class="f-header">
+      <div class="f-header-row">
+        <div>
+          <div class="f-emisor-name">${escH(c.emisor.nombre||c.emisor.rfc)}</div>
+          <div class="f-rfc-hdr">RFC: ${escH(c.emisor.rfc)}</div>
+        </div>
+        <div class="f-header-right">
+          <div class="f-badge">CFDI ${escH(c.version||'4.0')}</div>
+          <div class="f-folio">${escH(CAT_TIPO[c.tipo]||c.tipo||'')} · Folio ${escH(folioStr)}</div>
+          <div class="f-total-hdr">${fmt(c.total)}</div>
+          <div class="f-fecha-hdr">${escH(fmtDate(c.fecha))}</div>
+        </div>
+      </div>
+      ${c.tfd.uuid ? `<div class="f-uuid">UUID: ${escH(c.tfd.uuid)}</div>` : ''}
+    </div>
+
+    <div class="f-boxes">
+      <div class="f-box">
+        <div class="f-box-title">Emisor</div>
+        <div class="f-row"><span class="f-lbl">RFC:</span><span class="f-val">${escH(c.emisor.rfc||'—')}</span></div>
+        <div class="f-row"><span class="f-lbl">Nombre:</span><span class="f-val">${escH(c.emisor.nombre||'—')}</span></div>
+        <div class="f-row"><span class="f-lbl">Régimen fiscal:</span><span class="f-val">${escH(cat(CAT_REGIMEN,c.emisor.regimen))}</span></div>
+        <div class="f-row"><span class="f-lbl">CP expedición:</span><span class="f-val">${escH(c.lugarExp||'—')}</span></div>
+      </div>
+      <div class="f-box">
+        <div class="f-box-title">Receptor</div>
+        <div class="f-row"><span class="f-lbl">RFC:</span><span class="f-val">${escH(c.receptor.rfc||'—')}</span></div>
+        <div class="f-row"><span class="f-lbl">Nombre:</span><span class="f-val">${escH(c.receptor.nombre||'—')}</span></div>
+        <div class="f-row"><span class="f-lbl">Régimen fiscal:</span><span class="f-val">${escH(cat(CAT_REGIMEN,c.receptor.regimen))}</span></div>
+        <div class="f-row"><span class="f-lbl">Domicilio fiscal:</span><span class="f-val">${escH(c.receptor.domicilio||'—')}</span></div>
+        <div class="f-row"><span class="f-lbl">Uso CFDI:</span><span class="f-val">${escH(cat(CAT_USO,c.receptor.uso))}</span></div>
+        ${c.receptor.residencia ? `<div class="f-row"><span class="f-lbl">Residencia fiscal:</span><span class="f-val">${escH(c.receptor.residencia)}</span></div>` : ''}
+        ${c.receptor.numRegId   ? `<div class="f-row"><span class="f-lbl">Núm. reg. trib.:</span><span class="f-val">${escH(c.receptor.numRegId)}</span></div>` : ''}
+      </div>
+    </div>
+
+    <div class="f-meta">
+      <div class="f-meta-item"><div class="f-lbl">Tipo</div><div class="f-val">${escH(CAT_TIPO[c.tipo]||c.tipo||'—')}</div></div>
+      <div class="f-meta-item"><div class="f-lbl">Versión CFDI</div><div class="f-val">${escH(c.version||'4.0')}</div></div>
+      <div class="f-meta-item"><div class="f-lbl">Fecha emisión</div><div class="f-val">${escH(fmtDate(c.fecha))}</div></div>
+      ${c.tfd.fechaTimbrado ? `<div class="f-meta-item"><div class="f-lbl">Fecha timbrado</div><div class="f-val">${escH(fmtDate(c.tfd.fechaTimbrado))}</div></div>` : ''}
+      ${c.formaPago  ? `<div class="f-meta-item"><div class="f-lbl">Forma de pago</div><div class="f-val">${escH(cat(CAT_FORMA,c.formaPago))}</div></div>` : ''}
+      ${c.metodoPago ? `<div class="f-meta-item"><div class="f-lbl">Método de pago</div><div class="f-val">${escH(cat(CAT_METODO,c.metodoPago))}</div></div>` : ''}
+      <div class="f-meta-item"><div class="f-lbl">Moneda</div><div class="f-val">${escH(c.moneda)}${c.tipoCambio&&c.moneda!=='MXN'?' · TC '+escH(c.tipoCambio):''}</div></div>
+    </div>
+
+    <div class="f-concepts-wrap">
+      <table class="f-concepts">
+        <colgroup>
+          <col style="width:9%"><col style="width:33%"><col style="width:9%">
+          <col style="width:11%"><col style="width:11%"><col style="width:13.5%"><col style="width:13.5%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Clave prod.</th><th>Descripción</th><th class="r">Cantidad</th>
+            <th>Obj. imp.</th><th>Unidad</th><th class="r">P. Unitario</th><th class="r">Importe</th>
+          </tr>
+        </thead>
+        <tbody>${conRows}</tbody>
+      </table>
+    </div>
+
+    <div class="f-bottom">
+      <div class="f-payment">
+        <div class="f-box-title">Información de pago</div>
+        ${c.formaPago  ? `<div class="f-row"><span class="f-lbl">Forma de pago:</span><span class="f-val">${escH(cat(CAT_FORMA,c.formaPago))}</span></div>` : ''}
+        ${c.metodoPago ? `<div class="f-row"><span class="f-lbl">Método de pago:</span><span class="f-val">${escH(cat(CAT_METODO,c.metodoPago))}</span></div>` : ''}
+        ${c.lugarExp   ? `<div class="f-row"><span class="f-lbl">Lugar expedición:</span><span class="f-val">${escH(c.lugarExp)}</span></div>` : ''}
+        ${c.exportacion ? `<div class="f-row"><span class="f-lbl">Exportación:</span><span class="f-val">${escH(c.exportacion)}</span></div>` : ''}
+        ${c.tfd.rfcPac    ? `<div class="f-row" style="margin-top:8px"><span class="f-lbl">PAC:</span><span class="f-val">${escH(c.tfd.rfcPac)}</span></div>` : ''}
+        ${c.tfd.noCertSat ? `<div class="f-row"><span class="f-lbl">No. cert. SAT:</span><span class="f-val">${escH(c.tfd.noCertSat)}</span></div>` : ''}
+      </div>
+      <div class="f-totals">
+        <div class="f-total-row"><span>Subtotal</span><span>${fmt(c.subtotal)}</span></div>
+        ${descRow}
+        ${impRows}
+        <div class="f-total-row grand"><span>Total</span><span>${fmt(c.total)}</span></div>
+      </div>
+    </div>
+
+    <div class="f-letra">
+      <strong>Importe con letra:</strong> ${escH(importeEnLetra(c.total))}
+    </div>
+
+    <div class="f-seals">
+      <div class="f-seals-title">Sello digital y verificación</div>
+      <div class="f-seals-inner">
+        <div class="f-qr" id="qr-container">
+          ${!url ? '<span style="font-size:9px;color:#aaa">(sin timbre)</span>' : ''}
+        </div>
+        <div class="f-seal-data">
+          ${c.tfd.uuid ? `<div class="f-seal-label">UUID (Folio fiscal)</div><div class="f-seal-val">${escH(c.tfd.uuid)}</div>` : ''}
+          ${selloCfdi ? `<div class="f-seal-label">Sello CFDI</div><div class="f-seal-val">${escH(selloCfdi.slice(0,120))}…</div>` : ''}
+          ${c.tfd.selloSat ? `<div class="f-seal-label">Sello SAT</div><div class="f-seal-val">${escH(c.tfd.selloSat.slice(0,120))}…</div>` : ''}
+          <div class="f-seal-label">Cadena original del TFD</div>
+          <div class="f-seal-val">${escH(cadena.slice(0,200))}${cadena.length>200?'…':''}</div>
+        </div>
+      </div>
+      ${url ? `<div style="margin-top:8px"><a href="${escH(url)}" target="_blank" rel="noopener" style="font-size:9px;color:#2a5bd7;text-decoration:none;" class="no-print">Verificar autenticidad en el SAT →</a></div>` : ''}
+    </div>
+
+    <div class="f-footer">
+      <span>Este documento es una representación impresa de un Comprobante Fiscal Digital por Internet (CFDI)</span>
+      <span class="f-footer-brand">Design by Valhalla Studio · valhallastudio.com.mx</span>
+    </div>
+  `;
+
+  document.getElementById('factura-print').innerHTML = html;
+
+  if (url) {
+    try {
+      new QRCode(document.getElementById('qr-container'), {
+        text: url, width:100, height:100,
+        colorDark:'#000000', colorLight:'#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = 'Verificar en SAT';
+      a.className = 'no-print';
+      document.getElementById('qr-container').appendChild(a);
+    } catch(e) { /* QR no crítico */ }
+  }
+}
+
+// ─── File handling ────────────────────────────────────────────────
+function handleFile(file) {
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.xml')) { showError('Solo se aceptan archivos .xml'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const buf = e.target.result;
+      let text = new TextDecoder('UTF-8').decode(buf);
+      if (text.includes('�')) text = new TextDecoder('ISO-8859-1').decode(buf);
+      const cfdi = parseCfdi(text);
+      renderInvoice(cfdi);
+      document.getElementById('upload-section').hidden = true;
+      document.getElementById('invoice-section').hidden = false;
+      document.getElementById('btn-print').hidden = false;
+      document.getElementById('btn-reset').hidden = false;
+    } catch(err) {
+      showError('Error al procesar el XML: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.hidden = false;
+}
+
+function resetPage() {
+  document.getElementById('upload-section').hidden = false;
+  document.getElementById('invoice-section').hidden = true;
+  document.getElementById('btn-print').hidden = true;
+  document.getElementById('btn-reset').hidden = true;
+  document.getElementById('error-msg').hidden = true;
+  document.getElementById('factura-print').innerHTML = '';
+  document.getElementById('file-input').value = '';
+}
+
+// ─── Eventos ──────────────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', e => handleFile(e.target.files[0]));
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', ()  => dz.classList.remove('drag'));
+dz.addEventListener('drop',      e  => { e.preventDefault(); dz.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+</script>
+</body>
+</html>
