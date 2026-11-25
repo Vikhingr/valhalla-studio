@@ -173,7 +173,10 @@
       .f-totals { width:100%; }
     }
 
-    /* ─── Print ─── */
+    /* ─── Marca de agua (solo en print) ─── */
+    .watermark {
+      display: none;
+    }
     @media print {
       .no-print { display:none !important; }
       body { background:white !important; background-image:none !important; padding:0 !important; }
@@ -182,6 +185,28 @@
       .f-concepts-wrap { overflow-x:visible !important; }
       a[href]::after { content:none !important; }
       @page { size:letter; margin:8mm 10mm; }
+
+      .watermark {
+        display: block;
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+        overflow: hidden;
+      }
+      .watermark-inner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-38deg);
+        white-space: nowrap;
+        font-family: 'Caveat', cursive;
+        font-size: 72px;
+        font-weight: 700;
+        color: rgba(42, 91, 215, 0.07);
+        letter-spacing: 0.04em;
+        user-select: none;
+      }
     }
   </style>
 </head>
@@ -198,7 +223,7 @@
   <button class="btn-print" id="btn-print" onclick="window.print()" hidden>🖨 Imprimir / PDF</button>
 </div>
 
-<div id="upload-section" class="upload-wrap">
+<div id="upload-section" class="upload-wrap no-print">
   <h1>Visor de XML <span style="color:var(--blue)">CFDI</span></h1>
   <p>Sube tu archivo XML y visualiza la factura. Genera el PDF con un clic. Compatible con CFDI 4.0 y 3.3.</p>
 
@@ -222,6 +247,10 @@
 
 <div id="invoice-section" class="invoice-outer" hidden>
   <div id="factura-print"></div>
+</div>
+
+<div class="watermark" aria-hidden="true">
+  <div class="watermark-inner">Design by Valhalla Studio</div>
 </div>
 
 <script>
